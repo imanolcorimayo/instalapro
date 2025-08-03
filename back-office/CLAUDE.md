@@ -22,7 +22,7 @@ InstalarPro is an MVP back-office application for **self-employed** Air Conditio
 
 ```json
 {
-  "name": "instalapro",
+  "name": "instalapro-back-office",
   "private": true,
   "type": "module",
   "scripts": {
@@ -33,13 +33,11 @@ InstalarPro is an MVP back-office application for **self-employed** Air Conditio
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@pinia/nuxt": "0.11.0",
-    "@tailwindcss/vite": "^4.1.7",
+    "@nuxtjs/tailwindcss": "^6.12.3",
     "@vueuse/nuxt": "13.2.0",
     "nuxt": "^4.0.1",
-    "pinia": "^3.0.2",
-    "tailwindcss": "^4.1.7",
-    "unplugin-icons": "^22.1.0",
+    "tailwindcss": "^3.4.16",
+    "unplugin-icons": "^0.21.0",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1",
     "vue3-toastify": "^0.2.8"
@@ -51,6 +49,8 @@ InstalarPro is an MVP back-office application for **self-employed** Air Conditio
   }
 }
 ```
+
+**Note**: Pinia will be added back when Nuxt 4 compatible versions are available.
 
 #### Architecture Patterns
 - **Stores**: Pinia stores for state management (schedule, clients, quotes, cashFlow)

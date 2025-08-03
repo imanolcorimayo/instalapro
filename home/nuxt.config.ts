@@ -1,16 +1,23 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-08-03',
-  ssr: true,
+  ssr: true, // Server-side rendering for SEO
+  nitro: {
+    prerender: {
+      routes: ['/sitemap.xml', '/robots.txt']
+    }
+  },
   modules: [
     '@vueuse/nuxt', 
     'unplugin-icons/nuxt',
     'dayjs-nuxt',
     '@nuxtjs/tailwindcss'
   ],
+  // Proper icon configuration
   components: {
     global: true,
     dirs: ['~/components']
   },
+  // Icon configuration for unplugin-icons
   vite: {
     plugins: [],
     optimizeDeps: {
@@ -21,9 +28,9 @@ export default defineNuxtConfig({
     head: {
       htmlAttrs: { lang: 'es' },
       meta: [
-        { name: 'robots', content: 'noindex, nofollow' }, // Back office should not be indexed
+        { name: 'robots', content: 'index, follow' },
         { name: 'author', content: 'InstalarPro' },
-        { name: 'description', content: 'Panel de administración para técnicos de aire acondicionado. Gestión de clientes, agenda y presupuestos.' }
+        { name: 'description', content: 'Técnicos especializados en aire acondicionado. Instalación, mantenimiento y reparación. Servicio rápido y confiable en toda Argentina.' }
       ]
     }
   },
