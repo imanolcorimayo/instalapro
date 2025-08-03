@@ -1,195 +1,147 @@
-# InstalarPro Home - Marketing Landing Page
+# InstalarPro Home - Technician Acquisition Landing Page
 
 ## Domain Overview
 **URL**: https://instalapro.com  
-**Purpose**: Public marketing website for lead generation and brand awareness  
-**Target Users**: Potential clients seeking air conditioning services  
-**Primary Goal**: Drive traffic to technician booking pages and capture leads
+**Purpose**: Technician acquisition and platform showcase  
+**Target Users**: Air conditioning technicians seeking business management tools  
+**Primary Goal**: Convert technicians to sign up for the back-office platform
+
+## Business Model Clarification
+**IMPORTANT**: We market TO technicians, NOT to clients seeking technicians.
+- Technicians discover us through marketing/SEO
+- Technicians sign up and configure their services in back-office
+- Each technician gets their individual booking page: `agenda.instalapro.com/{technician}`
+- Technicians share their booking link directly with their own clients
+- We NEVER list technicians publicly or approach end clients
 
 ## Page Structure & Content Strategy
 
 ### Core Pages
-- **Homepage** (`/index.vue`) - Main landing with hero, services overview, CTA
-- **Services** (`/services/index.vue`) - Detailed service descriptions and pricing
-- **Technicians** (`/technicians/index.vue`) - Directory of available technicians
-- **Contact** (`/contact/index.vue`) - Contact forms and business information
-- **About** (`/about/index.vue`) - Company story and value proposition
-- **Blog** (`/blog/`) - SEO content and technical articles (optional)
+- **Homepage** (`/index.vue`) - Hero showcasing platform benefits for technicians
+- **Features** (`/features/index.vue`) - Detailed platform capabilities and tools
+- **Pricing** (`/pricing/index.vue`) - Subscription plans and pricing tiers
+- **About** (`/about/index.vue`) - Company mission and technician success stories
+- **Contact** (`/contact/index.vue`) - Technician support and sales contact
+- **Sign Up** (`/signup/index.vue`) - Technician registration flow
 
-### Dynamic Pages
-- **Technician Profile** (`/technicians/[slug].vue`) - Individual technician pages
-- **Service Detail** (`/services/[service].vue`) - Detailed service information
-- **Location Pages** (`/[city].vue`) - City-specific landing pages for local SEO
+### Supporting Pages
+- **Case Studies** (`/success-stories/`) - Technician testimonials and growth stories
+- **Resources** (`/resources/`) - Business tips and tools for technicians
+- **FAQ** (`/faq/index.vue`) - Common questions about the platform
 
 ## Content Strategy
 
-### Primary Value Propositions
-1. **Technicos Confiables** - Verified, experienced AC technicians
-2. **Servicio Rapido** - Same-day and next-day service availability  
-3. **Precios Justos** - Transparent pricing, no hidden fees
-4. **Garantia Total** - Full warranty on all installations and repairs
+### Primary Value Propositions for Technicians
+1. **Gestión Completa** - All-in-one business management platform
+2. **Más Clientes** - Professional booking system to attract more clients  
+3. **Organización Total** - Schedule, clients, quotes, and cash flow in one place
+4. **Presencia Digital** - Professional online presence with custom booking page
+5. **Herramientas Profesionales** - WhatsApp integration, PDF quotes, payment tracking
 
-### Service Categories
-```typescript
-interface ServiceCategory {
-  id: string
-  name: string
-  description: string
-  icon: string // Iconify icon name
-  basePrice: string // Display price range
-  services: string[] // Individual services in category
-}
+### Platform Benefits Showcase
+Display the following key platform benefits for technicians:
 
-const serviceCategories: ServiceCategory[] = [
-  {
-    id: 'installation',
-    name: 'Instalación',
-    description: 'Instalación profesional de equipos nuevos',
-    icon: 'mdi:air-conditioner',
-    basePrice: 'Desde $15,000',
-    services: ['Split 1x1', 'Split 2x1', 'Split 3x1', 'Cassette', 'Piso-Techo']
-  },
-  {
-    id: 'maintenance', 
-    name: 'Mantenimiento',
-    description: 'Service preventivo y limpieza',
-    icon: 'mdi:wrench',
-    basePrice: 'Desde $3,000',
-    services: ['Limpieza Split', 'Carga Gas', 'Cambio Filtros', 'Revisión General']
-  },
-  {
-    id: 'repair',
-    name: 'Reparación', 
-    description: 'Diagnóstico y reparación de fallas',
-    icon: 'mdi:hammer-wrench',
-    basePrice: 'Desde $2,500',
-    services: ['Diagnóstico', 'Reparación Electrónica', 'Cambio Repuestos']
-  },
-  {
-    id: 'consultation',
-    name: 'Consultoría',
-    description: 'Asesoramiento técnico especializado',
-    icon: 'mdi:clipboard-check',
-    basePrice: 'Desde $1,500', 
-    services: ['Evaluación Técnica', 'Presupuesto Detallado', 'Consulta Remota']
-  }
-]
-```
+1. **Gestión de Agenda** (📅)
+   - Organiza todos tus trabajos en un calendario intuitivo
+   - Calendario semanal/mensual, Estados de trabajo, Recordatorios automáticos
+
+2. **Base de Clientes** (👥)
+   - Mantén toda la información de tus clientes organizada
+   - Historial de servicios, Datos de contacto, Integración WhatsApp
+
+3. **Sistema de Presupuestos** (📋)
+   - Crea y envía presupuestos profesionales en minutos
+   - Plantillas predefinidas, Export PDF, Envío por WhatsApp
+
+4. **Página de Reservas** (🌐)
+   - Tu propia página web para que clientes reserven citas
+   - URL personalizada, Disponibilidad en tiempo real, Confirmación automática
 
 ## SEO Strategy
 
-### Target Keywords (Argentina/LATAM)
-- **Primary**: "instalacion aire acondicionado", "service aire acondicionado", "reparacion aire acondicionado"
-- **Location-based**: "[ciudad] aire acondicionado", "tecnico aire acondicionado [zona]"
-- **Long-tail**: "cuanto cuesta instalar aire acondicionado", "mejor tecnico aire acondicionado"
+### Target Keywords (Technician-Focused)
+- **Primary**: "software para técnicos aire acondicionado", "gestión de trabajos técnicos", "agenda digital técnicos"
+- **Business-focused**: "organizar trabajos aire acondicionado", "presupuestos técnicos digitales"
+- **Long-tail**: "como organizar mi negocio de aire acondicionado", "herramientas digitales para técnicos"
 
 ### Technical SEO Requirements
-- **Meta Tags**: Dynamic meta titles and descriptions per page
-- **Schema Markup**: LocalBusiness, Service, and Review schema
-- **Open Graph**: Social media sharing optimization
-- **Site Map**: XML sitemap with all pages and technicians
-- **Speed**: Core Web Vitals optimization with Nuxt SSG
+- **Meta Tags**: Dynamic meta targeting technician searches
+- **Schema Markup**: SoftwareApplication, LocalBusiness schema
+- **Open Graph**: Professional sharing for technician communities
+- **Speed**: Fast loading for mobile-first technician users
 
-### Content Guidelines
-- **Heading Structure**: H1 → H2 → H3 hierarchy on all pages
-- **Internal Linking**: Cross-link related services and technician pages  
-- **Local SEO**: Embed Google Maps, local business information
-- **Image SEO**: Alt tags in Spanish, optimized file sizes
+## Technician Acquisition Strategy
 
-## Lead Capture Strategy
+### Conversion Funnel
+1. **Awareness**: SEO, social media, technician communities
+2. **Interest**: Platform benefits demonstration, feature showcase
+3. **Consideration**: Free trial, demo videos, success stories
+4. **Conversion**: Sign-up flow to back-office onboarding
+5. **Retention**: Ongoing support and feature updates
 
-### Contact Forms
-```typescript
-interface LeadCapture {
-  id: string
-  name: string
-  phone: string
-  email?: string
-  serviceType: string
-  location: string
-  urgency: 'immediate' | 'this_week' | 'next_week' | 'planning'
-  description?: string
-  preferredContact: 'phone' | 'whatsapp' | 'email'
-  source: string // Page where form was submitted
-  createdAt: Date
-}
+### Call-to-Action Strategy
+- **Primary CTA**: "Prueba Gratis por 30 Días" → Back-office signup
+- **Secondary CTA**: "Ver Demo en Vivo" → Platform demonstration  
+- **Support CTA**: "Hablar con un Especialista" → Sales contact
+
+### Lead Capture Strategy
+Focus on capturing technician leads through:
+- Contact forms with business-focused questions
+- Demo request functionality  
+- Free trial signup process
+- Phone and WhatsApp contact options
 ```
-
-### CTA Strategy
-- **Primary CTA**: "Solicitar Presupuesto Gratis" → Contact form
-- **Secondary CTA**: "Ver Técnicos Disponibles" → Technician directory
-- **Urgency CTA**: "Servicio de Emergencia" → Priority contact form
-- **WhatsApp CTA**: Direct WhatsApp contact for instant communication
-
-### Form Placement
-- **Hero Section**: Main contact form above the fold
-- **Service Pages**: Service-specific quote forms
-- **Technician Pages**: "Contactar Técnico" forms
-- **Sticky Footer**: Persistent WhatsApp contact button
 
 ## UI/UX Requirements
 
-### Design Principles
-- **Trust Building**: Professional imagery, testimonials, certifications
-- **Simplicity**: Clear navigation, minimal clicks to contact
-- **Mobile-First**: 80% of users will access via mobile
-- **Speed**: Fast loading times, optimized images
-- **Accessibility**: WCAG compliance for inclusive design
+### Design Principles (Technician-Focused)
+- **Professional Credibility**: Clean, business-focused design
+- **Benefit-Driven**: Clear ROI and business improvement messaging
+- **Simplicity**: Easy to understand for non-tech-savvy users
+- **Trust Building**: Testimonials from successful technicians
+- **Mobile-First**: Technicians primarily use mobile devices
 
 ### Visual Elements
 ```vue
-<!-- Color Palette -->
-<div class="bg-blue-600">Primary - Professional Blue</div>
-<div class="bg-orange-500">Accent - Warmth/Energy Orange</div>
-<div class="bg-gray-100">Light Gray - Background</div>
-<div class="bg-gray-800">Dark Gray - Text</div>
-<div class="bg-white">White - Clean backgrounds</div>
+<!-- Professional Color Palette -->
+<div class="bg-blue-600">Primary - Professional Trust</div>
+<div class="bg-green-500">Success - Growth/Profit</div>
+<div class="bg-gray-100">Neutral - Clean Background</div>
+<div class="bg-gray-800">Text - Professional Dark</div>
+<div class="bg-white">Clean - Clarity</div>
 
-<!-- Typography Scale -->
-<h1 class="text-4xl font-bold">Hero Headlines</h1>
-<h2 class="text-3xl font-semibold">Section Headers</h2>
-<h3 class="text-xl font-medium">Subsections</h3>
-<p class="text-base">Body text</p>
-<small class="text-sm text-gray-600">Supporting text</small>
+<!-- Typography for Business Users -->
+<h1 class="text-4xl font-bold">Platform Benefits</h1>
+<h2 class="text-3xl font-semibold">Feature Categories</h2>
+<h3 class="text-xl font-medium">Specific Features</h3>
+<p class="text-base">Business-focused descriptions</p>
 ```
 
 ### Component Architecture
 ```typescript
-// Shared components for marketing site
-- ContactForm.vue (lead capture)
-- ServiceCard.vue (service display)
-- TechnicianCard.vue (technician profiles)
-- TestimonialCarousel.vue (social proof)
-- WhatsAppButton.vue (sticky contact)
-- LocationMap.vue (service area display)
-- PriceCalculator.vue (interactive pricing)
+// Components focused on technician conversion
+- PlatformBenefitsShowcase.vue (main value props)
+- FeatureComparison.vue (vs manual methods)
+- TechnicianTestimonials.vue (social proof)
+- PricingPlans.vue (subscription options)
+- DemoRequest.vue (lead capture)
+- SuccessMetrics.vue (business growth stats)
+- SignupFlow.vue (onboarding process)
 ```
 
 ## Technical Implementation
 
-### Nuxt Configuration
+### Nuxt Configuration (Technician SEO)
 ```typescript
 // nuxt.config.ts
 export default defineNuxtConfig({
-  ssr: true, // Server-side rendering for SEO
-  nitro: {
-    prerender: {
-      routes: ['/sitemap.xml', '/robots.txt']
-    }
-  },
-  modules: [
-    '@pinia/nuxt',
-    '@vueuse/nuxt', 
-    'unplugin-icons/nuxt',
-    'dayjs-nuxt',
-    '@nuxtjs/tailwindcss'
-  ],
+  ssr: true, // SEO for technician searches
   app: {
     head: {
       htmlAttrs: { lang: 'es' },
       meta: [
-        { name: 'robots', content: 'index, follow' },
-        { name: 'author', content: 'InstalarPro' }
+        { name: 'description', content: 'Plataforma de gestión para técnicos de aire acondicionado' },
+        { name: 'keywords', content: 'software técnicos, gestión trabajos, agenda digital' }
       ]
     }
   }
@@ -197,69 +149,56 @@ export default defineNuxtConfig({
 ```
 
 ### Store Architecture
-```typescript
-// stores/leads.ts - Lead capture and management
-interface LeadsStore {
-  leads: LeadCapture[]
-  loadLeads(): Promise<void>
-  submitLead(lead: Omit<LeadCapture, 'id' | 'createdAt'>): Promise<void>
-  getLeadsBySource(source: string): LeadCapture[]
-  exportLeads(): void
-}
+Use Pinia stores for:
+- **Lead Management**: Handle technician lead capture and form submissions
+- **Content Management**: Manage platform benefits, testimonials, and pricing plans
+- **UI State**: Handle form states, loading states, and user interactions
 
-// stores/content.ts - Site content management  
-interface ContentStore {
-  services: ServiceCategory[]
-  technicians: Technician[]
-  testimonials: Testimonial[]
-  loadContent(): Promise<void>
-  getServiceBySlug(slug: string): ServiceCategory | null
-  getTechnicianBySlug(slug: string): Technician | null
-}
-```
+All data will be handled in-memory or through localStorage for MVP phase.
 
-### Integration with Other Domains
-- **Lead Handoff**: Leads flow to back-office for technician assignment
-- **Technician Data**: Pull technician profiles from back-office system
-- **Booking Integration**: Direct links to agenda.instalapro.com/{technician}
-- **Analytics**: Track conversion from marketing site to bookings
+### Integration with Back-Office
+- **Signup Flow**: Direct integration with back-office registration
+- **Lead Handoff**: Qualified leads flow to sales process
+- **Tracking**: Conversion tracking from home → back-office signup
+- **Support**: Seamless transition to back-office onboarding
 
 ## Content Management
 
 ### Static Content
-- Service descriptions and pricing
-- Company information and policies
-- SEO-optimized blog content
-- Technician profiles and specialties
+- Platform feature descriptions
+- Pricing plans and billing information
+- Technician success stories and testimonials
+- Business resources and guides
 
 ### Dynamic Content  
-- Real-time technician availability status
-- Service area coverage maps
-- Customer testimonials and ratings
-- Pricing updates and promotions
+- Real-time signup numbers and growth metrics
+- Latest platform updates and features
+- Active technician success stories
+- Regional pricing and availability
 
-### Multilingual Considerations
-- **Primary Language**: Spanish (Argentina/LATAM market)
-- **Future**: Portuguese for Brazil expansion
-- **Technical Terms**: Use local HVAC terminology
-- **Currency**: Argentine Peso (ARS) pricing display
+### Messaging Guidelines
+- **Tone**: Professional but approachable, business-focused
+- **Language**: Spanish for Argentina/LATAM market
+- **Focus**: Business growth, efficiency, professionalism
+- **Avoid**: Technical jargon, complex explanations
+- **Emphasize**: ROI, time savings, client acquisition, professional image
 
 ## Performance & Analytics
 
 ### Key Metrics
-- **Traffic Sources**: Organic search, referrals, direct
-- **Conversion Rates**: Visitor → Lead → Booking
-- **Page Performance**: Core Web Vitals, bounce rate
-- **Form Completion**: Lead capture form analytics
-- **Mobile Usage**: Mobile vs desktop user behavior
+- **Technician Acquisition**: Signup conversion rates
+- **Lead Quality**: Lead to paying customer conversion
+- **Feature Interest**: Which benefits drive most signups
+- **Geographic Performance**: Regional technician adoption
+- **Mobile Usage**: Mobile vs desktop technician behavior
 
-### Optimization Strategy
-- **Image Optimization**: WebP format, lazy loading
-- **Code Splitting**: Route-based chunk loading  
-- **Caching**: Aggressive caching for static content
-- **CDN**: Content delivery optimization
-- **Monitoring**: Real-time performance tracking
+### Conversion Optimization
+- **A/B Testing**: Different value propositions and CTAs
+- **Landing Pages**: Targeted pages for different technician segments
+- **Form Optimization**: Reduce friction in lead capture
+- **Social Proof**: Testimonials and success metrics
+- **Demo Content**: Video demonstrations of platform benefits
 
 ---
 
-This marketing site serves as the primary entry point for potential clients, focusing on lead generation, SEO performance, and seamless handoff to the booking system for actual service appointments.
+This technician acquisition site serves as the primary entry point for technicians to discover and join our platform, focusing on business benefits and seamless onboarding to the back-office system.

@@ -1,14 +1,22 @@
 # InstalarPro - Air Conditioner Technician Job Management MVP
 
 ## Overview
-InstalarPro is an MVP back-office application for **self-employed** Air Conditioner Technicians in Argentina/LATAM. **Primary focus: client administration and job management**. The system provides essential tools for managing appointments, clients, quotes, and basic cash flow without the complexity of authentication or cloud storage.
+InstalarPro is an MVP back-office application for **self-employed** Air Conditioner Technicians in Argentina/LATAM. **Primary focus: technician account setup, service configuration, and complete business management**. The system provides essential tools for managing appointments, clients, quotes, and basic cash flow.
 
-**Target Users**: Self-employed technicians, no big teams, basic financial tracking only.
+**Target Users**: Self-employed technicians who sign up via our marketing site, set up their services, and get their individual booking pages.
+
+## Business Model Clarification
+**IMPORTANT**: We market TO technicians, NOT to clients seeking technicians.
+- Technicians discover us through instalapro.com (marketing site)
+- Technicians sign up and configure their business in this back-office
+- Upon setup, each technician gets their individual booking page: `agenda.instalapro.com/{technician}`
+- Technicians share their booking link directly with their own clients
+- We NEVER list technicians publicly or approach end clients
 
 ### Project URLs
-- **instalapro.com** - Public landing page (SEO/marketing)
-- **back.instalapro.com** - This back-office app (technician dashboard)
-- **client.instalapro.com** - Simple client booking interface
+- **instalapro.com** - Technician acquisition and marketing site
+- **back.instalapro.com** - This back-office app (technician dashboard and setup)
+- **agenda.instalapro.com/{technician}** - Individual technician booking pages
 
 ## Tech Stack
 - Nuxt 4 (Vue 3), Tailwind CSS, Pinia
@@ -145,47 +153,52 @@ subscribeToChanges()     // Real-time updates (Firestore only)
 
 ## Core System Modules
 
-### 1. Job Schedule Management
-- **Access**: All technicians
-- **Features**: Daily/weekly calendar view, job status tracking, pending appointment confirmations
+### 1. Technician Account Setup & Configuration
+- **Purpose**: Initial technician onboarding and profile setup
+- **Features**: Service configuration, availability setup, pricing definition, booking page customization
+- **Data**: Technician profile, service catalog, availability schedule, booking preferences
+- **Integration**: Generates individual technician booking page
+- **Store**: `technician.ts` | **LocalStorage Keys**: `technicianProfile`, `servicesCatalog`, `availability`
+
+### 2. Job Schedule Management
+- **Purpose**: Daily business operations and appointment management
+- **Features**: Daily/weekly calendar view, job status tracking, booking confirmations from client pages
 - **Data**: Job appointments, client assignments, service types, status updates
 - **Store**: `schedule.ts` | **LocalStorage Keys**: `jobs`, `jobHistory`
 
-### 2. Client Management
+### 3. Client Management
+- **Purpose**: Comprehensive client database and relationship management
 - **Features**: Client profiles with contact info, service history, WhatsApp integration
 - **Data**: Client information, address, phone (with WhatsApp button), service history
 - **Integration**: Direct WhatsApp messaging, service history tracking
 - **Store**: `clients.ts` | **LocalStorage Keys**: `clients`, `clientHistory`
 
-### 3. Quote Management
+### 4. Quote Management
+- **Purpose**: Professional quote generation and client communication
 - **Features**: Quick quote templates, service pricing, PDF export, WhatsApp sending
 - **Templates**: Standard installation templates (e.g., "3500 BTU Split Installation = $xx")
 - **Export**: PDF generation, WhatsApp sharing
 - **Store**: `quotes.ts` | **LocalStorage Keys**: `quotes`, `quoteTemplates`
 
-### 4. Basic Cash Flow
+### 5. Basic Cash Flow
+- **Purpose**: Simple financial tracking for self-employed technicians
 - **Features**: Simple revenue tracking, payment status monitoring
 - **Scope**: Basic numbers for self-employed technicians (no complex accounting)
 - **Data**: Monthly billing summary, paid/pending job status
 - **Reports**: Clear, understandable financial overview
 - **Store**: `cashFlow.ts` | **LocalStorage Keys**: `payments`, `monthlyReports`
 
-### 5. Client UI Interface
-- **Features**: Public-facing interface for clients to view technician availability and pricing
-- **Functionality**: Availability calendar, service selection, appointment booking
-- **Integration**: Feeds into technician schedule system
-- **Store**: `clientBooking.ts` | **LocalStorage Keys**: `availability`, `bookings`
-
 ## Page Structure
 
 All pages use modal-based entity management:
 
 - **Dashboard**: `/index.vue` - Main overview with key metrics and recent activities
+- **Setup**: `/setup/index.vue` - Initial technician onboarding, service configuration, availability setup
 - **Schedule**: `/schedule/index.vue` - Daily/weekly job calendar and appointment management
 - **Clients**: `/clients/index.vue` - Client directory with profiles and history
 - **Quotes**: `/quotes/index.vue` - Quote templates and generation
 - **Cash Flow**: `/cash-flow/index.vue` - Payment tracking and monthly reports
-- **Client Booking**: `/booking/index.vue` - Public interface for client appointment booking
+- **Settings**: `/settings/index.vue` - Technician profile, booking page customization, service management
 
 ## TypeScript Interfaces & Data Structures
 
@@ -194,6 +207,74 @@ All pages use modal-based entity management:
 - Interfaces designed for both LocalStorage and Firestore compatibility
 - Consistent naming: `[Entity]`, `[Entity]CreateInput`, `[Entity]UpdateInput`
 - Common fields: `id`, `createdAt`, `updatedAt` (Firestore timestamps compatible)
+
+### Technician Store Interfaces
+```typescript
+// Core Technician entity for account setup
+interface Technician {
+  id: string
+  name: string
+  phone: string
+  whatsappNumber: string
+  email: string
+  businessName?: string
+  serviceArea: string[] // Cities/zones served
+  services: TechnicianService[]
+  availability: WeeklyAvailability
+  bookingUrl: string // agenda.instalapro.com/{technician}
+  profileSetupComplete: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface TechnicianService {
+  id: string
+  name: string
+  description: string
+  basePrice: number
+  estimatedDuration: number // minutes
+  category: 'installation' | 'maintenance' | 'repair' | 'consultation'
+  isActive: boolean
+}
+
+interface WeeklyAvailability {
+  monday: DaySchedule
+  tuesday: DaySchedule
+  wednesday: DaySchedule
+  thursday: DaySchedule
+  friday: DaySchedule
+  saturday: DaySchedule
+  sunday: DaySchedule
+}
+
+interface DaySchedule {
+  enabled: boolean
+  startTime: string // HH:mm format
+  endTime: string // HH:mm format
+  breakStart?: string
+  breakEnd?: string
+}
+
+// Input types for store operations
+interface TechnicianCreateInput {
+  name: string
+  phone: string
+  email: string
+  businessName?: string
+  serviceArea: string[]
+}
+
+interface TechnicianUpdateInput {
+  name?: string
+  phone?: string
+  whatsappNumber?: string
+  email?: string
+  businessName?: string
+  serviceArea?: string[]
+  services?: TechnicianService[]
+  availability?: WeeklyAvailability
+}
+```
 
 ### Jobs Store Interfaces
 ```typescript

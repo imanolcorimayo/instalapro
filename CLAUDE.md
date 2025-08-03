@@ -13,9 +13,9 @@ InstalarPro is a comprehensive platform for Air Conditioner Technicians in Argen
 ```
 
 ### Domain URLs & Purposes
-- **instalapro.com** (`/home`) - Public marketing site, lead capture, contact info
-- **back.instalapro.com** (`/back-office`) - Complex technician dashboard and management
-- **agenda.instalapro.com/{technician}** (`/booking`) - Simple client booking interface
+- **instalapro.com** (`/home`) - Technician acquisition site, showcase platform benefits
+- **back.instalapro.com** (`/back-office`) - Technician dashboard and business management
+- **agenda.instalapro.com/{technician}** (`/booking`) - Individual technician booking pages for their clients
 
 ## Shared Tech Stack & Standards
 
@@ -237,40 +237,41 @@ Store shared components that might be used across domains:
 
 ## Domain-Specific Focus Areas
 
-### `/home` - Marketing & SEO
-- **Primary Goal**: Drive traffic and capture leads
-- **Key Features**: Landing pages, contact forms, SEO optimization
-- **User Journey**: Visitor → Lead → Phone Call → Booking
-- **Technology**: Nuxt SSG for optimal SEO performance
+### `/home` - Technician Acquisition
+- **Primary Goal**: Attract technicians to join the platform
+- **Key Features**: Platform benefits showcase, technician onboarding, feature demonstrations
+- **User Journey**: Technician Discovery → Platform Benefits → Sign Up → Back Office Setup
+- **Technology**: Nuxt SSG for optimal SEO performance targeting technicians
 
 ### `/back-office` - Technician Management
 - **Primary Goal**: Complete business management for technicians
-- **Key Features**: Schedule, clients, quotes, cash flow, analytics
-- **User Journey**: Technician daily workflow and administration
+- **Key Features**: Account setup, services configuration, availability management, client tracking, quotes, cash flow
+- **User Journey**: New technician onboarding → Service setup → Availability configuration → Daily operations
 - **Technology**: Nuxt SPA with complex state management
 
-### `/booking` - Client Self-Service
-- **Primary Goal**: Simple appointment booking for clients
-- **Key Features**: Availability calendar, service selection, booking confirmation
-- **User Journey**: Client → Service Selection → Time Slot → Confirmation
-- **Technology**: Nuxt SSG/SPA hybrid for speed and simplicity
+### `/booking` - Individual Technician Pages
+- **Primary Goal**: Provide each technician with their own booking interface
+- **Key Features**: Individual technician branding, service selection, availability calendar, booking confirmation
+- **User Journey**: Client receives technician's booking link → Service Selection → Time Slot → Confirmation
+- **Technology**: Dynamic routing for individual technician pages
 
 ## Integration Requirements
 
 ### Data Synchronization
-- Real-time booking notifications from `/booking` to `/back-office`
-- Client data shared between domains
-- Service catalog synchronized across booking and back-office
+- Real-time booking notifications from individual `/booking/{technician}` pages to `/back-office`
+- Technician profile and service data shared between back-office and booking domains
+- Service catalog and availability synchronized from back-office to individual booking pages
 
 ### Communication Flow
 - WhatsApp integration from back-office for client communication
 - Email notifications for booking confirmations
 - SMS reminders for upcoming appointments
+- Technician shares their individual booking link directly with clients
 
 ### Analytics & Reporting
-- Cross-domain user journey tracking
-- Lead conversion rates (home → booking → job)
-- Technician performance metrics
+- Technician acquisition tracking (home → back-office signup)
+- Booking conversion rates per technician
+- Individual technician performance metrics
 
 ---
 

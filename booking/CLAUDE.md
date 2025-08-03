@@ -2,9 +2,17 @@
 
 ## Domain Overview
 **URL**: https://agenda.instalapro.com/{technician}  
-**Purpose**: Simple, mobile-first booking interface for clients to schedule appointments  
-**Target Users**: End customers seeking air conditioning services  
+**Purpose**: Individual technician booking pages for their clients  
+**Target Users**: End customers who received the booking link directly from their technician
 **Primary Goal**: Convert booking requests into confirmed appointments with minimal friction
+
+## Business Model Clarification
+**IMPORTANT**: Each technician gets their own individual booking page after setting up their account in back-office.
+- Technicians share their unique booking URL directly with their clients
+- Each URL is customized for that specific technician: `agenda.instalapro.com/{technician}`
+- Clients only see and book with the one technician who shared the link
+- We NEVER have a technician directory or public listing - each page is private to that technician's clients
+- This is NOT a marketplace - it's individual booking pages for each technician's business
 
 ## Core Philosophy: Ultra-Simple UX
 
@@ -17,7 +25,7 @@
 
 ### User Journey Flow
 ```
-Client receives link → Select Service → Pick Date/Time → Enter Details → Confirmation → WhatsApp notification
+Technician shares booking link → Client receives link → Select Service → Pick Date/Time → Enter Details → Confirmation → WhatsApp notification to technician
 ```
 
 ## URL Structure & Routing
@@ -66,11 +74,12 @@ Client receives link → Select Service → Pick Date/Time → Enter Details →
 interface TechnicianHeaderProps {
   technician: {
     name: string
+    businessName?: string
     photo?: string
-    rating: number
-    completedJobs: number
-    responseTime: string // "Responde en 15 min"
+    phone: string
+    whatsappNumber: string
     serviceArea: string[]
+    responseTime: string // "Responde en 15 min"
   }
 }
 ```
@@ -263,10 +272,10 @@ interface BookingNotification {
 ```
 
 ### Data Synchronization
-- **Availability**: Pull real-time availability from back-office
-- **Services**: Sync service catalog and pricing
-- **Technician Profile**: Get technician info and status
-- **Booking Confirmation**: Submit booking requests for approval
+- **Technician Profile**: Sync individual technician's profile from back-office
+- **Services**: Pull that specific technician's service catalog and pricing
+- **Availability**: Get real-time availability for that technician only
+- **Booking Requests**: Submit booking requests to that technician's back-office
 
 ### LocalStorage Integration (MVP)
 ```typescript

@@ -1,75 +1,34 @@
-# Nuxt Minimal Starter
+# InstalarPro - Back Office
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+## Overview
+Complete business management dashboard for air conditioner technicians.
 
-## Setup
+## Purpose
+- **Target**: Self-employed AC technicians
+- **Goal**: Comprehensive job and client management system
+- **Focus**: Client administration, job scheduling, and business operations
 
-Make sure to install dependencies:
+## Key Features
+- Job schedule management
+- Client database and history
+- Quote generation and management
+- Basic cash flow tracking
+- WhatsApp integration for client communication
 
+## User Experience
+Designed specifically for technicians who need maximum simplicity and minimal learning curve. All interfaces prioritize ease of use over complex features.
+
+## Technical Details
+For implementation details and technical specifications, refer to `/back-office/CLAUDE.md` and the global `/CLAUDE.md` file.
+
+## Getting Started
 ```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
+# Install dependencies
 yarn install
 
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
+# Start development server
 yarn dev
 
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
+# Build for production
 yarn build
-
-# bun
-bun run build
 ```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
