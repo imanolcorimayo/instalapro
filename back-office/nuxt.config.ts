@@ -5,7 +5,8 @@ export default defineNuxtConfig({
     '@vueuse/nuxt', 
     'unplugin-icons/nuxt',
     'dayjs-nuxt',
-    '@nuxtjs/tailwindcss'
+    '@nuxtjs/tailwindcss',
+    '@pinia/nuxt'
   ],
   components: {
     global: true,
@@ -17,6 +18,7 @@ export default defineNuxtConfig({
       include: ['@iconify/json']
     }
   },
+  css: ['~/assets/css/main.css'],
   app: {
     head: {
       htmlAttrs: { lang: 'es' },
