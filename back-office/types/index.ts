@@ -260,6 +260,79 @@ export interface PaymentUpdateInput {
 }
 
 // ==========================================
+// SCHEDULE & TIME SLOT INTERFACES
+// ==========================================
+
+export interface TimeSlot {
+  id: string
+  date: string // YYYY-MM-DD format
+  startTime: string // HH:mm format
+  endTime: string // HH:mm format
+  duration: number // minutes
+  status: 'available' | 'booked' | 'blocked' | 'break'
+  jobId?: string // Reference to job if booked
+  technicianId: string
+  serviceTypes: string[] // Which services can be booked in this slot
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface TimeSlotCreateInput {
+  date: string
+  startTime: string
+  endTime: string
+  duration: number
+  status: 'available' | 'blocked'
+  serviceTypes?: string[]
+}
+
+export interface TimeSlotUpdateInput {
+  status?: TimeSlot['status']
+  jobId?: string
+  serviceTypes?: string[]
+}
+
+export interface ScheduleDay {
+  date: string // YYYY-MM-DD format
+  dayOfWeek: DayOfWeek
+  isAvailable: boolean
+  timeSlots: TimeSlot[]
+  totalSlots: number
+  availableSlots: number
+  bookedSlots: number
+  blockedSlots: number
+}
+
+export interface ScheduleWeek {
+  startDate: string // YYYY-MM-DD format
+  endDate: string // YYYY-MM-DD format
+  days: ScheduleDay[]
+  totalAvailableHours: number
+  utilization: number // Percentage of booked vs available slots
+}
+
+export interface BlockedTimeSlot {
+  id: string
+  technicianId: string
+  startDate: string // YYYY-MM-DD format
+  endDate: string // YYYY-MM-DD format
+  startTime: string // HH:mm format
+  endTime: string // HH:mm format
+  reason: string
+  isRecurring: boolean
+  recurringPattern?: 'weekly' | 'monthly'
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface SlotGenerationOptions {
+  slotDuration: number // Default slot duration in minutes
+  bufferTime: number // Buffer time between appointments in minutes
+  advanceBookingDays: number // How many days ahead to generate slots
+  minBookingNotice: number // Minimum hours notice required for booking
+}
+
+// ==========================================
 // UTILITY TYPES
 // ==========================================
 
@@ -272,3 +345,7 @@ export type JobStatus = 'pending' | 'confirmed' | 'in_progress' | 'completed' | 
 export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'
 
 export type PaymentMethod = 'cash' | 'transfer' | 'card'
+
+export type TimeSlotStatus = 'available' | 'booked' | 'blocked' | 'break'
+
+export type ScheduleView = 'day' | 'week' | 'month'

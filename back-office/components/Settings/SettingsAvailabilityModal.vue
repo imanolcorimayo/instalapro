@@ -389,6 +389,16 @@ const handleSave = async (): Promise<void> => {
   
   try {
     await technicianStore.updateAvailability(localAvailability.value)
+    
+    // Regenerate time slots when availability changes
+    if (technicianStore.technician) {
+      const scheduleStore = useScheduleStore()
+      await scheduleStore.regenerateSlotsFromAvailability(
+        localAvailability.value,
+        technicianStore.technician.id
+      )
+    }
+    
     modalRef.value?.closeModal()
   } catch (error) {
     console.error('Error saving availability:', error)
