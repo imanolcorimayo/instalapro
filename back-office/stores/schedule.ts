@@ -1,11 +1,18 @@
 import { defineStore } from 'pinia'
+import { 
+  nowInBuenosAires,
+  toBuenosAires,
+  startOfDayInBuenosAires,
+  endOfDayInBuenosAires,
+  isTodayInBuenosAires,
+  formatInBuenosAires,
+  startOfWeekInBuenosAires
+} from '~/utils/timezone'
 import type { 
   Job,
   JobCreateInput,
   JobUpdateInput,
   TimeSlot,
-  TimeSlotCreateInput,
-  TimeSlotUpdateInput,
   ScheduleDay,
   ScheduleWeek,
   BlockedTimeSlot,
@@ -23,12 +30,12 @@ const STORAGE_KEYS = {
   SLOT_OPTIONS: 'instalapro_schedule_options'
 } as const
 
-// Default slot generation options
+// Simplified slot generation options
 const createDefaultSlotOptions = (): SlotGenerationOptions => ({
-  slotDuration: 60, // 1 hour default slots
-  bufferTime: 15, // 15 minutes between appointments
-  advanceBookingDays: 30, // Generate slots 30 days ahead
-  minBookingNotice: 2 // Minimum 2 hours notice
+  slotDuration: 120, // 2 hour default slots (more realistic for AC work)
+  bufferTime: 30, // 30 minutes between appointments
+  advanceBookingDays: 14, // Generate slots 2 weeks ahead (reduced complexity)
+  minBookingNotice: 4 // Minimum 4 hours notice
 })
 
 export const useScheduleStore = defineStore('schedule', () => {
@@ -42,51 +49,43 @@ export const useScheduleStore = defineStore('schedule', () => {
   const slotOptions = ref<SlotGenerationOptions>(createDefaultSlotOptions())
   const loading = ref<boolean>(false)
   const error = ref<string | null>(null)
+  const initialized = ref<boolean>(false)
 
   // ==========================================
-  // GETTERS
+  // GETTERS - SIMPLIFIED
   // ==========================================
 
   const upcomingJobs = computed(() => {
-    const now = new Date()
+    const now = nowInBuenosAires()
     return jobs.value
-      .filter(job => new Date(job.scheduledDate) >= now)
-      .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
+      .filter(job => toBuenosAires(job.scheduledDate).isAfter(now))
+      .sort((a, b) => toBuenosAires(a.scheduledDate).diff(toBuenosAires(b.scheduledDate)))
   })
 
   const todaysJobs = computed(() => {
-    const today = new Date().toISOString().split('T')[0]
-    return jobs.value.filter(job => 
-      job.scheduledDate.toISOString().split('T')[0] === today
-    )
+    return jobs.value.filter(job => isTodayInBuenosAires(job.scheduledDate))
   })
 
   const availableSlotsForDate = computed(() => (date: string) => {
-    return timeSlots.value.filter(slot => 
-      slot.date === date && slot.status === 'available'
-    )
-  })
-
-  const bookedSlotsForDate = computed(() => (date: string) => {
-    return timeSlots.value.filter(slot => 
-      slot.date === date && slot.status === 'booked'
-    )
+    return timeSlots.value
+      .filter(slot => slot.date === date && slot.status === 'available')
+      .sort((a, b) => a.startTime.localeCompare(b.startTime))
   })
 
   // ==========================================
-  // ACTIONS - DATA PERSISTENCE
+  // ACTIONS - DATA PERSISTENCE (FIXED)
   // ==========================================
 
   const saveToLocalStorage = () => {
     try {
-      // Save jobs
+      // Save jobs with consistent timezone handling
       localStorage.setItem(
         STORAGE_KEYS.JOBS, 
         JSON.stringify(jobs.value.map(job => ({
           ...job,
-          scheduledDate: job.scheduledDate.toISOString(),
-          createdAt: job.createdAt.toISOString(),
-          updatedAt: job.updatedAt.toISOString()
+          scheduledDate: toBuenosAires(job.scheduledDate).toISOString(),
+          createdAt: toBuenosAires(job.createdAt).toISOString(),
+          updatedAt: toBuenosAires(job.updatedAt).toISOString()
         })))
       )
 
@@ -95,18 +94,8 @@ export const useScheduleStore = defineStore('schedule', () => {
         STORAGE_KEYS.TIME_SLOTS,
         JSON.stringify(timeSlots.value.map(slot => ({
           ...slot,
-          createdAt: slot.createdAt.toISOString(),
-          updatedAt: slot.updatedAt.toISOString()
-        })))
-      )
-
-      // Save blocked slots
-      localStorage.setItem(
-        STORAGE_KEYS.BLOCKED_SLOTS,
-        JSON.stringify(blockedSlots.value.map(blocked => ({
-          ...blocked,
-          createdAt: blocked.createdAt.toISOString(),
-          updatedAt: blocked.updatedAt.toISOString()
+          createdAt: toBuenosAires(slot.createdAt).toISOString(),
+          updatedAt: toBuenosAires(slot.updatedAt).toISOString()
         })))
       )
 
@@ -126,9 +115,9 @@ export const useScheduleStore = defineStore('schedule', () => {
         const parsedJobs = JSON.parse(storedJobs)
         jobs.value = parsedJobs.map((job: any) => ({
           ...job,
-          scheduledDate: new Date(job.scheduledDate),
-          createdAt: new Date(job.createdAt),
-          updatedAt: new Date(job.updatedAt)
+          scheduledDate: toBuenosAires(job.scheduledDate).toDate(),
+          createdAt: toBuenosAires(job.createdAt).toDate(),
+          updatedAt: toBuenosAires(job.updatedAt).toDate()
         }))
       }
 
@@ -138,19 +127,8 @@ export const useScheduleStore = defineStore('schedule', () => {
         const parsedSlots = JSON.parse(storedSlots)
         timeSlots.value = parsedSlots.map((slot: any) => ({
           ...slot,
-          createdAt: new Date(slot.createdAt),
-          updatedAt: new Date(slot.updatedAt)
-        }))
-      }
-
-      // Load blocked slots
-      const storedBlocked = localStorage.getItem(STORAGE_KEYS.BLOCKED_SLOTS)
-      if (storedBlocked) {
-        const parsedBlocked = JSON.parse(storedBlocked)
-        blockedSlots.value = parsedBlocked.map((blocked: any) => ({
-          ...blocked,
-          createdAt: new Date(blocked.createdAt),
-          updatedAt: new Date(blocked.updatedAt)
+          createdAt: toBuenosAires(slot.createdAt).toDate(),
+          updatedAt: toBuenosAires(slot.updatedAt).toDate()
         }))
       }
 
@@ -161,64 +139,44 @@ export const useScheduleStore = defineStore('schedule', () => {
       }
     } catch (err) {
       console.error('Error loading schedule from localStorage:', err)
+      // Reset to defaults on error
+      jobs.value = []
+      timeSlots.value = []
+      slotOptions.value = createDefaultSlotOptions()
     }
   }
 
   // ==========================================
-  // ACTIONS - TIME SLOT GENERATION
+  // ACTIONS - TIME SLOT GENERATION (FIXED)
   // ==========================================
 
-  const regenerateSlotsFromAvailability = async (
-    availability: WeeklyAvailability,
-    technicianId: string
-  ): Promise<void> => {
-    loading.value = true
-    error.value = null
-
-    try {
-      // Only regenerate future slots to preserve existing bookings
-      const tomorrow = new Date()
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      tomorrow.setHours(0, 0, 0, 0)
-      
-      const endDate = new Date(Date.now() + slotOptions.value.advanceBookingDays * 24 * 60 * 60 * 1000)
-
-      // Remove only future available slots (preserve booked ones)
-      const futureDateStrings = getDatesInRange(tomorrow, endDate)
-      timeSlots.value = timeSlots.value.filter(slot => 
-        !futureDateStrings.includes(slot.date) || 
-        slot.technicianId !== technicianId ||
-        slot.status === 'booked'
-      )
-
-      // Generate new slots for future dates
-      await generateTimeSlots(availability, technicianId, tomorrow, endDate)
-    } catch (err) {
-      error.value = 'Error regenerando los horarios'
-      console.error('Error regenerating slots from availability:', err)
-    } finally {
-      loading.value = false
-    }
+  const clearAllSlots = (technicianId: string): void => {
+    timeSlots.value = timeSlots.value.filter(slot => 
+      slot.technicianId !== technicianId || slot.status === 'booked'
+    )
   }
 
   const generateTimeSlots = async (
     availability: WeeklyAvailability,
-    technicianId: string,
-    startDate?: Date,
-    endDate?: Date
+    technicianId: string
   ): Promise<void> => {
+    if (loading.value) return // Prevent concurrent generations
+    
     loading.value = true
     error.value = null
 
     try {
-      const start = startDate || new Date()
-      const end = endDate || new Date(Date.now() + slotOptions.value.advanceBookingDays * 24 * 60 * 60 * 1000)
+      // Clear existing available slots (keep booked ones)
+      clearAllSlots(technicianId)
 
+      const startDate = nowInBuenosAires().startOf('day')
+      const endDate = startDate.add(slotOptions.value.advanceBookingDays, 'day')
+      
       const newSlots: TimeSlot[] = []
-      const currentDate = new Date(start)
+      let currentDate = startDate
 
-      while (currentDate <= end) {
-        const dayOfWeek = getDayOfWeekFromDate(currentDate)
+      while (currentDate.isBefore(endDate)) {
+        const dayOfWeek = getDayOfWeekFromDate(currentDate.toDate())
         const daySchedule = availability[dayOfWeek]
 
         if (daySchedule.enabled) {
@@ -226,15 +184,9 @@ export const useScheduleStore = defineStore('schedule', () => {
           newSlots.push(...daySlots)
         }
 
-        currentDate.setDate(currentDate.getDate() + 1)
+        currentDate = currentDate.add(1, 'day')
       }
 
-      // Remove old slots and add new ones
-      const dateRange = getDatesInRange(start, end)
-      timeSlots.value = timeSlots.value.filter(slot => 
-        !dateRange.includes(slot.date) || slot.technicianId !== technicianId
-      )
-      
       timeSlots.value.push(...newSlots)
       saveToLocalStorage()
     } catch (err) {
@@ -245,9 +197,9 @@ export const useScheduleStore = defineStore('schedule', () => {
     }
   }
 
-  const generateSlotsForDay = (date: Date, daySchedule: DaySchedule, technicianId: string): TimeSlot[] => {
+  const generateSlotsForDay = (dateMoment: any, daySchedule: DaySchedule, technicianId: string): TimeSlot[] => {
     const slots: TimeSlot[] = []
-    const dateString = date.toISOString().split('T')[0]
+    const dateString = formatInBuenosAires(dateMoment, 'YYYY-MM-DD')
     
     // Parse working hours
     const startMinutes = parseTimeToMinutes(daySchedule.startTime)
@@ -273,20 +225,27 @@ export const useScheduleStore = defineStore('schedule', () => {
       const isBreakTime = breakStartMinutes !== null && breakEndMinutes !== null &&
         currentMinutes < breakEndMinutes && (currentMinutes + slotOptions.value.slotDuration) > breakStartMinutes
       
-      const slot: TimeSlot = {
-        id: `slot_${technicianId}_${dateString}_${slotStart}`,
-        date: dateString,
-        startTime: slotStart,
-        endTime: slotEnd,
-        duration: slotOptions.value.slotDuration,
-        status: isBreakTime ? 'break' : 'available',
-        technicianId,
-        serviceTypes: [], // Will be populated based on service requirements
-        createdAt: new Date(),
-        updatedAt: new Date()
+      // Skip past slots
+      const slotDateTime = dateMoment.hour(Math.floor(currentMinutes / 60)).minute(currentMinutes % 60)
+      const isPastSlot = slotDateTime.isBefore(nowInBuenosAires())
+      
+      if (!isPastSlot) {
+        const slot: TimeSlot = {
+          id: `slot_${technicianId}_${dateString}_${slotStart}`,
+          date: dateString,
+          startTime: slotStart,
+          endTime: slotEnd,
+          duration: slotOptions.value.slotDuration,
+          status: isBreakTime ? 'break' : 'available',
+          technicianId,
+          serviceTypes: [],
+          createdAt: nowInBuenosAires().toDate(),
+          updatedAt: nowInBuenosAires().toDate()
+        }
+        
+        slots.push(slot)
       }
       
-      slots.push(slot)
       currentMinutes += slotOptions.value.slotDuration + slotOptions.value.bufferTime
     }
     
@@ -294,7 +253,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   }
 
   // ==========================================
-  // ACTIONS - JOB MANAGEMENT
+  // ACTIONS - JOB MANAGEMENT (SIMPLIFIED)
   // ==========================================
 
   const createJob = async (input: JobCreateInput): Promise<Job> => {
@@ -302,19 +261,20 @@ export const useScheduleStore = defineStore('schedule', () => {
     error.value = null
 
     try {
-      const now = new Date()
+      const now = nowInBuenosAires()
       const newJob: Job = {
         id: `job_${Date.now()}`,
         ...input,
+        scheduledDate: toBuenosAires(input.scheduledDate).toDate(),
         status: 'pending',
         paid: false,
-        createdAt: now,
-        updatedAt: now
+        createdAt: now.toDate(),
+        updatedAt: now.toDate()
       }
 
       jobs.value.push(newJob)
       
-      // Book the corresponding time slot if it exists
+      // Book the corresponding time slot
       await bookTimeSlotForJob(newJob)
       
       saveToLocalStorage()
@@ -329,69 +289,49 @@ export const useScheduleStore = defineStore('schedule', () => {
   }
 
   const updateJob = async (jobId: string, updates: JobUpdateInput): Promise<void> => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const jobIndex = jobs.value.findIndex(job => job.id === jobId)
-      if (jobIndex === -1) {
-        throw new Error('Trabajo no encontrado')
-      }
-
-      const oldJob = jobs.value[jobIndex]
-      
-      jobs.value[jobIndex] = {
-        ...oldJob,
-        ...updates,
-        updatedAt: new Date()
-      }
-
-      // Update time slot booking if schedule changed
-      if (updates.scheduledDate) {
-        await updateTimeSlotBooking(oldJob, jobs.value[jobIndex])
-      }
-
-      saveToLocalStorage()
-    } catch (err) {
-      error.value = 'Error actualizando el trabajo'
-      console.error('Error updating job:', err)
-    } finally {
-      loading.value = false
+    const jobIndex = jobs.value.findIndex(job => job.id === jobId)
+    if (jobIndex === -1) {
+      throw new Error('Trabajo no encontrado')
     }
+
+    const oldJob = jobs.value[jobIndex]
+    
+    jobs.value[jobIndex] = {
+      ...oldJob,
+      ...updates,
+      updatedAt: nowInBuenosAires().toDate()
+    }
+
+    // Update time slot booking if schedule changed
+    if (updates.scheduledDate) {
+      await updateTimeSlotBooking(oldJob, jobs.value[jobIndex])
+    }
+
+    saveToLocalStorage()
   }
 
   const deleteJob = async (jobId: string): Promise<void> => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const jobIndex = jobs.value.findIndex(job => job.id === jobId)
-      if (jobIndex === -1) {
-        throw new Error('Trabajo no encontrado')
-      }
-
-      const job = jobs.value[jobIndex]
-      
-      // Free up the time slot
-      await freeTimeSlotFromJob(job)
-      
-      jobs.value.splice(jobIndex, 1)
-      saveToLocalStorage()
-    } catch (err) {
-      error.value = 'Error eliminando el trabajo'
-      console.error('Error deleting job:', err)
-    } finally {
-      loading.value = false
+    const jobIndex = jobs.value.findIndex(job => job.id === jobId)
+    if (jobIndex === -1) {
+      throw new Error('Trabajo no encontrado')
     }
+
+    const job = jobs.value[jobIndex]
+    
+    // Free up the time slot
+    await freeTimeSlotFromJob(job)
+    
+    jobs.value.splice(jobIndex, 1)
+    saveToLocalStorage()
   }
 
   // ==========================================
-  // ACTIONS - TIME SLOT MANAGEMENT
+  // ACTIONS - TIME SLOT MANAGEMENT (SIMPLIFIED)
   // ==========================================
 
   const bookTimeSlotForJob = async (job: Job): Promise<void> => {
-    const dateString = job.scheduledDate.toISOString().split('T')[0]
-    const timeString = job.scheduledDate.toTimeString().substring(0, 5)
+    const dateString = formatInBuenosAires(job.scheduledDate, 'YYYY-MM-DD')
+    const timeString = formatInBuenosAires(job.scheduledDate, 'HH:mm')
     
     const slot = timeSlots.value.find(slot => 
       slot.date === dateString && 
@@ -402,7 +342,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     if (slot) {
       slot.status = 'booked'
       slot.jobId = job.id
-      slot.updatedAt = new Date()
+      slot.updatedAt = nowInBuenosAires().toDate()
     }
   }
 
@@ -412,62 +352,17 @@ export const useScheduleStore = defineStore('schedule', () => {
     if (slot) {
       slot.status = 'available'
       slot.jobId = undefined
-      slot.updatedAt = new Date()
+      slot.updatedAt = nowInBuenosAires().toDate()
     }
   }
 
   const updateTimeSlotBooking = async (oldJob: Job, newJob: Job): Promise<void> => {
-    // Free old slot
     await freeTimeSlotFromJob(oldJob)
-    
-    // Book new slot
     await bookTimeSlotForJob(newJob)
   }
 
-  const blockTimeSlot = async (slotId: string, reason: string): Promise<void> => {
-    const slot = timeSlots.value.find(s => s.id === slotId)
-    if (slot && slot.status === 'available') {
-      slot.status = 'blocked'
-      slot.updatedAt = new Date()
-      
-      // Create blocked slot record
-      const blockedSlot: BlockedTimeSlot = {
-        id: `blocked_${Date.now()}`,
-        technicianId: slot.technicianId,
-        startDate: slot.date,
-        endDate: slot.date,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        reason,
-        isRecurring: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-      
-      blockedSlots.value.push(blockedSlot)
-      saveToLocalStorage()
-    }
-  }
-
-  const unblockTimeSlot = async (slotId: string): Promise<void> => {
-    const slot = timeSlots.value.find(s => s.id === slotId)
-    if (slot && slot.status === 'blocked') {
-      slot.status = 'available'
-      slot.updatedAt = new Date()
-      
-      // Remove blocked slot record
-      blockedSlots.value = blockedSlots.value.filter(blocked => 
-        !(blocked.startDate === slot.date && 
-          blocked.startTime === slot.startTime && 
-          blocked.technicianId === slot.technicianId)
-      )
-      
-      saveToLocalStorage()
-    }
-  }
-
   // ==========================================
-  // ACTIONS - SCHEDULE VIEWS
+  // ACTIONS - SCHEDULE VIEWS (SIMPLIFIED)
   // ==========================================
 
   const getScheduleDay = (date: string, technicianId: string): ScheduleDay => {
@@ -475,13 +370,13 @@ export const useScheduleStore = defineStore('schedule', () => {
       slot.date === date && slot.technicianId === technicianId
     )
     
-    const dayOfWeek = getDayOfWeekFromDate(new Date(date))
+    const dayOfWeek = getDayOfWeekFromDate(new Date(date + 'T00:00:00'))
     
     return {
       date,
       dayOfWeek,
       isAvailable: daySlots.length > 0,
-      timeSlots: daySlots,
+      timeSlots: daySlots.sort((a, b) => a.startTime.localeCompare(b.startTime)),
       totalSlots: daySlots.length,
       availableSlots: daySlots.filter(s => s.status === 'available').length,
       bookedSlots: daySlots.filter(s => s.status === 'booked').length,
@@ -490,25 +385,24 @@ export const useScheduleStore = defineStore('schedule', () => {
   }
 
   const getScheduleWeek = (startDate: string, technicianId: string): ScheduleWeek => {
-    const start = new Date(startDate)
-    const end = new Date(start)
-    end.setDate(end.getDate() + 6)
+    const start = toBuenosAires(startDate)
+    const end = start.add(6, 'day')
     
     const days: ScheduleDay[] = []
-    const currentDate = new Date(start)
+    let currentDate = start
     
-    while (currentDate <= end) {
-      const dateString = currentDate.toISOString().split('T')[0]
+    for (let i = 0; i < 7; i++) {
+      const dateString = formatInBuenosAires(currentDate, 'YYYY-MM-DD')
       days.push(getScheduleDay(dateString, technicianId))
-      currentDate.setDate(currentDate.getDate() + 1)
+      currentDate = currentDate.add(1, 'day')
     }
     
     const totalAvailableSlots = days.reduce((sum, day) => sum + day.availableSlots, 0)
     const totalBookedSlots = days.reduce((sum, day) => sum + day.bookedSlots, 0)
     
     return {
-      startDate: start.toISOString().split('T')[0],
-      endDate: end.toISOString().split('T')[0],
+      startDate: formatInBuenosAires(start, 'YYYY-MM-DD'),
+      endDate: formatInBuenosAires(end, 'YYYY-MM-DD'),
       days,
       totalAvailableHours: totalAvailableSlots * (slotOptions.value.slotDuration / 60),
       utilization: totalAvailableSlots > 0 ? (totalBookedSlots / totalAvailableSlots) * 100 : 0
@@ -535,26 +429,17 @@ export const useScheduleStore = defineStore('schedule', () => {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`
   }
 
-  const getDatesInRange = (start: Date, end: Date): string[] => {
-    const dates: string[] = []
-    const currentDate = new Date(start)
-    
-    while (currentDate <= end) {
-      dates.push(currentDate.toISOString().split('T')[0])
-      currentDate.setDate(currentDate.getDate() + 1)
-    }
-    
-    return dates
-  }
-
   // ==========================================
-  // INITIALIZATION
+  // INITIALIZATION (SIMPLIFIED)
   // ==========================================
 
   const initialize = async (): Promise<void> => {
+    if (initialized.value) return
+    
     loading.value = true
     try {
       loadFromLocalStorage()
+      initialized.value = true
     } catch (err) {
       error.value = 'Error cargando los datos de la agenda'
       console.error('Error initializing schedule store:', err)
@@ -566,31 +451,26 @@ export const useScheduleStore = defineStore('schedule', () => {
   // Return store interface
   return {
     // State
-    jobs,
-    timeSlots,
-    blockedSlots,
-    slotOptions,
-    loading,
-    error,
+    jobs: readonly(jobs),
+    timeSlots: readonly(timeSlots),
+    blockedSlots: readonly(blockedSlots),
+    slotOptions: readonly(slotOptions),
+    loading: readonly(loading),
+    error: readonly(error),
 
     // Getters
     upcomingJobs,
     todaysJobs,
     availableSlotsForDate,
-    bookedSlotsForDate,
 
     // Actions - Time slot generation
     generateTimeSlots,
-    regenerateSlotsFromAvailability,
+    clearAllSlots,
 
     // Actions - Job management
     createJob,
     updateJob,
     deleteJob,
-
-    // Actions - Time slot management
-    blockTimeSlot,
-    unblockTimeSlot,
 
     // Actions - Schedule views
     getScheduleDay,

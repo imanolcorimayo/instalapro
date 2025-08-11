@@ -266,6 +266,7 @@
 
 <script setup lang="ts">
 import type { TimeSlot, Job, ScheduleDay } from '~/types'
+import { isTodayInBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -308,8 +309,7 @@ const scheduleDay = computed((): ScheduleDay => {
 })
 
 const isToday = computed(() => {
-  const today = new Date().toISOString().split('T')[0]
-  return props.date === today
+  return isTodayInBuenosAires(props.date)
 })
 
 const dayName = computed(() => {

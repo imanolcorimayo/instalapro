@@ -174,6 +174,7 @@
 
 <script setup lang="ts">
 import type { TimeSlot, Job, ScheduleWeek } from '~/types'
+import { isTodayInBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -252,8 +253,7 @@ const weekSummary = computed(() => {
 // ==========================================
 
 const isToday = (date: string): boolean => {
-  const today = new Date().toISOString().split('T')[0]
-  return date === today
+  return isTodayInBuenosAires(date)
 }
 
 const formatHour = (hour: number): string => {

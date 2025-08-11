@@ -175,6 +175,7 @@
 
 <script setup lang="ts">
 import type { Job } from '~/types'
+import { formatInBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -230,13 +231,13 @@ const calendarEnd = computed(() => {
 const calendarDays = computed(() => {
   const days = []
   const current = new Date(calendarStart.value)
-  const today = new Date().toISOString().split('T')[0]
+  const today = formatInBuenosAires(new Date(), 'YYYY-MM-DD')
   
   while (current <= calendarEnd.value) {
-    const dateString = current.toISOString().split('T')[0]
+    const dateString = formatInBuenosAires(current, 'YYYY-MM-DD')
     const scheduleDay = scheduleStore.getScheduleDay(dateString, props.technicianId)
     const dayJobs = scheduleStore.jobs.filter(job => 
-      job.scheduledDate.toISOString().split('T')[0] === dateString
+      formatInBuenosAires(job.scheduledDate, 'YYYY-MM-DD') === dateString
     )
     
     days.push({

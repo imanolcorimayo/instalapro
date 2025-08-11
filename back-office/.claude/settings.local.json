@@ -3,7 +3,9 @@
     "allow": [
       "Bash(rm:*)",
       "Bash(yarn dev)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(mv:*)",
+      "Bash(yarn build)"
     ],
     "deny": []
   }

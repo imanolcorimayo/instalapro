@@ -8,6 +8,12 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt'
   ],
+  dayjs: {
+    locales: ['es'],
+    plugins: ['timezone', 'utc', 'relativeTime', 'localizedFormat'],
+    defaultLocale: 'es',
+    defaultTimezone: 'America/Buenos_Aires'
+  },
   components: {
     global: true,
     dirs: ['~/components']

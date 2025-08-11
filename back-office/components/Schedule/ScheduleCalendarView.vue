@@ -1,16 +1,16 @@
 <template>
   <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-    <!-- Calendar Header -->
+    <!-- Simplified Header -->
     <div class="px-6 py-4 border-b border-gray-200">
       <div class="flex items-center justify-between">
-        <!-- View Selection -->
+        <!-- View Selection - Simplified -->
         <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
           <button
             v-for="view in viewOptions"
             :key="view.value"
             type="button"
             :class="[
-              'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+              'px-4 py-2 text-sm font-medium rounded-md transition-colors',
               currentView === view.value
                 ? 'bg-white text-gray-900 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
@@ -25,54 +25,42 @@
         <div class="flex items-center space-x-4">
           <button
             type="button"
-            class="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            class="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
             @click="navigateDate(-1)"
           >
-            <Icon
-              name="mdi:chevron-left"
-              class="w-5 h-5"
-            />
+            <Icon name="mdi:chevron-left" class="w-5 h-5" />
           </button>
           
-          <div class="text-center">
+          <div class="text-center min-w-[200px]">
             <h2 class="text-lg font-semibold text-gray-900">
               {{ currentDateLabel }}
             </h2>
-            <p class="text-sm text-gray-500">
-              {{ currentDateSubtitle }}
-            </p>
           </div>
           
           <button
             type="button"
-            class="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            class="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
             @click="navigateDate(1)"
           >
-            <Icon
-              name="mdi:chevron-right"
-              class="w-5 h-5"
-            />
+            <Icon name="mdi:chevron-right" class="w-5 h-5" />
           </button>
         </div>
 
-        <!-- Actions -->
-        <div class="flex items-center space-x-2">
+        <!-- Actions - Simplified -->
+        <div class="flex items-center space-x-3">
           <button
             type="button"
-            class="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
             @click="goToToday"
           >
             Hoy
           </button>
           <button
             type="button"
-            class="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
             @click="openNewJobModal"
           >
-            <Icon
-              name="mdi:plus"
-              class="w-4 h-4 mr-2"
-            />
+            <Icon name="mdi:plus" class="w-4 h-4 mr-2" />
             Nuevo Trabajo
           </button>
         </div>
@@ -84,7 +72,7 @@
       <!-- Loading State -->
       <div
         v-if="scheduleStore.loading"
-        class="flex items-center justify-center py-12"
+        class="flex items-center justify-center py-16"
       >
         <div class="text-center">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
@@ -95,46 +83,44 @@
       <!-- Error State -->
       <div
         v-else-if="scheduleStore.error"
-        class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+        class="bg-red-50 border border-red-200 rounded-lg p-6 text-center"
       >
-        <div class="flex">
-          <Icon
-            name="mdi:alert-circle-outline"
-            class="w-5 h-5 text-red-400 mt-0.5"
-          />
-          <div class="ml-3">
-            <h3 class="text-sm font-medium text-red-800">
-              Error
-            </h3>
-            <p class="text-sm text-red-700 mt-1">
-              {{ scheduleStore.error }}
-            </p>
-          </div>
-        </div>
+        <Icon name="mdi:alert-circle-outline" class="w-8 h-8 text-red-400 mx-auto mb-3" />
+        <h3 class="text-sm font-medium text-red-800 mb-2">Error en la Agenda</h3>
+        <p class="text-sm text-red-700">{{ scheduleStore.error }}</p>
+        <button
+          type="button"
+          class="mt-4 px-4 py-2 text-sm font-medium text-red-700 hover:text-red-900 transition-colors"
+          @click="retryLoad"
+        >
+          Reintentar
+        </button>
       </div>
 
       <!-- Calendar Views -->
       <div v-else>
         <!-- Day View -->
-        <ScheduleDayView
+        <ScheduleDayViewSimplified
           v-if="currentView === 'day'"
           :date="currentDate"
           :technician-id="technicianId"
           @job-click="handleJobClick"
           @slot-click="handleSlotClick"
+          @new-job="handleNewJobAtTime"
         />
 
         <!-- Week View -->
-        <ScheduleWeekView
+        <ScheduleWeekViewSimplified
           v-else-if="currentView === 'week'"
           :start-date="weekStartDate"
           :technician-id="technicianId"
           @job-click="handleJobClick"
           @slot-click="handleSlotClick"
+          @date-click="handleDateClick"
         />
 
         <!-- Month View -->
-        <ScheduleMonthView
+        <ScheduleMonthViewSimplified
           v-else-if="currentView === 'month'"
           :year="currentYear"
           :month="currentMonth"
@@ -145,40 +131,24 @@
       </div>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-      <div class="grid grid-cols-4 gap-4">
-        <div class="text-center">
-          <p class="text-2xl font-bold text-green-600">
-            {{ todaysStats.available }}
-          </p>
-          <p class="text-xs text-gray-600">
-            Slots Disponibles
-          </p>
+    <!-- Simplified Stats Footer - Only essential info -->
+    <div
+      v-if="!scheduleStore.loading && !scheduleStore.error"
+      class="px-6 py-3 border-t border-gray-200 bg-gray-50"
+    >
+      <div class="flex items-center justify-between text-sm text-gray-600">
+        <div class="flex items-center space-x-6">
+          <span>
+            <span class="font-medium text-blue-600">{{ todaysStats.booked }}</span>
+            trabajos hoy
+          </span>
+          <span>
+            <span class="font-medium text-green-600">{{ todaysStats.available }}</span>
+            slots disponibles
+          </span>
         </div>
-        <div class="text-center">
-          <p class="text-2xl font-bold text-blue-600">
-            {{ todaysStats.booked }}
-          </p>
-          <p class="text-xs text-gray-600">
-            Trabajos Agendados
-          </p>
-        </div>
-        <div class="text-center">
-          <p class="text-2xl font-bold text-gray-600">
-            {{ todaysStats.blocked }}
-          </p>
-          <p class="text-xs text-gray-600">
-            Horarios Bloqueados
-          </p>
-        </div>
-        <div class="text-center">
-          <p class="text-2xl font-bold text-purple-600">
-            {{ todaysStats.utilization }}%
-          </p>
-          <p class="text-xs text-gray-600">
-            Utilización
-          </p>
+        <div v-if="todaysStats.total > 0">
+          {{ todaysStats.utilization }}% ocupación
         </div>
       </div>
     </div>
@@ -187,6 +157,7 @@
 
 <script setup lang="ts">
 import type { ScheduleView, Job, TimeSlot } from '~/types'
+import { formatInBuenosAires, startOfWeekInBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -206,7 +177,7 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   initialView: 'week',
-  initialDate: () => new Date().toISOString().split('T')[0]
+  initialDate: () => formatInBuenosAires(new Date(), 'YYYY-MM-DD')
 })
 
 const emit = defineEmits<Emits>()
@@ -240,53 +211,43 @@ const currentMonth = computed(() => new Date(currentDate.value).getMonth())
 
 const currentDateLabel = computed(() => {
   const date = new Date(currentDate.value)
-  const formatter = new Intl.DateTimeFormat('es-ES', {
-    year: 'numeric',
-    month: 'long',
-    day: currentView.value === 'day' ? 'numeric' : undefined
-  })
-  
-  if (currentView.value === 'week') {
-    const weekStart = getWeekStartDate(date)
-    const weekEnd = new Date(weekStart)
-    weekEnd.setDate(weekEnd.getDate() + 6)
-    
-    const startFormatter = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' })
-    const endFormatter = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
-    
-    return `${startFormatter.format(weekStart)} - ${endFormatter.format(weekEnd)}`
-  }
-  
-  return formatter.format(date)
-})
-
-const currentDateSubtitle = computed(() => {
-  const date = new Date(currentDate.value)
   
   if (currentView.value === 'day') {
-    return new Intl.DateTimeFormat('es-ES', { weekday: 'long' }).format(date)
+    return new Intl.DateTimeFormat('es-ES', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(date)
   }
   
   if (currentView.value === 'week') {
-    return `Semana ${getWeekNumber(date)}`
+    const weekStart = startOfWeekInBuenosAires(date)
+    const weekEnd = weekStart.add(6, 'day')
+    
+    return `${weekStart.format('D MMM')} - ${weekEnd.format('D MMM YYYY')}`
   }
   
-  return `${date.getFullYear()}`
+  return new Intl.DateTimeFormat('es-ES', {
+    year: 'numeric',
+    month: 'long'
+  }).format(date)
 })
 
 const weekStartDate = computed(() => {
   const date = new Date(currentDate.value)
-  return getWeekStartDate(date).toISOString().split('T')[0]
+  const weekStart = startOfWeekInBuenosAires(date)
+  return formatInBuenosAires(weekStart, 'YYYY-MM-DD')
 })
 
 const todaysStats = computed(() => {
-  const today = new Date().toISOString().split('T')[0]
+  const today = formatInBuenosAires(new Date(), 'YYYY-MM-DD')
   const scheduleDay = scheduleStore.getScheduleDay(today, props.technicianId)
   
   return {
     available: scheduleDay.availableSlots,
     booked: scheduleDay.bookedSlots,
-    blocked: scheduleDay.blockedSlots,
+    total: scheduleDay.totalSlots,
     utilization: scheduleDay.totalSlots > 0 
       ? Math.round((scheduleDay.bookedSlots / scheduleDay.totalSlots) * 100)
       : 0
@@ -316,11 +277,11 @@ const navigateDate = (direction: number): void => {
       break
   }
   
-  currentDate.value = date.toISOString().split('T')[0]
+  currentDate.value = formatInBuenosAires(date, 'YYYY-MM-DD')
 }
 
 const goToToday = (): void => {
-  currentDate.value = new Date().toISOString().split('T')[0]
+  currentDate.value = formatInBuenosAires(new Date(), 'YYYY-MM-DD')
 }
 
 const openNewJobModal = (): void => {
@@ -340,16 +301,12 @@ const handleDateClick = (date: string): void => {
   currentView.value = 'day'
 }
 
-const getWeekStartDate = (date: Date): Date => {
-  const day = date.getDay()
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1) // Adjust when day is sunday
-  return new Date(date.setDate(diff))
+const handleNewJobAtTime = (date: string, time: string): void => {
+  emit('new-job-requested', date, time)
 }
 
-const getWeekNumber = (date: Date): number => {
-  const firstDayOfYear = new Date(date.getFullYear(), 0, 1)
-  const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000
-  return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7)
+const retryLoad = async (): Promise<void> => {
+  await scheduleStore.initialize()
 }
 
 // ==========================================

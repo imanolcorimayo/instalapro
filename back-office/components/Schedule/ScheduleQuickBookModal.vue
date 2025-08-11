@@ -237,6 +237,7 @@
 
 <script setup lang="ts">
 import type { Job, JobCreateInput, TimeSlot, TechnicianService } from '~/types'
+import { parseTimeInBuenosAires, formatInBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -293,7 +294,7 @@ const form = ref({
 // ==========================================
 
 const minDate = computed(() => {
-  return new Date().toISOString().split('T')[0]
+  return formatInBuenosAires(new Date(), 'YYYY-MM-DD')
 })
 
 const availableSlots = computed((): TimeSlot[] => {
@@ -327,7 +328,7 @@ const showModal = (date?: string, time?: string): void => {
     form.value.date = date
     selectedDate.value = date
   } else {
-    form.value.date = new Date().toISOString().split('T')[0]
+    form.value.date = formatInBuenosAires(new Date(), 'YYYY-MM-DD')
   }
   
   if (time) {
@@ -396,10 +397,8 @@ const handleSubmit = async (): Promise<void> => {
   isSubmitting.value = true
   
   try {
-    // Create scheduled date from form data
-    const [hours, minutes] = form.value.time.split(':').map(Number)
-    const scheduledDate = new Date(form.value.date)
-    scheduledDate.setHours(hours, minutes, 0, 0)
+    // Create scheduled date from form data using Buenos Aires timezone
+    const scheduledDate = parseTimeInBuenosAires(form.value.time, form.value.date).toDate()
     
     // Prepare job data
     const jobData: JobCreateInput = {
