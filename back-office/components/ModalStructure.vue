@@ -61,42 +61,47 @@
   </Teleport>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import IconClose from '~icons/mdi/close'
 
-interface Props {
-  title?: string
-  modalClass?: string
-  closeOnBackdropClick?: boolean
-  clickPropagationFilter?: string[]
-  modalNamespace?: string
-}
 
-interface Emits {
-  (e: 'on-close'): void
-}
 
-const props = withDefaults(defineProps<Props>(), {
-  title: '',
-  modalClass: '',
-  closeOnBackdropClick: true,
-  clickPropagationFilter: () => [],
-  modalNamespace: 'modal-namespace'
+const props = defineProps({
+  title: {
+    type: String,
+    default: ''
+  },
+  modalClass: {
+    type: String,
+    default: ''
+  },
+  closeOnBackdropClick: {
+    type: Boolean,
+    default: true
+  },
+  clickPropagationFilter: {
+    type: Array,
+    default: () => []
+  },
+  modalNamespace: {
+    type: String,
+    default: 'modal-namespace'
+  }
 })
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['on-close'])
 
 // ==========================================
 // STATE
 // ==========================================
 
-const isVisible = ref<boolean>(false)
+const isVisible = ref(false)
 
 // ==========================================
 // MODAL CONTROL METHODS
 // ==========================================
 
-const showModal = (): void => {
+const showModal = () => {
   isVisible.value = true
   
   // Prevent body scroll when modal is open
@@ -105,7 +110,7 @@ const showModal = (): void => {
   }
 }
 
-const closeModal = (): void => {
+const closeModal = () => {
   isVisible.value = false
   
   // Restore body scroll
@@ -120,11 +125,11 @@ const closeModal = (): void => {
 // EVENT HANDLERS
 // ==========================================
 
-const handleBackdropClick = (event: Event): void => {
+const handleBackdropClick = (event) => {
   if (!props.closeOnBackdropClick) return
 
   // Check if click should be filtered based on clickPropagationFilter
-  const target = event.target as HTMLElement
+  const target = event.target
   const shouldFilter = props.clickPropagationFilter.some(filterClass => {
     return target.closest(`.${filterClass}`)
   })
@@ -134,7 +139,7 @@ const handleBackdropClick = (event: Event): void => {
   closeModal()
 }
 
-const handleEscapeKey = (event: KeyboardEvent): void => {
+const handleEscapeKey = (event) => {
   if (event.key === 'Escape' && isVisible.value) {
     closeModal()
   }

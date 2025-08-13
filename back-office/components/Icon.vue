@@ -2,16 +2,20 @@
   <span :class="iconClass">{{ iconContent }}</span>
 </template>
 
-<script setup lang="ts">
-interface Props {
-  name: string
-  class?: string
-}
-
-const props = defineProps<Props>()
+<script setup>
+const props = defineProps({
+  name: {
+    type: String,
+    required: true
+  },
+  class: {
+    type: String,
+    default: ''
+  }
+})
 
 // Simple icon mapping for common MDI icons
-const iconMap: Record<string, string> = {
+const iconMap = {
   'mdi:air-conditioner': '❄️',
   'mdi:close': '✕',
   'mdi:menu': '☰',

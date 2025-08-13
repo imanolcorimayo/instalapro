@@ -169,29 +169,28 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import IconBlockHelper from '~icons/mdi/block-helper'
 import IconCoffeeOutline from '~icons/mdi/coffee-outline'
 import IconPlusCircleOutline from '~icons/mdi/plus-circle-outline'
-import type { TimeSlot, Job, ScheduleWeek } from '~/types'
 import { isTodayInBuenosAires, toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
 // ==========================================
 
-interface Props {
-  startDate: string // YYYY-MM-DD format
-  technicianId: string
-}
+const props = defineProps({
+  startDate: {
+    type: String,
+    required: true
+  },
+  technicianId: {
+    type: String,
+    required: true
+  }
+})
 
-interface Emits {
-  (e: 'job-click', job: Job): void
-  (e: 'slot-click', slot: TimeSlot): void
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['job-click', 'slot-click'])
 
 // ==========================================
 // COMPOSABLES
@@ -203,7 +202,7 @@ const scheduleStore = useScheduleStore()
 // COMPUTED
 // ==========================================
 
-const scheduleWeek = computed((): ScheduleWeek => {
+const scheduleWeek = computed(() => {
   return scheduleStore.getScheduleWeek(props.startDate, props.technicianId)
 })
 
@@ -226,7 +225,7 @@ const weekDays = computed(() => {
 
 const displayHours = computed(() => {
   // Get all unique hours from time slots across the week
-  const hours = new Set<number>()
+  const hours = new Set()
   
   scheduleWeek.value.days.forEach(day => {
     day.timeSlots.forEach(slot => {
@@ -252,15 +251,15 @@ const weekSummary = computed(() => {
 // METHODS
 // ==========================================
 
-const isToday = (date: string): boolean => {
+const isToday = (date) => {
   return isTodayInBuenosAires(date)
 }
 
-const formatHour = (hour: number): string => {
+const formatHour = (hour) => {
   return `${hour.toString().padStart(2, '0')}:00`
 }
 
-const getSlotsForHour = (date: string, hour: number): TimeSlot[] => {
+const getSlotsForHour = (date, hour) => {
   const day = scheduleWeek.value.days.find(d => d.date === date)
   if (!day) return []
   
@@ -270,7 +269,7 @@ const getSlotsForHour = (date: string, hour: number): TimeSlot[] => {
   })
 }
 
-const getSlotClasses = (slot: TimeSlot): string => {
+const getSlotClasses = (slot) => {
   const baseClasses = 'group transition-all duration-200 hover:shadow-sm'
   
   switch (slot.status) {
@@ -287,7 +286,7 @@ const getSlotClasses = (slot: TimeSlot): string => {
   }
 }
 
-const getSlotStyle = (slot: TimeSlot): Record<string, string> => {
+const getSlotStyle = (slot) => {
   // Calculate position based on minutes within the hour
   const [, minutes] = slot.startTime.split(':').map(Number)
   const top = (minutes / 60) * 60 // Convert to pixels (assuming 60px per hour)
@@ -299,11 +298,11 @@ const getSlotStyle = (slot: TimeSlot): Record<string, string> => {
   }
 }
 
-const handleSlotClick = (slot: TimeSlot): void => {
+const handleSlotClick = (slot) => {
   emit('slot-click', slot)
 }
 
-const getJobForSlot = (slot: TimeSlot): Job | undefined => {
+const getJobForSlot = (slot) => {
   if (!slot.jobId) return undefined
   return scheduleStore.jobs.find(job => job.id === slot.jobId)
 }

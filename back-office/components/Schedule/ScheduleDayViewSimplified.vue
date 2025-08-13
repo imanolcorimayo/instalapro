@@ -151,7 +151,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import IconClockOutline from '~icons/mdi/clock-outline'
 import IconPlusCircle from '~icons/mdi/plus-circle'
 import IconCalendarRemove from '~icons/mdi/calendar-remove'
@@ -159,27 +159,24 @@ import IconCheckCircleOutline from '~icons/mdi/check-circle-outline'
 import IconCalendarCheck from '~icons/mdi/calendar-check'
 import IconBlockHelper from '~icons/mdi/block-helper'
 import IconCoffeeOutline from '~icons/mdi/coffee-outline'
-import type { TimeSlot, Job, ScheduleDay } from '~/types'
 import { isTodayInBuenosAires, formatInBuenosAires, nowInBuenosAires, toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
 // ==========================================
 
-interface Props {
-  date: string // YYYY-MM-DD format
-  technicianId: string
-}
+const props = defineProps({
+  date: {
+    type: String,
+    required: true
+  },
+  technicianId: {
+    type: String,
+    required: true
+  }
+})
 
-interface Emits {
-  (e: 'job-click', job: Job): void
-  (e: 'slot-click', slot: TimeSlot): void
-  (e: 'new-job', date: string, time: string): void
-  (e: 'configure-availability'): void
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['job-click', 'slot-click', 'new-job', 'configure-availability'])
 
 // ==========================================
 // COMPOSABLES
@@ -191,14 +188,14 @@ const scheduleStore = useScheduleStore()
 // STATE
 // ==========================================
 
-const currentTime = ref<string>('')
-const showAllSlots = ref<boolean>(false)
+const currentTime = ref('')
+const showAllSlots = ref(false)
 
 // ==========================================
 // COMPUTED
 // ==========================================
 
-const scheduleDay = computed((): ScheduleDay => {
+const scheduleDay = computed(() => {
   return scheduleStore.getScheduleDay(props.date, props.technicianId)
 })
 
@@ -253,16 +250,16 @@ const currentTimeSlot = computed(() => {
 // METHODS
 // ==========================================
 
-const updateCurrentTime = (): void => {
+const updateCurrentTime = () => {
   const now = nowInBuenosAires()
   currentTime.value = formatInBuenosAires(now, 'HH:mm')
 }
 
-const isCurrentTimeSlot = (slot: TimeSlot): boolean => {
+const isCurrentTimeSlot = (slot) => {
   return currentTimeSlot.value?.id === slot.id
 }
 
-const getCurrentSlotStatus = (): string => {
+const getCurrentSlotStatus = () => {
   if (!currentTimeSlot.value) return 'Sin horario disponible'
   
   switch (currentTimeSlot.value.status) {
@@ -280,7 +277,7 @@ const getCurrentSlotStatus = (): string => {
   }
 }
 
-const getSlotClasses = (slot: TimeSlot): string => {
+const getSlotClasses = (slot) => {
   const baseClasses = 'transition-all duration-200'
   
   switch (slot.status) {
@@ -297,7 +294,7 @@ const getSlotClasses = (slot: TimeSlot): string => {
   }
 }
 
-const getSlotIcon = (slot: TimeSlot) => {
+const getSlotIcon = (slot) => {
   switch (slot.status) {
     case 'available':
       return IconCheckCircleOutline
@@ -312,7 +309,7 @@ const getSlotIcon = (slot: TimeSlot) => {
   }
 }
 
-const getSlotIconColor = (slot: TimeSlot): string => {
+const getSlotIconColor = (slot) => {
   switch (slot.status) {
     case 'available':
       return 'text-green-500'
@@ -327,22 +324,22 @@ const getSlotIconColor = (slot: TimeSlot): string => {
   }
 }
 
-const getStatusLabel = (status: string): string => {
+const getStatusLabel = (status) => {
   const labels = {
     available: 'Disponible',
     booked: 'Ocupado',
     blocked: 'Bloqueado',
     break: 'Descanso'
   }
-  return labels[status as keyof typeof labels] || status
+  return labels[status] || status
 }
 
-const getJobForSlot = (slot: TimeSlot): Job | undefined => {
+const getJobForSlot = (slot) => {
   if (!slot.jobId) return undefined
   return scheduleStore.jobs.find(job => job.id === slot.jobId)
 }
 
-const formatDuration = (minutes: number): string => {
+const formatDuration = (minutes) => {
   const hours = Math.floor(minutes / 60)
   const mins = minutes % 60
   
@@ -355,26 +352,26 @@ const formatDuration = (minutes: number): string => {
   }
 }
 
-const formatPrice = (price: number): string => {
+const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', {
     style: 'decimal',
     maximumFractionDigits: 0
   }).format(price)
 }
 
-const handleSlotClick = (slot: TimeSlot): void => {
+const handleSlotClick = (slot) => {
   emit('slot-click', slot)
 }
 
-const handleNewJob = (slot: TimeSlot): void => {
+const handleNewJob = (slot) => {
   emit('new-job', slot.date, slot.startTime)
 }
 
-const handleConfigureAvailability = (): void => {
+const handleConfigureAvailability = () => {
   emit('configure-availability')
 }
 
-const toggleShowAll = (): void => {
+const toggleShowAll = () => {
   showAllSlots.value = !showAllSlots.value
 }
 

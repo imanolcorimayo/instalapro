@@ -118,28 +118,30 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import IconPlusCircleOutline from '~icons/mdi/plus-circle-outline'
-import type { Job } from '~/types'
 import { formatInBuenosAires, isTodayInBuenosAires, toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
 // ==========================================
 
-interface Props {
-  year: number
-  month: number // 0-based (0 = January)
-  technicianId: string
-}
+const props = defineProps({
+  year: {
+    type: Number,
+    required: true
+  },
+  month: {
+    type: Number,
+    required: true
+  },
+  technicianId: {
+    type: String,
+    required: true
+  }
+})
 
-interface Emits {
-  (e: 'date-click', date: string): void
-  (e: 'job-click', job: Job): void
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['date-click', 'job-click'])
 
 // ==========================================
 // COMPOSABLES
@@ -215,15 +217,15 @@ const monthSummary = computed(() => {
 // METHODS
 // ==========================================
 
-const handleDateClick = (date: string): void => {
+const handleDateClick = (date) => {
   emit('date-click', date)
 }
 
-const handleJobClick = (job: Job): void => {
+const handleJobClick = (job) => {
   emit('job-click', job)
 }
 
-const getJobStatusClasses = (status: string): string => {
+const getJobStatusClasses = (status) => {
   switch (status) {
     case 'pending':
       return 'bg-yellow-100 text-yellow-800 border border-yellow-200'
@@ -240,11 +242,11 @@ const getJobStatusClasses = (status: string): string => {
   }
 }
 
-const formatJobTime = (date: Date): string => {
+const formatJobTime = (date) => {
   return formatInBuenosAires(date, 'HH:mm')
 }
 
-const formatPrice = (price: number): string => {
+const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', {
     style: 'decimal',
     maximumFractionDigits: 0

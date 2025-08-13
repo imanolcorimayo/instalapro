@@ -173,31 +173,34 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import type { Job } from '~/types'
+<script setup>
 import { formatInBuenosAires, toBuenosAires, nowInBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
 // ==========================================
 
-interface Props {
-  year: number
-  month: number // 0-based (0 = January)
-  technicianId: string
-  selectedDate?: string
-}
 
-interface Emits {
-  (e: 'date-click', date: string): void
-  (e: 'job-click', job: Job): void
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  selectedDate: undefined
+const props = defineProps({
+  year: {
+    type: Number,
+    default: new Date().getFullYear()
+  },
+  month: {
+    type: Number,
+    default: new Date().getMonth()
+  },
+  technicianId: {
+    type: String,
+    default: ''
+  },
+  selectedDate: {
+    type: String,
+    default: undefined
+  }
 })
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['date-click', 'job-click'])
 
 // ==========================================
 // COMPOSABLES
@@ -296,15 +299,15 @@ const busiestDays = computed(() => {
 // METHODS
 // ==========================================
 
-const handleDateClick = (date: string): void => {
+const handleDateClick = (date) => {
   emit('date-click', date)
 }
 
-const handleJobClick = (job: Job): void => {
+const handleJobClick = (job) => {
   emit('job-click', job)
 }
 
-const getJobStatusClasses = (status: string): string => {
+const getJobStatusClasses = (status) => {
   switch (status) {
     case 'pending':
       return 'bg-yellow-100 text-yellow-800'
@@ -321,7 +324,7 @@ const getJobStatusClasses = (status: string): string => {
   }
 }
 
-const formatDate = (dateString: string): string => {
+const formatDate = (dateString) => {
   const date = toBuenosAires(dateString + 'T00:00:00')
   return date.format('D MMM')
 }

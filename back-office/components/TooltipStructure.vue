@@ -59,29 +59,26 @@
   </div>
 </template>
 
-<script setup lang="ts">
-type TooltipPosition = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right' | 'bottom-center' | 'top-center'
+<script setup>
 
-interface Props {
-  title?: string
-  tooltipClass?: string
-  position?: TooltipPosition
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  title: '',
-  tooltipClass: '',
-  position: 'bottom-left'
+const props = defineProps({
+  title: String,
+  tooltipClass: String,
+  position: {
+    type: String,
+    default: 'bottom-left',
+    validator: value => ['bottom-left', 'bottom-right', 'bottom-center', 'top-left', 'top-right', 'top-center'].includes(value)
+  }
 })
 
 // ==========================================
 // STATE
 // ==========================================
 
-const isVisible = ref<boolean>(false)
-const triggerRef = ref<HTMLElement>()
-const tooltipRef = ref<HTMLElement>()
-const actualPosition = ref<TooltipPosition>(props.position)
+const isVisible = ref(false)
+const triggerRef = ref()
+const tooltipRef = ref()
+const actualPosition = ref(props.position)
 
 // ==========================================
 // COMPUTED
@@ -104,7 +101,7 @@ const positionClasses = computed(() => {
 // METHODS
 // ==========================================
 
-const showTooltip = (): void => {
+const showTooltip = () => {
   isVisible.value = true
   
   // Calculate optimal position after tooltip is rendered
@@ -113,11 +110,11 @@ const showTooltip = (): void => {
   })
 }
 
-const closeTooltip = (): void => {
+const closeTooltip = () => {
   isVisible.value = false
 }
 
-const toggleTooltip = (): void => {
+const toggleTooltip = () => {
   if (isVisible.value) {
     closeTooltip()
   } else {
@@ -125,7 +122,7 @@ const toggleTooltip = (): void => {
   }
 }
 
-const adjustPosition = (): void => {
+const adjustPosition = () => {
   if (!triggerRef.value || !tooltipRef.value) return
 
   const triggerRect = triggerRef.value.getBoundingClientRect()
@@ -146,12 +143,12 @@ const adjustPosition = (): void => {
   if (props.position.startsWith('bottom') && spaceBelow < tooltipRect.height + 10) {
     // Not enough space below, try to position above
     if (spaceAbove >= tooltipRect.height + 10) {
-      newPosition = props.position.replace('bottom', 'top') as TooltipPosition
+      newPosition = props.position.replace('bottom', 'top')
     }
   } else if (props.position.startsWith('top') && spaceAbove < tooltipRect.height + 10) {
     // Not enough space above, try to position below
     if (spaceBelow >= tooltipRect.height + 10) {
-      newPosition = props.position.replace('top', 'bottom') as TooltipPosition
+      newPosition = props.position.replace('top', 'bottom')
     }
   }
 
@@ -159,19 +156,19 @@ const adjustPosition = (): void => {
   if (newPosition.endsWith('-right') && spaceRight < tooltipRect.width + 10) {
     // Not enough space on the right, try left
     if (spaceLeft >= tooltipRect.width + 10) {
-      newPosition = newPosition.replace('-right', '-left') as TooltipPosition
+      newPosition = newPosition.replace('-right', '-left')
     }
   } else if (newPosition.endsWith('-left') && spaceLeft < tooltipRect.width + 10) {
     // Not enough space on the left, try right
     if (spaceRight >= tooltipRect.width + 10) {
-      newPosition = newPosition.replace('-left', '-right') as TooltipPosition
+      newPosition = newPosition.replace('-left', '-right')
     }
   }
 
   actualPosition.value = newPosition
 }
 
-const handleEscapeKey = (event: KeyboardEvent): void => {
+const handleEscapeKey = (event) => {
   if (event.key === 'Escape' && isVisible.value) {
     closeTooltip()
   }

@@ -94,10 +94,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import type { Job, TimeSlot } from '~/types'
-import { formatInBuenosAires, startOfWeekInBuenosAires } from '~/utils/timezone'
-
+<script setup>
 // Icons
 import IconAlertOutline from '~icons/mdi/alert-outline'
 import IconCalendarClock from '~icons/mdi/calendar-clock'
@@ -141,53 +138,53 @@ const slotActionsModalRef = ref()
 // METHODS
 // ==========================================
 
-const goToSetup = (): void => {
+const goToSetup = () => {
   router.push('/setup')
 }
 
-const goToSettings = (): void => {
+const goToSettings = () => {
   router.push('/settings')
 }
 
-const handleJobSelected = (job: Job): void => {
+const handleJobSelected = (job) => {
   if (jobModalRef.value) {
     jobModalRef.value.showModal(job)
   }
 }
 
-const handleSlotSelected = (slot: TimeSlot): void => {
+const handleSlotSelected = (slot) => {
   if (slotActionsModalRef.value) {
     slotActionsModalRef.value.showModal(slot)
   }
 }
 
-const handleNewJobRequested = (date: string, time?: string): void => {
+const handleNewJobRequested = (date, time) => {
   if (quickBookModalRef.value) {
     quickBookModalRef.value.showModal(date, time)
   }
 }
 
-const handleJobUpdated = (job: Job): void => {
+const handleJobUpdated = (job) => {
   // Job is automatically updated in the store
   // Optionally show success message
 }
 
-const handleJobDeleted = (jobId: string): void => {
+const handleJobDeleted = (jobId) => {
   // Job is automatically deleted from the store
   // Optionally show success message
 }
 
-const handleJobCreated = (job: Job): void => {
+const handleJobCreated = (job) => {
   // Job is automatically added to the store
   // Optionally show success message
 }
 
-const handleSlotBooked = (slot: TimeSlot): void => {
+const handleSlotBooked = (slot) => {
   // Slot is automatically booked in the store
   handleNewJobRequested(slot.date, slot.startTime)
 }
 
-const handleSlotBlocked = (slot: TimeSlot): void => {
+const handleSlotBlocked = (slot) => {
   // Slot is automatically blocked in the store
   // Optionally show success message
 }

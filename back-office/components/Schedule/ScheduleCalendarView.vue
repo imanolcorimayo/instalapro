@@ -155,36 +155,32 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import IconChevronLeft from '~icons/mdi/chevron-left'
 import IconChevronRight from '~icons/mdi/chevron-right'
 import IconPlus from '~icons/mdi/plus'
 import IconAlertCircleOutline from '~icons/mdi/alert-circle-outline'
-import type { ScheduleView, Job, TimeSlot } from '~/types'
 import { formatInBuenosAires, startOfWeekInBuenosAires, nowInBuenosAires, toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
 // ==========================================
-
-interface Props {
-  technicianId: string
-  initialView?: ScheduleView
-  initialDate?: string
-}
-
-interface Emits {
-  (e: 'job-selected', job: Job): void
-  (e: 'slot-selected', slot: TimeSlot): void
-  (e: 'new-job-requested', date: string, time?: string): void
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  initialView: 'week',
-  initialDate: () => formatInBuenosAires(nowInBuenosAires(), 'YYYY-MM-DD')
+const props = defineProps({
+  technicianId: {
+    type: String,
+    required: true
+  },
+  initialView: {
+    type: String,
+    default: 'week'
+  },
+  initialDate: {
+    type: String,
+    default: () => formatInBuenosAires(nowInBuenosAires(), 'YYYY-MM-DD')
+  }
 })
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['job-selected', 'slot-selected', 'new-job-requested'])
 
 // ==========================================
 // COMPOSABLES
@@ -197,17 +193,17 @@ const technicianStore = useTechnicianStore()
 // STATE
 // ==========================================
 
-const currentView = ref<ScheduleView>(props.initialView)
-const currentDate = ref<string>(props.initialDate)
+const currentView = ref(props.initialView)
+const currentDate = ref(props.initialDate)
 
 // ==========================================
 // COMPUTED
 // ==========================================
 
 const viewOptions = computed(() => [
-  { label: 'Día', value: 'day' as ScheduleView },
-  { label: 'Semana', value: 'week' as ScheduleView },
-  { label: 'Mes', value: 'month' as ScheduleView }
+  { label: 'Día', value: 'day' },
+  { label: 'Semana', value: 'week' },
+  { label: 'Mes', value: 'month' }
 ])
 
 const currentYear = computed(() => toBuenosAires(currentDate.value + 'T00:00:00').year())
@@ -254,11 +250,11 @@ const todaysStats = computed(() => {
 // METHODS
 // ==========================================
 
-const changeView = (view: ScheduleView): void => {
+const changeView = (view) => {
   currentView.value = view
 }
 
-const navigateDate = (direction: number): void => {
+const navigateDate = (direction) => {
   const date = toBuenosAires(currentDate.value + 'T00:00:00')
   
   let newDate
@@ -279,32 +275,32 @@ const navigateDate = (direction: number): void => {
   currentDate.value = formatInBuenosAires(newDate, 'YYYY-MM-DD')
 }
 
-const goToToday = (): void => {
+const goToToday = () => {
   currentDate.value = formatInBuenosAires(nowInBuenosAires(), 'YYYY-MM-DD')
 }
 
-const openNewJobModal = (): void => {
+const openNewJobModal = () => {
   emit('new-job-requested', currentDate.value)
 }
 
-const handleJobClick = (job: Job): void => {
+const handleJobClick = (job) => {
   emit('job-selected', job)
 }
 
-const handleSlotClick = (slot: TimeSlot): void => {
+const handleSlotClick = (slot) => {
   emit('slot-selected', slot)
 }
 
-const handleDateClick = (date: string): void => {
+const handleDateClick = (date) => {
   currentDate.value = date
   currentView.value = 'day'
 }
 
-const handleNewJobAtTime = (date: string, time: string): void => {
+const handleNewJobAtTime = (date, time) => {
   emit('new-job-requested', date, time)
 }
 
-const retryLoad = async (): Promise<void> => {
+const retryLoad = async () => {
   await scheduleStore.initialize()
 }
 

@@ -258,7 +258,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import IconClockOutline from '~icons/mdi/clock-outline'
 import IconPlusCircle from '~icons/mdi/plus-circle'
 import IconPencil from '~icons/mdi/pencil'
@@ -268,28 +268,24 @@ import IconCalendarRemove from '~icons/mdi/calendar-remove'
 import IconCheckCircleOutline from '~icons/mdi/check-circle-outline'
 import IconCalendarCheck from '~icons/mdi/calendar-check'
 import IconCoffeeOutline from '~icons/mdi/coffee-outline'
-import type { TimeSlot, Job, ScheduleDay } from '~/types'
 import { isTodayInBuenosAires, toBuenosAires, nowInBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
 // ==========================================
 
-interface Props {
-  date: string // YYYY-MM-DD format
-  technicianId: string
-}
+const props = defineProps({
+  date: {
+    type: String,
+    required: true
+  },
+  technicianId: {
+    type: String,
+    required: true
+  }
+})
 
-interface Emits {
-  (e: 'job-click', job: Job): void
-  (e: 'slot-click', slot: TimeSlot): void
-  (e: 'book-slot', slot: TimeSlot): void
-  (e: 'block-slot', slot: TimeSlot): void
-  (e: 'configure-availability'): void
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['job-click', 'slot-click', 'book-slot', 'block-slot', 'configure-availability'])
 
 // ==========================================
 // COMPOSABLES
@@ -301,13 +297,13 @@ const scheduleStore = useScheduleStore()
 // STATE
 // ==========================================
 
-const currentTime = ref<string>('')
+const currentTime = ref('')
 
 // ==========================================
 // COMPUTED
 // ==========================================
 
-const scheduleDay = computed((): ScheduleDay => {
+const scheduleDay = computed(() => {
   return scheduleStore.getScheduleDay(props.date, props.technicianId)
 })
 
@@ -352,16 +348,16 @@ const dayUtilization = computed(() => {
 // METHODS
 // ==========================================
 
-const updateCurrentTime = (): void => {
+const updateCurrentTime = () => {
   const now = nowInBuenosAires()
   currentTime.value = now.format('HH:mm')
 }
 
-const isCurrentTimeSlot = (slot: TimeSlot): boolean => {
+const isCurrentTimeSlot = (slot) => {
   return currentTimeSlot.value?.id === slot.id
 }
 
-const getSlotClasses = (slot: TimeSlot): string => {
+const getSlotClasses = (slot) => {
   const baseClasses = 'hover:shadow-md transition-all duration-200'
   
   switch (slot.status) {
@@ -378,7 +374,7 @@ const getSlotClasses = (slot: TimeSlot): string => {
   }
 }
 
-const getSlotIcon = (slot: TimeSlot) => {
+const getSlotIcon = (slot) => {
   switch (slot.status) {
     case 'available':
       return IconCheckCircleOutline
@@ -393,7 +389,7 @@ const getSlotIcon = (slot: TimeSlot) => {
   }
 }
 
-const getSlotIconColor = (slot: TimeSlot): string => {
+const getSlotIconColor = (slot) => {
   switch (slot.status) {
     case 'available':
       return 'text-green-500'
@@ -408,22 +404,22 @@ const getSlotIconColor = (slot: TimeSlot): string => {
   }
 }
 
-const getStatusLabel = (status: string): string => {
+const getStatusLabel = (status) => {
   const labels = {
     available: 'Disponible',
     booked: 'Agendado',
     blocked: 'Bloqueado',
     break: 'Descanso'
   }
-  return labels[status as keyof typeof labels] || status
+  return labels[status] || status
 }
 
-const getJobForSlot = (slot: TimeSlot): Job | undefined => {
+const getJobForSlot = (slot) => {
   if (!slot.jobId) return undefined
   return scheduleStore.jobs.find(job => job.id === slot.jobId)
 }
 
-const getBlockedReason = (slot: TimeSlot): string => {
+const getBlockedReason = (slot) => {
   const blockedSlot = scheduleStore.blockedSlots.find(blocked => 
     blocked.startDate === slot.date && 
     blocked.startTime === slot.startTime &&
@@ -432,30 +428,30 @@ const getBlockedReason = (slot: TimeSlot): string => {
   return blockedSlot?.reason || 'Sin razón especificada'
 }
 
-const handleSlotClick = (slot: TimeSlot): void => {
+const handleSlotClick = (slot) => {
   emit('slot-click', slot)
 }
 
-const handleBookSlot = (slot: TimeSlot): void => {
+const handleBookSlot = (slot) => {
   emit('book-slot', slot)
 }
 
-const handleEditJob = (slot: TimeSlot): void => {
+const handleEditJob = (slot) => {
   const job = getJobForSlot(slot)
   if (job) {
     emit('job-click', job)
   }
 }
 
-const handleBlockSlot = (slot: TimeSlot): void => {
+const handleBlockSlot = (slot) => {
   emit('block-slot', slot)
 }
 
-const handleUnblockSlot = async (slot: TimeSlot): Promise<void> => {
+const handleUnblockSlot = async (slot) => {
   await scheduleStore.unblockTimeSlot(slot.id)
 }
 
-const handleConfigureAvailability = (): void => {
+const handleConfigureAvailability = () => {
   emit('configure-availability')
 }
 

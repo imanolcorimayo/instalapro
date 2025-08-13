@@ -233,8 +233,7 @@
   </ModalStructure>
 </template>
 
-<script setup lang="ts">
-import type { DayOfWeek, WeeklyAvailability, DaySchedule } from '~/types'
+<script setup>
 import IconInformationOutline from '~icons/mdi/information-outline'
 import IconCheck from '~icons/mdi/check'
 
@@ -254,8 +253,8 @@ const modalRef = ref()
 // STATE
 // ==========================================
 
-const isSaving = ref<boolean>(false)
-const localAvailability = ref<WeeklyAvailability>({} as WeeklyAvailability)
+const isSaving = ref(false)
+const localAvailability = ref({})
 
 // ==========================================
 // COMPUTED
@@ -291,7 +290,7 @@ const dayPresets = computed(() => [
 // METHODS
 // ==========================================
 
-const showModal = (): void => {
+const showModal = () => {
   // Load current availability into local state
   if (technicianStore.technician?.availability) {
     localAvailability.value = JSON.parse(JSON.stringify(technicianStore.technician.availability))
@@ -303,7 +302,7 @@ const showModal = (): void => {
   modalRef.value?.showModal()
 }
 
-const createDefaultAvailability = (): WeeklyAvailability => ({
+const createDefaultAvailability = () => ({
   monday: { enabled: true, startTime: '09:00', endTime: '18:00', breakStart: '12:00', breakEnd: '13:00' },
   tuesday: { enabled: true, startTime: '09:00', endTime: '18:00', breakStart: '12:00', breakEnd: '13:00' },
   wednesday: { enabled: true, startTime: '09:00', endTime: '18:00', breakStart: '12:00', breakEnd: '13:00' },
@@ -313,11 +312,11 @@ const createDefaultAvailability = (): WeeklyAvailability => ({
   sunday: { enabled: false, startTime: '09:00', endTime: '18:00' }
 })
 
-const toggleLocalDay = (dayKey: DayOfWeek): void => {
+const toggleLocalDay = (dayKey) => {
   localAvailability.value[dayKey].enabled = !localAvailability.value[dayKey].enabled
 }
 
-const applyPreset = (dayKey: DayOfWeek, preset: any): void => {
+const applyPreset = (dayKey, preset) => {
   localAvailability.value[dayKey] = {
     ...localAvailability.value[dayKey],
     startTime: preset.startTime,
@@ -327,7 +326,7 @@ const applyPreset = (dayKey: DayOfWeek, preset: any): void => {
   }
 }
 
-const applyQuickPreset = (presetType: 'business' | 'extended'): void => {
+const applyQuickPreset = (presetType) => {
   const presets = {
     business: {
       monday: { enabled: true, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
@@ -349,10 +348,10 @@ const applyQuickPreset = (presetType: 'business' | 'extended'): void => {
     }
   }
   
-  localAvailability.value = presets[presetType] as WeeklyAvailability
+  localAvailability.value = presets[presetType]
 }
 
-const calculateWorkingHours = (daySchedule: DaySchedule): number => {
+const calculateWorkingHours = (daySchedule) => {
   if (!daySchedule.enabled) return 0
   
   const startTime = parseTime(daySchedule.startTime)
@@ -371,12 +370,12 @@ const calculateWorkingHours = (daySchedule: DaySchedule): number => {
   return Math.max(0, Math.round(workingMinutes / 60 * 10) / 10) // Round to 1 decimal
 }
 
-const parseTime = (timeString: string): number => {
+const parseTime = (timeString) => {
   const [hours, minutes] = timeString.split(':').map(Number)
   return hours * 60 + minutes
 }
 
-const handleSave = async (): Promise<void> => {
+const handleSave = async () => {
   // Validate schedule before saving
   const validationErrors = validateSchedule(localAvailability.value)
   if (validationErrors.length > 0) {
@@ -407,13 +406,13 @@ const handleSave = async (): Promise<void> => {
   }
 }
 
-const validateSchedule = (schedule: WeeklyAvailability): string[] => {
-  const errors: string[] = []
+const validateSchedule = (schedule) => {
+  const errors = []
   
   Object.entries(schedule).forEach(([dayKey, daySchedule]) => {
     if (!daySchedule.enabled) return
     
-    const dayName = daysOfWeek.value[dayKey as DayOfWeek]?.name || dayKey
+    const dayName = daysOfWeek.value[dayKey]?.name || dayKey
     
     // Validate that end time is after start time
     const startMinutes = parseTime(daySchedule.startTime)
@@ -447,11 +446,11 @@ const validateSchedule = (schedule: WeeklyAvailability): string[] => {
   return errors
 }
 
-const handleCancel = (): void => {
+const handleCancel = () => {
   modalRef.value?.closeModal()
 }
 
-const handleModalClose = (): void => {
+const handleModalClose = () => {
   // Reset local state when modal closes
   isSaving.value = false
 }

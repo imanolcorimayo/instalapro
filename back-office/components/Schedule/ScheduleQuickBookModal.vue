@@ -234,25 +234,22 @@
   </ModalStructure>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import IconAlertCircleOutline from '~icons/mdi/alert-circle-outline'
-import type { Job, JobCreateInput, TimeSlot, TechnicianService } from '~/types'
 import { parseTimeInBuenosAires, formatInBuenosAires, nowInBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
 // ==========================================
 
-interface Props {
-  technicianId: string
-}
+const props = defineProps({
+  technicianId: {
+    type: String,
+    required: true
+  }
+})
 
-interface Emits {
-  (e: 'job-created', job: Job): void
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['job-created'])
 
 // ==========================================
 // COMPOSABLES
@@ -271,9 +268,9 @@ const modalRef = ref()
 // STATE
 // ==========================================
 
-const isSubmitting = ref<boolean>(false)
-const selectedDate = ref<string>('')
-const selectedTime = ref<string>('')
+const isSubmitting = ref(false)
+const selectedDate = ref('')
+const selectedTime = ref('')
 
 const form = ref({
   date: '',
@@ -297,14 +294,14 @@ const minDate = computed(() => {
   return formatInBuenosAires(nowInBuenosAires(), 'YYYY-MM-DD')
 })
 
-const availableSlots = computed((): TimeSlot[] => {
+const availableSlots = computed(() => {
   if (!form.value.date) return []
   
   return scheduleStore.availableSlotsForDate(form.value.date)
     .sort((a, b) => a.startTime.localeCompare(b.startTime))
 })
 
-const availableServices = computed((): TechnicianService[] => {
+const availableServices = computed(() => {
   return technicianStore.activeServices || []
 })
 
@@ -319,7 +316,7 @@ const hasSlotConflict = computed(() => {
 // METHODS
 // ==========================================
 
-const showModal = (date?: string, time?: string): void => {
+const showModal = (date, time) => {
   // Reset form
   resetForm()
   
@@ -339,7 +336,7 @@ const showModal = (date?: string, time?: string): void => {
   modalRef.value?.showModal()
 }
 
-const resetForm = (): void => {
+const resetForm = () => {
   form.value = {
     date: '',
     time: '',
@@ -355,7 +352,7 @@ const resetForm = (): void => {
   }
 }
 
-const handleServiceChange = (): void => {
+const handleServiceChange = () => {
   const selectedService = availableServices.value.find(
     service => service.name === form.value.serviceType
   )
@@ -367,7 +364,7 @@ const handleServiceChange = (): void => {
   }
 }
 
-const validateForm = (): boolean => {
+const validateForm = () => {
   if (!form.value.date || !form.value.time) {
     console.error('Fecha y hora son requeridos')
     return false
@@ -391,7 +388,7 @@ const validateForm = (): boolean => {
   return true
 }
 
-const handleSubmit = async (): Promise<void> => {
+const handleSubmit = async () => {
   if (!validateForm()) return
   
   isSubmitting.value = true
@@ -401,7 +398,7 @@ const handleSubmit = async (): Promise<void> => {
     const scheduledDate = parseTimeInBuenosAires(form.value.time, form.value.date).toDate()
     
     // Prepare job data
-    const jobData: JobCreateInput = {
+    const jobData = {
       clientId: form.value.createClient ? `client_${Date.now()}` : '',
       clientName: form.value.clientName,
       clientPhone: form.value.clientPhone,
@@ -436,11 +433,11 @@ const handleSubmit = async (): Promise<void> => {
   }
 }
 
-const handleCancel = (): void => {
+const handleCancel = () => {
   modalRef.value?.closeModal()
 }
 
-const handleModalClose = (): void => {
+const handleModalClose = () => {
   isSubmitting.value = false
 }
 

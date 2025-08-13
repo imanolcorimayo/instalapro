@@ -256,7 +256,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 // Icons
 import IconAlertCircleOutline from '~icons/mdi/alert-circle-outline'
 import IconPencil from '~icons/mdi/pencil'
@@ -292,7 +292,7 @@ const availabilityModalRef = ref()
 // METHODS
 // ==========================================
 
-const openAvailabilityModal = (): void => {
+const openAvailabilityModal = () => {
   if (availabilityModalRef.value) {
     availabilityModalRef.value.showModal()
   }

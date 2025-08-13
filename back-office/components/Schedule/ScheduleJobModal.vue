@@ -395,7 +395,7 @@
   </ModalStructure>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import IconWhatsapp from '~icons/mdi/whatsapp'
 import IconAlertCircleOutline from '~icons/mdi/alert-circle-outline'
 import IconClockOutline from '~icons/mdi/clock-outline'
@@ -404,19 +404,13 @@ import IconProgressClock from '~icons/mdi/progress-clock'
 import IconCheckCircle from '~icons/mdi/check-circle'
 import IconCancel from '~icons/mdi/cancel'
 import IconHelpCircle from '~icons/mdi/help-circle'
-import type { Job, JobUpdateInput } from '~/types'
 import { toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // EMITS
 // ==========================================
 
-interface Emits {
-  (e: 'job-updated', job: Job): void
-  (e: 'job-deleted', jobId: string): void
-}
-
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['job-updated', 'job-deleted'])
 
 // ==========================================
 // COMPOSABLES
@@ -435,10 +429,10 @@ const deleteConfirmModalRef = ref()
 // STATE
 // ==========================================
 
-const currentJob = ref<Job | null>(null)
-const isEditing = ref<boolean>(false)
-const isSubmitting = ref<boolean>(false)
-const isDeleting = ref<boolean>(false)
+const currentJob = ref(null)
+const isEditing = ref(false)
+const isSubmitting = ref(false)
+const isDeleting = ref(false)
 
 const editForm = ref({
   clientName: '',
@@ -448,7 +442,7 @@ const editForm = ref({
   description: '',
   price: 0,
   estimatedDuration: 180,
-  status: 'pending' as Job['status'],
+  status: 'pending',
   paid: false,
   notes: '',
   scheduledDateTime: ''
@@ -467,14 +461,14 @@ const modalTitle = computed(() => {
 // METHODS
 // ==========================================
 
-const showModal = (job: Job): void => {
+const showModal = (job) => {
   currentJob.value = job
   loadJobToForm()
   isEditing.value = false
   modalRef.value?.showModal()
 }
 
-const loadJobToForm = (): void => {
+const loadJobToForm = () => {
   if (!currentJob.value) return
   
   editForm.value = {
@@ -492,22 +486,22 @@ const loadJobToForm = (): void => {
   }
 }
 
-const startEditing = (): void => {
+const startEditing = () => {
   isEditing.value = true
 }
 
-const cancelEditing = (): void => {
+const cancelEditing = () => {
   isEditing.value = false
   loadJobToForm() // Reset form
 }
 
-const handleSave = async (): Promise<void> => {
+const handleSave = async () => {
   if (!currentJob.value) return
   
   isSubmitting.value = true
   
   try {
-    const updates: JobUpdateInput = {
+    const updates = {
       clientName: editForm.value.clientName,
       clientPhone: editForm.value.clientPhone,
       address: editForm.value.address,
@@ -542,11 +536,11 @@ const handleSave = async (): Promise<void> => {
   }
 }
 
-const handleDelete = (): void => {
+const handleDelete = () => {
   deleteConfirmModalRef.value?.showModal()
 }
 
-const confirmDelete = async (): Promise<void> => {
+const confirmDelete = async () => {
   if (!currentJob.value) return
   
   isDeleting.value = true
@@ -564,30 +558,30 @@ const confirmDelete = async (): Promise<void> => {
   }
 }
 
-const cancelDelete = (): void => {
+const cancelDelete = () => {
   deleteConfirmModalRef.value?.closeModal()
 }
 
-const handleClose = (): void => {
+const handleClose = () => {
   modalRef.value?.closeModal()
 }
 
-const handleModalClose = (): void => {
+const handleModalClose = () => {
   currentJob.value = null
   isEditing.value = false
   isSubmitting.value = false
 }
 
-const handleStatusChange = (): void => {
+const handleStatusChange = () => {
   // Could trigger additional logic based on status change
 }
 
-const openWhatsApp = (phone: string): void => {
+const openWhatsApp = (phone) => {
   const cleanPhone = phone.replace(/\D/g, '')
   window.open(`https://wa.me/${cleanPhone}`, '_blank')
 }
 
-const formatJobDateTime = (date: Date): string => {
+const formatJobDateTime = (date) => {
   return new Intl.DateTimeFormat('es-ES', {
     weekday: 'long',
     year: 'numeric',
@@ -598,7 +592,7 @@ const formatJobDateTime = (date: Date): string => {
   }).format(date)
 }
 
-const formatDate = (date: Date): string => {
+const formatDate = (date) => {
   return new Intl.DateTimeFormat('es-ES', {
     year: 'numeric',
     month: 'long',
@@ -608,11 +602,11 @@ const formatDate = (date: Date): string => {
   }).format(date)
 }
 
-const formatDateTimeForInput = (date: Date): string => {
+const formatDateTimeForInput = (date) => {
   return date.toISOString().slice(0, 16)
 }
 
-const getJobStatusIcon = (status: string) => {
+const getJobStatusIcon = (status) => {
   const icons = {
     pending: IconClockOutline,
     confirmed: IconCalendarCheck,
@@ -620,10 +614,10 @@ const getJobStatusIcon = (status: string) => {
     completed: IconCheckCircle,
     cancelled: IconCancel
   }
-  return icons[status as keyof typeof icons] || IconHelpCircle
+  return icons[status] || IconHelpCircle
 }
 
-const getJobStatusIconColor = (status: string): string => {
+const getJobStatusIconColor = (status) => {
   const colors = {
     pending: 'text-yellow-500',
     confirmed: 'text-blue-500',
@@ -631,10 +625,10 @@ const getJobStatusIconColor = (status: string): string => {
     completed: 'text-green-500',
     cancelled: 'text-red-500'
   }
-  return colors[status as keyof typeof colors] || 'text-gray-500'
+  return colors[status] || 'text-gray-500'
 }
 
-const getJobStatusClasses = (status: string): string => {
+const getJobStatusClasses = (status) => {
   const classes = {
     pending: 'bg-yellow-100 text-yellow-800',
     confirmed: 'bg-blue-100 text-blue-800',
@@ -642,10 +636,10 @@ const getJobStatusClasses = (status: string): string => {
     completed: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800'
   }
-  return classes[status as keyof typeof classes] || 'bg-gray-100 text-gray-800'
+  return classes[status] || 'bg-gray-100 text-gray-800'
 }
 
-const getSlotStatusColor = (): string => {
+const getSlotStatusColor = () => {
   // This would check the actual time slot status
   // For now, return based on job status
   if (!currentJob.value) return 'text-gray-500'
@@ -659,7 +653,7 @@ const getSlotStatusColor = (): string => {
   }
 }
 
-const getSlotStatusText = (): string => {
+const getSlotStatusText = () => {
   if (!currentJob.value) return 'Sin información'
   
   switch (currentJob.value.status) {

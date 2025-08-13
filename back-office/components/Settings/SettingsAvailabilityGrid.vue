@@ -129,8 +129,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import type { DayOfWeek, WeeklyAvailability, DaySchedule } from '~/types'
+<script setup>
 import IconClockOutline from '~icons/mdi/clock-outline'
 import IconCoffeeOutline from '~icons/mdi/coffee-outline'
 import IconTimerOutline from '~icons/mdi/timer-outline'
@@ -146,7 +145,7 @@ const technicianStore = useTechnicianStore()
 // COMPUTED
 // ==========================================
 
-const availability = computed((): WeeklyAvailability | undefined => {
+const availability = computed(() => {
   return technicianStore.technician?.availability
 })
 
@@ -195,11 +194,11 @@ const typicalSchedule = computed(() => {
 // METHODS
 // ==========================================
 
-const toggleDay = async (dayKey: DayOfWeek): Promise<void> => {
+const toggleDay = async (dayKey) => {
   await technicianStore.toggleDayAvailability(dayKey)
 }
 
-const calculateWorkingHours = (daySchedule: DaySchedule): number => {
+const calculateWorkingHours = (daySchedule) => {
   if (!daySchedule.enabled) return 0
   
   const startTime = parseTime(daySchedule.startTime)
@@ -218,15 +217,15 @@ const calculateWorkingHours = (daySchedule: DaySchedule): number => {
   return Math.max(0, Math.round(workingMinutes / 60 * 10) / 10) // Round to 1 decimal
 }
 
-const parseTime = (timeString: string): number => {
+const parseTime = (timeString) => {
   const [hours, minutes] = timeString.split(':').map(Number)
   return hours * 60 + minutes
 }
 
-const findMostCommon = (array: string[]): string => {
+const findMostCommon = (array) => {
   if (array.length === 0) return ''
   
-  const frequency: Record<string, number> = {}
+  const frequency = {}
   
   array.forEach(item => {
     frequency[item] = (frequency[item] || 0) + 1

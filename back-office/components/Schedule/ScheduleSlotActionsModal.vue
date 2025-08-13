@@ -291,27 +291,20 @@
   </ModalStructure>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import IconCalendarPlus from '~icons/mdi/calendar-plus'
 import IconBlockHelper from '~icons/mdi/block-helper'
 import IconCalendarEdit from '~icons/mdi/calendar-edit'
 import IconCalendarRemove from '~icons/mdi/calendar-remove'
 import IconCheckCircle from '~icons/mdi/check-circle'
 import IconCoffeeOutline from '~icons/mdi/coffee-outline'
-import type { TimeSlot, Job } from '~/types'
 import { toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // EMITS
 // ==========================================
 
-interface Emits {
-  (e: 'slot-booked', slot: TimeSlot): void
-  (e: 'slot-blocked', slot: TimeSlot): void
-  (e: 'job-selected', job: Job): void
-}
-
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['slot-booked', 'slot-blocked', 'job-selected'])
 
 // ==========================================
 // COMPOSABLES
@@ -329,9 +322,9 @@ const modalRef = ref()
 // STATE
 // ==========================================
 
-const currentSlot = ref<TimeSlot | null>(null)
-const showBlockingForm = ref<boolean>(false)
-const isSubmitting = ref<boolean>(false)
+const currentSlot = ref(null)
+const showBlockingForm = ref(false)
+const isSubmitting = ref(false)
 
 const blockForm = ref({
   reason: '',
@@ -368,14 +361,14 @@ const modalTitle = computed(() => {
 // METHODS
 // ==========================================
 
-const showModal = (slot: TimeSlot): void => {
+const showModal = (slot) => {
   currentSlot.value = slot
   showBlockingForm.value = false
   resetBlockForm()
   modalRef.value?.showModal()
 }
 
-const resetBlockForm = (): void => {
+const resetBlockForm = () => {
   blockForm.value = {
     reason: '',
     customReason: '',
@@ -383,22 +376,22 @@ const resetBlockForm = (): void => {
   }
 }
 
-const showBlockForm = (): void => {
+const showBlockForm = () => {
   showBlockingForm.value = true
 }
 
-const cancelBlockForm = (): void => {
+const cancelBlockForm = () => {
   showBlockingForm.value = false
   resetBlockForm()
 }
 
-const handleBookSlot = (): void => {
+const handleBookSlot = () => {
   if (!currentSlot.value) return
   emit('slot-booked', currentSlot.value)
   modalRef.value?.closeModal()
 }
 
-const handleConfirmBlock = async (): Promise<void> => {
+const handleConfirmBlock = async () => {
   if (!currentSlot.value || !blockForm.value.reason) return
   
   isSubmitting.value = true
@@ -419,7 +412,7 @@ const handleConfirmBlock = async (): Promise<void> => {
   }
 }
 
-const handleUnblockSlot = async (): Promise<void> => {
+const handleUnblockSlot = async () => {
   if (!currentSlot.value) return
   
   isSubmitting.value = true
@@ -434,7 +427,7 @@ const handleUnblockSlot = async (): Promise<void> => {
   }
 }
 
-const handleEditJob = (): void => {
+const handleEditJob = () => {
   if (!currentSlot.value?.jobId) return
   
   const job = getJobForSlot(currentSlot.value)
@@ -444,37 +437,37 @@ const handleEditJob = (): void => {
   }
 }
 
-const handleRescheduleJob = (): void => {
+const handleRescheduleJob = () => {
   // This would open a reschedule modal
   console.log('Reschedule job:', currentSlot.value?.jobId)
 }
 
-const handleCancelJob = (): void => {
+const handleCancelJob = () => {
   // This would cancel the job and free the slot
   console.log('Cancel job:', currentSlot.value?.jobId)
 }
 
-const handleClose = (): void => {
+const handleClose = () => {
   modalRef.value?.closeModal()
 }
 
-const handleModalClose = (): void => {
+const handleModalClose = () => {
   currentSlot.value = null
   showBlockingForm.value = false
   isSubmitting.value = false
   resetBlockForm()
 }
 
-const formatSlotTime = (slot: TimeSlot): string => {
+const formatSlotTime = (slot) => {
   return `${slot.startTime} - ${slot.endTime}`
 }
 
-const formatSlotDate = (dateString: string): string => {
+const formatSlotDate = (dateString) => {
   const date = toBuenosAires(dateString + 'T00:00:00')
   return date.format('dddd, D [de] MMMM [de] YYYY')
 }
 
-const getSlotStatusClasses = (status: string): string => {
+const getSlotStatusClasses = (status) => {
   switch (status) {
     case 'available':
       return 'bg-green-100 text-green-800'
@@ -489,22 +482,22 @@ const getSlotStatusClasses = (status: string): string => {
   }
 }
 
-const getSlotStatusLabel = (status: string): string => {
+const getSlotStatusLabel = (status) => {
   const labels = {
     available: 'Disponible',
     booked: 'Agendado',
     blocked: 'Bloqueado',
     break: 'Descanso'
   }
-  return labels[status as keyof typeof labels] || status
+  return labels[status] || status
 }
 
-const getJobForSlot = (slot: TimeSlot): Job | undefined => {
+const getJobForSlot = (slot) => {
   if (!slot.jobId) return undefined
   return scheduleStore.jobs.find(job => job.id === slot.jobId)
 }
 
-const getBlockedReason = (slot: TimeSlot): string => {
+const getBlockedReason = (slot) => {
   const blockedSlot = scheduleStore.blockedSlots.find(blocked => 
     blocked.startDate === slot.date && 
     blocked.startTime === slot.startTime &&
@@ -513,7 +506,7 @@ const getBlockedReason = (slot: TimeSlot): string => {
   return blockedSlot?.reason || 'Sin razón especificada'
 }
 
-const getReasonLabel = (reason: string): string => {
+const getReasonLabel = (reason) => {
   const labels = {
     personal: 'Compromiso Personal',
     maintenance: 'Mantenimiento de Equipos',
@@ -522,7 +515,7 @@ const getReasonLabel = (reason: string): string => {
     vacation: 'Vacaciones',
     other: 'Otro'
   }
-  return labels[reason as keyof typeof labels] || reason
+  return labels[reason] || reason
 }
 
 // ==========================================

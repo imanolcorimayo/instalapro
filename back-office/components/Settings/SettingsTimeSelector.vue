@@ -117,27 +117,29 @@
   </TooltipStructure>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import IconChevronDown from '~icons/mdi/chevron-down'
 
-interface Props {
-  modelValue: string // HH:mm format
-  title?: string
-  placeholder?: string
-  disabled?: boolean
-}
-
-interface Emits {
-  (e: 'update:modelValue', value: string): void
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  title: 'Seleccionar Hora',
-  placeholder: 'Seleccionar...',
-  disabled: false
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: ''
+  },
+  title: {
+    type: String,
+    default: 'Seleccionar Hora'
+  },
+  placeholder: {
+    type: String,
+    default: 'Seleccionar...'
+  },
+  disabled: {
+    type: Boolean,
+    default: false
+  }
 })
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['update:modelValue'])
 
 // ==========================================
 // REFS
@@ -149,8 +151,8 @@ const tooltipRef = ref()
 // STATE
 // ==========================================
 
-const selectedHour = ref<number>(9)
-const selectedMinute = ref<number>(0)
+const selectedHour = ref(9)
+const selectedMinute = ref(0)
 
 // ==========================================
 // COMPUTED
@@ -189,7 +191,7 @@ const quickTimes = computed(() => [
 // METHODS
 // ==========================================
 
-const parseTimeValue = (timeValue: string): { hour: number; minute: number } => {
+const parseTimeValue = (timeValue) => {
   if (!timeValue) return { hour: 9, minute: 0 }
   
   const [hourStr, minuteStr] = timeValue.split(':')
@@ -199,18 +201,18 @@ const parseTimeValue = (timeValue: string): { hour: number; minute: number } => 
   }
 }
 
-const updateTime = (): void => {
+const updateTime = () => {
   // Update preview immediately as user selects
   // Actual value is only emitted when confirmed
 }
 
-const selectQuickTime = (timeValue: string): void => {
+const selectQuickTime = (timeValue) => {
   const { hour, minute } = parseTimeValue(timeValue)
   selectedHour.value = hour
   selectedMinute.value = minute
 }
 
-const confirmTime = (): void => {
+const confirmTime = () => {
   // Validate time before confirming
   if (isValidTime(selectedHour.value, selectedMinute.value)) {
     const newTimeValue = previewTime.value
@@ -219,11 +221,11 @@ const confirmTime = (): void => {
   }
 }
 
-const isValidTime = (hour: number, minute: number): boolean => {
+const isValidTime = (hour, minute) => {
   return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59
 }
 
-const closeTooltip = (): void => {
+const closeTooltip = () => {
   if (tooltipRef.value) {
     tooltipRef.value.closeTooltip()
   }

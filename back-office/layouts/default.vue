@@ -128,7 +128,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 // Icons
 import IconAirConditioner from '~icons/mdi/air-conditioner'
 import IconClose from '~icons/mdi/close'
@@ -153,7 +153,7 @@ const technicianStore = useTechnicianStore()
 // STATE
 // ==========================================
 
-const isMobileMenuOpen = ref<boolean>(false)
+const isMobileMenuOpen = ref(false)
 
 // ==========================================
 // COMPUTED
@@ -164,7 +164,7 @@ const technicianName = computed(() => {
 })
 
 const pageTitle = computed(() => {
-  const titles: Record<string, string> = {
+  const titles = {
     '/': 'Panel Principal',
     '/setup': 'Configuración Inicial',
     '/schedule': 'Agenda',
@@ -229,11 +229,11 @@ const navigationItems = computed(() => [
 // METHODS
 // ==========================================
 
-const openMobileMenu = (): void => {
+const openMobileMenu = () => {
   isMobileMenuOpen.value = true
 }
 
-const closeMobileMenu = (): void => {
+const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
 }
 

@@ -244,46 +244,48 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import IconBlockHelper from '~icons/mdi/block-helper'
 import IconCoffeeOutline from '~icons/mdi/coffee-outline'
 import IconPlusCircleOutline from '~icons/mdi/plus-circle-outline'
 import IconPlus from '~icons/mdi/plus'
 import IconPencil from '~icons/mdi/pencil'
 import IconCheck from '~icons/mdi/check'
-import type { TimeSlot, Job } from '~/types'
 import { formatInBuenosAires, nowInBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
 // ==========================================
 
-interface Props {
-  date: string // YYYY-MM-DD format
-  technicianId: string
-  title?: string
-  hourHeight?: number
-  showCurrentTime?: boolean
-  defaultSlotDuration?: number
-}
 
-interface Emits {
-  (e: 'slot-click', slot: TimeSlot): void
-  (e: 'book-slot', slot: TimeSlot): void
-  (e: 'block-slot', slot: TimeSlot): void
-  (e: 'edit-job', slot: TimeSlot): void
-  (e: 'refresh'): void
-  (e: 'quick-book'): void
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  title: 'Horarios del Día',
-  hourHeight: 80,
-  showCurrentTime: true,
-  defaultSlotDuration: 60
+const props = defineProps({
+  date: {
+    type: String,
+    required: true
+  },
+  technicianId: {
+    type: String,
+    default: ''
+  },
+  title: {
+    type: String,
+    default: 'Horarios del Día'
+  },
+  hourHeight: {
+    type: Number,
+    default: 80
+  },
+  showCurrentTime: {
+    type: Boolean,
+    default: true
+  },
+  defaultSlotDuration: {
+    type: Number,
+    default: 60
+  }
 })
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['slot-click', 'book-slot', 'block-slot', 'edit-job', 'refresh', 'quick-book'])
 
 // ==========================================
 // COMPOSABLES
@@ -295,11 +297,11 @@ const scheduleStore = useScheduleStore()
 // STATE
 // ==========================================
 
-const hoveredSlot = ref<TimeSlot | null>(null)
-const tooltipStyle = ref<Record<string, string>>({})
-const tooltipRef = ref<HTMLElement>()
-const currentTime = ref<string>('')
-const currentTimePosition = ref<number | null>(null)
+const hoveredSlot = ref(null)
+const tooltipStyle = ref({})
+const tooltipRef = ref()
+const currentTime = ref('')
+const currentTimePosition = ref(null)
 
 // ==========================================
 // COMPUTED
@@ -341,7 +343,7 @@ const isToday = computed(() => {
 // METHODS
 // ==========================================
 
-const updateCurrentTime = (): void => {
+const updateCurrentTime = () => {
   const now = nowInBuenosAires()
   currentTime.value = now.format('HH:mm')
   
@@ -361,11 +363,11 @@ const updateCurrentTime = (): void => {
   }
 }
 
-const formatHour = (hour: number): string => {
+const formatHour = (hour) => {
   return `${hour.toString().padStart(2, '0')}:00`
 }
 
-const getSlotStyle = (slot: TimeSlot): Record<string, string> => {
+const getSlotStyle = (slot) => {
   if (hours.value.length === 0) return {}
   
   const startHour = Math.min(...hours.value)
@@ -381,7 +383,7 @@ const getSlotStyle = (slot: TimeSlot): Record<string, string> => {
   }
 }
 
-const getSlotClasses = (slot: TimeSlot): string => {
+const getSlotClasses = (slot) => {
   const baseClasses = 'hover:shadow-md transition-all duration-200'
   
   switch (slot.status) {
@@ -398,55 +400,55 @@ const getSlotClasses = (slot: TimeSlot): string => {
   }
 }
 
-const getStatusLabel = (status: string): string => {
+const getStatusLabel = (status) => {
   const labels = {
     available: 'Disponible',
     booked: 'Agendado',
     blocked: 'Bloqueado',
     break: 'Descanso'
   }
-  return labels[status as keyof typeof labels] || status
+  return labels[status] || status
 }
 
-const parseTimeToMinutes = (timeString: string): number => {
+const parseTimeToMinutes = (timeString) => {
   const [hours, minutes] = timeString.split(':').map(Number)
   return hours * 60 + minutes
 }
 
-const getJobForSlot = (slot: TimeSlot): Job | undefined => {
+const getJobForSlot = (slot) => {
   if (!slot.jobId) return undefined
   return scheduleStore.jobs.find(job => job.id === slot.jobId)
 }
 
-const handleSlotClick = (slot: TimeSlot): void => {
+const handleSlotClick = (slot) => {
   emit('slot-click', slot)
 }
 
-const handleBookSlot = (slot: TimeSlot): void => {
+const handleBookSlot = (slot) => {
   emit('book-slot', slot)
 }
 
-const handleBlockSlot = (slot: TimeSlot): void => {
+const handleBlockSlot = (slot) => {
   emit('block-slot', slot)
 }
 
-const handleEditJob = (slot: TimeSlot): void => {
+const handleEditJob = (slot) => {
   emit('edit-job', slot)
 }
 
-const handleUnblockSlot = async (slot: TimeSlot): Promise<void> => {
+const handleUnblockSlot = async (slot) => {
   await scheduleStore.unblockTimeSlot(slot.id)
 }
 
-const handleRefresh = (): void => {
+const handleRefresh = () => {
   emit('refresh')
 }
 
-const handleQuickBook = (): void => {
+const handleQuickBook = () => {
   emit('quick-book')
 }
 
-const handleSlotHover = (slot: TimeSlot, isEntering: boolean): void => {
+const handleSlotHover = (slot, isEntering) => {
   if (isEntering) {
     hoveredSlot.value = slot
     updateTooltipPosition()
@@ -455,11 +457,11 @@ const handleSlotHover = (slot: TimeSlot, isEntering: boolean): void => {
   }
 }
 
-const updateTooltipPosition = (): void => {
+const updateTooltipPosition = () => {
   if (!hoveredSlot.value) return
   
   // Get mouse position and adjust tooltip
-  const handleMouseMove = (event: MouseEvent) => {
+  const handleMouseMove = (event) => {
     tooltipStyle.value = {
       left: `${event.clientX + 10}px`,
       top: `${event.clientY - 10}px`

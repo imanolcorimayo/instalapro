@@ -168,7 +168,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import IconCalendarOutline from '~icons/mdi/calendar-outline'
 import IconClockOutline from '~icons/mdi/clock-outline'
 import IconCheckCircleOutline from '~icons/mdi/check-circle-outline'
@@ -176,26 +176,24 @@ import IconPlayCircleOutline from '~icons/mdi/play-circle-outline'
 import IconCheckAll from '~icons/mdi/check-all'
 import IconCloseCircleOutline from '~icons/mdi/close-circle-outline'
 import IconHelpCircleOutline from '~icons/mdi/help-circle-outline'
-import type { TimeSlot, Job, ScheduleWeek } from '~/types'
 import { isTodayInBuenosAires, formatInBuenosAires, toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
 // ==========================================
 
-interface Props {
-  startDate: string // YYYY-MM-DD format
-  technicianId: string
-}
+const props = defineProps({
+  startDate: {
+    type: String,
+    required: true
+  },
+  technicianId: {
+    type: String,
+    required: true
+  }
+})
 
-interface Emits {
-  (e: 'job-click', job: Job): void
-  (e: 'date-click', date: string): void
-  (e: 'new-job'): void
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['job-click', 'date-click', 'new-job'])
 
 // ==========================================
 // COMPOSABLES
@@ -207,7 +205,7 @@ const scheduleStore = useScheduleStore()
 // COMPUTED
 // ==========================================
 
-const scheduleWeek = computed((): ScheduleWeek => {
+const scheduleWeek = computed(() => {
   return scheduleStore.getScheduleWeek(props.startDate, props.technicianId)
 })
 
@@ -254,23 +252,23 @@ const weekSummary = computed(() => {
 // METHODS
 // ==========================================
 
-const isToday = (date: string): boolean => {
+const isToday = (date) => {
   return isTodayInBuenosAires(date)
 }
 
-const handleDateClick = (date: string): void => {
+const handleDateClick = (date) => {
   emit('date-click', date)
 }
 
-const handleJobClick = (job: Job): void => {
+const handleJobClick = (job) => {
   emit('job-click', job)
 }
 
-const handleNewJob = (): void => {
+const handleNewJob = () => {
   emit('new-job')
 }
 
-const getJobStatusClasses = (status: string): string => {
+const getJobStatusClasses = (status) => {
   switch (status) {
     case 'pending':
       return 'border-yellow-200 bg-yellow-50'
@@ -287,7 +285,7 @@ const getJobStatusClasses = (status: string): string => {
   }
 }
 
-const getJobStatusIcon = (status: string) => {
+const getJobStatusIcon = (status) => {
   switch (status) {
     case 'pending':
       return IconClockOutline
@@ -304,7 +302,7 @@ const getJobStatusIcon = (status: string) => {
   }
 }
 
-const getJobStatusIconColor = (status: string): string => {
+const getJobStatusIconColor = (status) => {
   switch (status) {
     case 'pending':
       return 'text-yellow-500'
@@ -321,11 +319,11 @@ const getJobStatusIconColor = (status: string): string => {
   }
 }
 
-const formatJobTime = (date: Date): string => {
+const formatJobTime = (date) => {
   return formatInBuenosAires(date, 'HH:mm')
 }
 
-const formatPrice = (price: number): string => {
+const formatPrice = (price) => {
   return new Intl.NumberFormat('es-AR', {
     style: 'decimal',
     maximumFractionDigits: 0
