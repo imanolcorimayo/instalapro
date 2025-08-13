@@ -10,8 +10,7 @@
       <!-- Instructions -->
       <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div class="flex">
-          <Icon
-            name="mdi:information-outline"
+          <IconInformationOutline
             class="w-5 h-5 text-blue-600 mt-0.5 mr-3"
           />
           <div>
@@ -51,9 +50,8 @@
                 ]"
                 @click="toggleLocalDay(dayKey)"
               >
-                <Icon
+                <IconCheck
                   v-if="localAvailability[dayKey].enabled"
-                  name="mdi:check"
                   class="w-4 h-4"
                 />
               </button>
@@ -237,6 +235,8 @@
 
 <script setup lang="ts">
 import type { DayOfWeek, WeeklyAvailability, DaySchedule } from '~/types'
+import IconInformationOutline from '~icons/mdi/information-outline'
+import IconCheck from '~icons/mdi/check'
 
 // ==========================================
 // COMPOSABLES

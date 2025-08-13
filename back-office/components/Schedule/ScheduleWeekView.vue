@@ -84,8 +84,7 @@
                 v-else-if="slot.status === 'blocked'"
                 class="text-xs text-center"
               >
-                <Icon
-                  name="mdi:block-helper"
+                <IconBlockHelper
                   class="w-3 h-3 mx-auto"
                 />
                 <div class="mt-0.5 truncate">
@@ -98,8 +97,7 @@
                 v-else-if="slot.status === 'break'"
                 class="text-xs text-center"
               >
-                <Icon
-                  name="mdi:coffee-outline"
+                <IconCoffeeOutline
                   class="w-3 h-3 mx-auto"
                 />
                 <div class="mt-0.5 truncate">
@@ -112,8 +110,7 @@
                 v-else
                 class="text-xs text-center opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <Icon
-                  name="mdi:plus-circle-outline"
+                <IconPlusCircleOutline
                   class="w-3 h-3 mx-auto"
                 />
                 <div class="mt-0.5">
@@ -173,8 +170,11 @@
 </template>
 
 <script setup lang="ts">
+import IconBlockHelper from '~icons/mdi/block-helper'
+import IconCoffeeOutline from '~icons/mdi/coffee-outline'
+import IconPlusCircleOutline from '~icons/mdi/plus-circle-outline'
 import type { TimeSlot, Job, ScheduleWeek } from '~/types'
-import { isTodayInBuenosAires } from '~/utils/timezone'
+import { isTodayInBuenosAires, toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -209,11 +209,11 @@ const scheduleWeek = computed((): ScheduleWeek => {
 
 const weekDays = computed(() => {
   return scheduleWeek.value.days.map(day => {
-    const date = new Date(day.date)
+    const date = toBuenosAires(day.date + 'T00:00:00')
     return {
       date: day.date,
-      dayName: new Intl.DateTimeFormat('es-ES', { weekday: 'short' }).format(date),
-      dayNumber: date.getDate(),
+      dayName: date.format('ddd'),
+      dayNumber: date.date(),
       availability: {
         total: day.totalSlots,
         available: day.availableSlots,

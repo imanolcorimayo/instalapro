@@ -175,7 +175,7 @@
 
 <script setup lang="ts">
 import type { Job } from '~/types'
-import { formatInBuenosAires } from '~/utils/timezone'
+import { formatInBuenosAires, toBuenosAires, nowInBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -213,25 +213,23 @@ const weekDayNames = computed(() => [
   'Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'
 ])
 
-const monthStart = computed(() => new Date(props.year, props.month, 1))
-const monthEnd = computed(() => new Date(props.year, props.month + 1, 0))
+const monthStart = computed(() => toBuenosAires(`${props.year}-${(props.month + 1).toString().padStart(2, '0')}-01T00:00:00`))
+const monthEnd = computed(() => toBuenosAires(`${props.year}-${(props.month + 1).toString().padStart(2, '0')}-01T00:00:00`).endOf('month'))
 
 const calendarStart = computed(() => {
-  const start = new Date(monthStart.value)
-  start.setDate(start.getDate() - start.getDay()) // Go to start of week
-  return start
+  const start = monthStart.value
+  return start.startOf('week') // dayjs starts week on Sunday by default
 })
 
 const calendarEnd = computed(() => {
-  const end = new Date(monthEnd.value)
-  end.setDate(end.getDate() + (6 - end.getDay())) // Go to end of week
-  return end
+  const end = monthEnd.value
+  return end.endOf('week')
 })
 
 const calendarDays = computed(() => {
   const days = []
-  const current = new Date(calendarStart.value)
-  const today = formatInBuenosAires(new Date(), 'YYYY-MM-DD')
+  let current = calendarStart.value
+  const today = formatInBuenosAires(nowInBuenosAires(), 'YYYY-MM-DD')
   
   while (current <= calendarEnd.value) {
     const dateString = formatInBuenosAires(current, 'YYYY-MM-DD')
@@ -242,8 +240,8 @@ const calendarDays = computed(() => {
     
     days.push({
       date: dateString,
-      dayNumber: current.getDate(),
-      isCurrentMonth: current.getMonth() === props.month,
+      dayNumber: current.date(),
+      isCurrentMonth: current.month() === props.month,
       isToday: dateString === today,
       isSelected: dateString === props.selectedDate,
       stats: {
@@ -258,7 +256,7 @@ const calendarDays = computed(() => {
         : 0
     })
     
-    current.setDate(current.getDate() + 1)
+    current = current.add(1, 'day')
   }
   
   return days
@@ -324,10 +322,7 @@ const getJobStatusClasses = (status: string): string => {
 }
 
 const formatDate = (dateString: string): string => {
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat('es-ES', { 
-    day: 'numeric', 
-    month: 'short' 
-  }).format(date)
+  const date = toBuenosAires(dateString + 'T00:00:00')
+  return date.format('D MMM')
 }
 </script>

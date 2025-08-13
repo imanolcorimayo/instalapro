@@ -15,8 +15,7 @@
         ]"
       >
         <span>{{ displayValue }}</span>
-        <Icon
-          name="mdi:chevron-down"
+        <IconChevronDown
           class="w-4 h-4 text-gray-400"
         />
       </button>
@@ -119,6 +118,8 @@
 </template>
 
 <script setup lang="ts">
+import IconChevronDown from '~icons/mdi/chevron-down'
+
 interface Props {
   modelValue: string // HH:mm format
   title?: string

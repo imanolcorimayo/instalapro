@@ -12,7 +12,7 @@
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center cursor-default">
             <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-              <Icon name="mdi:calendar-today" class="w-6 h-6 text-white" />
+              <IconCalendarToday class="w-6 h-6 text-white" />
             </div>
             <div class="ml-4">
               <p class="text-sm font-medium text-gray-600 cursor-default">Trabajos Hoy</p>
@@ -25,7 +25,7 @@
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center cursor-default">
             <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-              <Icon name="mdi:account-group" class="w-6 h-6 text-white" />
+              <IconAccountGroup class="w-6 h-6 text-white" />
             </div>
             <div class="ml-4">
               <p class="text-sm font-medium text-gray-600 cursor-default">Clientes</p>
@@ -38,7 +38,7 @@
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center cursor-default">
             <div class="w-12 h-12 bg-yellow-600 rounded-full flex items-center justify-center">
-              <Icon name="mdi:file-document-outline" class="w-6 h-6 text-white" />
+              <IconFileDocumentOutline class="w-6 h-6 text-white" />
             </div>
             <div class="ml-4">
               <p class="text-sm font-medium text-gray-600 cursor-default">Presupuestos</p>
@@ -51,7 +51,7 @@
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center cursor-default">
             <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
-              <Icon name="mdi:cash-multiple" class="w-6 h-6 text-white" />
+              <IconCashMultiple class="w-6 h-6 text-white" />
             </div>
             <div class="ml-4">
               <p class="text-sm font-medium text-gray-600 cursor-default">Este Mes</p>
@@ -65,7 +65,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <button class="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-lg text-center transition-colors">
           <div class="w-12 h-12 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center">
-            <Icon name="mdi:plus-circle" class="w-6 h-6" />
+            <IconPlusCircle class="w-6 h-6" />
           </div>
           <h3 class="font-semibold mb-1">Nuevo Trabajo</h3>
           <p class="text-sm opacity-90">Agendar una nueva cita</p>
@@ -73,7 +73,7 @@
 
         <button class="bg-green-600 hover:bg-green-700 text-white p-6 rounded-lg text-center transition-colors">
           <div class="w-12 h-12 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center">
-            <Icon name="mdi:account-plus" class="w-6 h-6" />
+            <IconAccountPlus class="w-6 h-6" />
           </div>
           <h3 class="font-semibold mb-1">Nuevo Cliente</h3>
           <p class="text-sm opacity-90">Agregar cliente nuevo</p>
@@ -81,7 +81,7 @@
 
         <button class="bg-yellow-600 hover:bg-yellow-700 text-white p-6 rounded-lg text-center transition-colors">
           <div class="w-12 h-12 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center">
-            <Icon name="mdi:file-document-plus" class="w-6 h-6" />
+            <IconFileDocumentPlus class="w-6 h-6" />
           </div>
           <h3 class="font-semibold mb-1">Nuevo Presupuesto</h3>
           <p class="text-sm opacity-90">Crear presupuesto</p>
@@ -89,7 +89,7 @@
 
         <button class="bg-purple-600 hover:bg-purple-700 text-white p-6 rounded-lg text-center transition-colors">
           <div class="w-12 h-12 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center">
-            <Icon name="mdi:whatsapp" class="w-6 h-6" />
+            <IconWhatsapp class="w-6 h-6" />
           </div>
           <h3 class="font-semibold mb-1">WhatsApp</h3>
           <p class="text-sm opacity-90">Enviar mensaje</p>
@@ -104,7 +104,7 @@
             <div class="space-y-4">
               <div class="flex items-center space-x-3 cursor-default">
                 <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span class="text-blue-600 text-sm">📝</span>
+                  <IconFileEdit class="w-4 h-4 text-blue-600" />
                 </div>
                 <div class="flex-1">
                   <p class="text-sm font-medium text-gray-900 cursor-default">Nuevo trabajo programado</p>
@@ -115,7 +115,7 @@
 
               <div class="flex items-center space-x-3 cursor-default">
                 <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <span class="text-green-600 text-sm">💰</span>
+                  <IconCash class="w-4 h-4 text-green-600" />
                 </div>
                 <div class="flex-1">
                   <p class="text-sm font-medium text-gray-900 cursor-default">Pago recibido</p>
@@ -126,7 +126,7 @@
 
               <div class="flex items-center space-x-3 cursor-default">
                 <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <span class="text-yellow-600 text-sm">📋</span>
+                  <IconClipboardText class="w-4 h-4 text-yellow-600" />
                 </div>
                 <div class="flex-1">
                   <p class="text-sm font-medium text-gray-900 cursor-default">Presupuesto enviado</p>
@@ -142,6 +142,23 @@
 </template>
 
 <script setup lang="ts">
+// ==========================================
+// IMPORTS
+// ==========================================
+
+// Icons
+import IconCalendarToday from '~icons/mdi/calendar-today'
+import IconAccountGroup from '~icons/mdi/account-group'
+import IconFileDocumentOutline from '~icons/mdi/file-document-outline'
+import IconCashMultiple from '~icons/mdi/cash-multiple'
+import IconPlusCircle from '~icons/mdi/plus-circle'
+import IconAccountPlus from '~icons/mdi/account-plus'
+import IconFileDocumentPlus from '~icons/mdi/file-document-plus'
+import IconWhatsapp from '~icons/mdi/whatsapp'
+import IconFileEdit from '~icons/mdi/file-edit'
+import IconCash from '~icons/mdi/cash'
+import IconClipboardText from '~icons/mdi/clipboard-text'
+
 // ==========================================
 // PAGE METADATA
 // ==========================================

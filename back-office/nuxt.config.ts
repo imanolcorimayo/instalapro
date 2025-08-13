@@ -24,6 +24,9 @@ export default defineNuxtConfig({
       include: ['@iconify/json']
     }
   },
+  build: {
+    transpile: ['@iconify/vue']
+  },
   css: ['~/assets/css/main.css'],
   app: {
     head: {

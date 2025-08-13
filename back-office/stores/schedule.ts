@@ -115,9 +115,9 @@ export const useScheduleStore = defineStore('schedule', () => {
         const parsedJobs = JSON.parse(storedJobs)
         jobs.value = parsedJobs.map((job: any) => ({
           ...job,
-          scheduledDate: toBuenosAires(job.scheduledDate).toDate(),
-          createdAt: toBuenosAires(job.createdAt).toDate(),
-          updatedAt: toBuenosAires(job.updatedAt).toDate()
+          scheduledDate: toBuenosAires(job.scheduledDate),
+          createdAt: toBuenosAires(job.createdAt),
+          updatedAt: toBuenosAires(job.updatedAt)
         }))
       }
 
@@ -127,8 +127,8 @@ export const useScheduleStore = defineStore('schedule', () => {
         const parsedSlots = JSON.parse(storedSlots)
         timeSlots.value = parsedSlots.map((slot: any) => ({
           ...slot,
-          createdAt: toBuenosAires(slot.createdAt).toDate(),
-          updatedAt: toBuenosAires(slot.updatedAt).toDate()
+          createdAt: toBuenosAires(slot.createdAt),
+          updatedAt: toBuenosAires(slot.updatedAt)
         }))
       }
 
@@ -176,7 +176,7 @@ export const useScheduleStore = defineStore('schedule', () => {
       let currentDate = startDate
 
       while (currentDate.isBefore(endDate)) {
-        const dayOfWeek = getDayOfWeekFromDate(currentDate.toDate())
+        const dayOfWeek = getDayOfWeekFromDate(currentDate)
         const daySchedule = availability[dayOfWeek]
 
         if (daySchedule.enabled) {
@@ -239,8 +239,8 @@ export const useScheduleStore = defineStore('schedule', () => {
           status: isBreakTime ? 'break' : 'available',
           technicianId,
           serviceTypes: [],
-          createdAt: nowInBuenosAires().toDate(),
-          updatedAt: nowInBuenosAires().toDate()
+          createdAt: nowInBuenosAires(),
+          updatedAt: nowInBuenosAires()
         }
         
         slots.push(slot)
@@ -263,13 +263,13 @@ export const useScheduleStore = defineStore('schedule', () => {
     try {
       const now = nowInBuenosAires()
       const newJob: Job = {
-        id: `job_${Date.now()}`,
+        id: `job_${nowInBuenosAires().valueOf()}`,
         ...input,
-        scheduledDate: toBuenosAires(input.scheduledDate).toDate(),
+        scheduledDate: toBuenosAires(input.scheduledDate),
         status: 'pending',
         paid: false,
-        createdAt: now.toDate(),
-        updatedAt: now.toDate()
+        createdAt: now,
+        updatedAt: now
       }
 
       jobs.value.push(newJob)
@@ -299,7 +299,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     jobs.value[jobIndex] = {
       ...oldJob,
       ...updates,
-      updatedAt: nowInBuenosAires().toDate()
+      updatedAt: nowInBuenosAires()
     }
 
     // Update time slot booking if schedule changed
@@ -370,7 +370,7 @@ export const useScheduleStore = defineStore('schedule', () => {
       slot.date === date && slot.technicianId === technicianId
     )
     
-    const dayOfWeek = getDayOfWeekFromDate(new Date(date + 'T00:00:00'))
+    const dayOfWeek = getDayOfWeekFromDate(toBuenosAires(date + 'T00:00:00'))
     
     return {
       date,
@@ -413,9 +413,9 @@ export const useScheduleStore = defineStore('schedule', () => {
   // UTILITY FUNCTIONS
   // ==========================================
 
-  const getDayOfWeekFromDate = (date: Date): DayOfWeek => {
+  const getDayOfWeekFromDate = (date: any): DayOfWeek => {
     const days: DayOfWeek[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-    return days[date.getDay()]
+    return days[toBuenosAires(date).day()]
   }
 
   const parseTimeToMinutes = (timeString: string): number => {

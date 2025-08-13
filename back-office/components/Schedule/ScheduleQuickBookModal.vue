@@ -177,8 +177,7 @@
           class="bg-red-50 border border-red-200 rounded-lg p-4"
         >
           <div class="flex">
-            <Icon
-              name="mdi:alert-circle-outline"
+            <IconAlertCircleOutline
               class="w-5 h-5 text-red-400 mt-0.5 mr-3"
             />
             <div>
@@ -236,8 +235,9 @@
 </template>
 
 <script setup lang="ts">
+import IconAlertCircleOutline from '~icons/mdi/alert-circle-outline'
 import type { Job, JobCreateInput, TimeSlot, TechnicianService } from '~/types'
-import { parseTimeInBuenosAires, formatInBuenosAires } from '~/utils/timezone'
+import { parseTimeInBuenosAires, formatInBuenosAires, nowInBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -294,7 +294,7 @@ const form = ref({
 // ==========================================
 
 const minDate = computed(() => {
-  return formatInBuenosAires(new Date(), 'YYYY-MM-DD')
+  return formatInBuenosAires(nowInBuenosAires(), 'YYYY-MM-DD')
 })
 
 const availableSlots = computed((): TimeSlot[] => {
@@ -328,7 +328,7 @@ const showModal = (date?: string, time?: string): void => {
     form.value.date = date
     selectedDate.value = date
   } else {
-    form.value.date = formatInBuenosAires(new Date(), 'YYYY-MM-DD')
+    form.value.date = formatInBuenosAires(nowInBuenosAires(), 'YYYY-MM-DD')
   }
   
   if (time) {

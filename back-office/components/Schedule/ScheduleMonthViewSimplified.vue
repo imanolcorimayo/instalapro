@@ -78,7 +78,7 @@
           v-if="day.jobs.length === 0 && day.isCurrentMonth"
           class="text-center py-4 text-gray-400"
         >
-          <Icon name="mdi:plus-circle-outline" class="w-6 h-6 mx-auto mb-1" />
+          <IconPlusCircleOutline class="w-6 h-6 mx-auto mb-1" />
           <div class="text-xs">Agregar trabajo</div>
         </div>
       </div>
@@ -119,8 +119,9 @@
 </template>
 
 <script setup lang="ts">
+import IconPlusCircleOutline from '~icons/mdi/plus-circle-outline'
 import type { Job } from '~/types'
-import { formatInBuenosAires, isTodayInBuenosAires } from '~/utils/timezone'
+import { formatInBuenosAires, isTodayInBuenosAires, toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -154,24 +155,22 @@ const weekDayNames = computed(() => [
   'Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'
 ])
 
-const monthStart = computed(() => new Date(props.year, props.month, 1))
-const monthEnd = computed(() => new Date(props.year, props.month + 1, 0))
+const monthStart = computed(() => toBuenosAires(`${props.year}-${(props.month + 1).toString().padStart(2, '0')}-01T00:00:00`))
+const monthEnd = computed(() => toBuenosAires(`${props.year}-${(props.month + 1).toString().padStart(2, '0')}-01T00:00:00`).endOf('month'))
 
 const calendarStart = computed(() => {
-  const start = new Date(monthStart.value)
-  start.setDate(start.getDate() - start.getDay()) // Go to start of week
-  return start
+  const start = monthStart.value
+  return start.startOf('week')
 })
 
 const calendarEnd = computed(() => {
-  const end = new Date(monthEnd.value)
-  end.setDate(end.getDate() + (6 - end.getDay())) // Go to end of week
-  return end
+  const end = monthEnd.value
+  return end.endOf('week')
 })
 
 const calendarDays = computed(() => {
   const days = []
-  const current = new Date(calendarStart.value)
+  let current = calendarStart.value
   
   while (current <= calendarEnd.value) {
     const dateString = formatInBuenosAires(current, 'YYYY-MM-DD')
@@ -181,8 +180,8 @@ const calendarDays = computed(() => {
     
     days.push({
       date: dateString,
-      dayNumber: current.getDate(),
-      isCurrentMonth: current.getMonth() === props.month,
+      dayNumber: current.date(),
+      isCurrentMonth: current.month() === props.month,
       isToday: isTodayInBuenosAires(dateString),
       hasJobs: dayJobs.length > 0,
       jobs: dayJobs.sort((a, b) => 
@@ -192,7 +191,7 @@ const calendarDays = computed(() => {
       )
     })
     
-    current.setDate(current.getDate() + 1)
+    current = current.add(1, 'day')
   }
   
   return days

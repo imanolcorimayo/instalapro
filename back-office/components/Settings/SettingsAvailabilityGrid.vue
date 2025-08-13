@@ -46,8 +46,7 @@
         >
           <!-- Working hours -->
           <div class="flex items-center text-sm text-gray-700">
-            <Icon
-              name="mdi:clock-outline"
+            <IconClockOutline
               class="w-4 h-4 mr-2 text-gray-500"
             />
             <span>
@@ -60,8 +59,7 @@
             v-if="availability[dayKey].breakStart && availability[dayKey].breakEnd"
             class="flex items-center text-sm text-gray-600"
           >
-            <Icon
-              name="mdi:coffee-outline"
+            <IconCoffeeOutline
               class="w-4 h-4 mr-2 text-gray-500"
             />
             <span>
@@ -71,8 +69,7 @@
 
           <!-- Working hours calculation -->
           <div class="flex items-center text-xs text-gray-500">
-            <Icon
-              name="mdi:timer-outline"
+            <IconTimerOutline
               class="w-3 h-3 mr-1"
             />
             <span>
@@ -94,8 +91,7 @@
     <!-- Summary -->
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
       <div class="flex items-start">
-        <Icon
-          name="mdi:information-outline"
+        <IconInformationOutline
           class="w-5 h-5 text-blue-600 mt-0.5 mr-3"
         />
         <div class="flex-1">
@@ -135,6 +131,10 @@
 
 <script setup lang="ts">
 import type { DayOfWeek, WeeklyAvailability, DaySchedule } from '~/types'
+import IconClockOutline from '~icons/mdi/clock-outline'
+import IconCoffeeOutline from '~icons/mdi/coffee-outline'
+import IconTimerOutline from '~icons/mdi/timer-outline'
+import IconInformationOutline from '~icons/mdi/information-outline'
 
 // ==========================================
 // COMPOSABLES

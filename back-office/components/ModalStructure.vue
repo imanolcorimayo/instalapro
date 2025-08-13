@@ -37,8 +37,7 @@
               class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md p-1"
               @click="closeModal"
             >
-              <Icon
-                name="mdi:close"
+              <IconClose
                 class="w-5 h-5"
               />
             </button>
@@ -63,6 +62,8 @@
 </template>
 
 <script setup lang="ts">
+import IconClose from '~icons/mdi/close'
+
 interface Props {
   title?: string
   modalClass?: string

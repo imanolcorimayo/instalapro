@@ -38,8 +38,7 @@
         class="relative mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg"
       >
         <div class="flex items-center">
-          <Icon
-            name="mdi:clock-outline"
+          <IconClockOutline
             class="w-5 h-5 text-blue-600 mr-3"
           />
           <div>
@@ -69,8 +68,8 @@
             <!-- Time and Status -->
             <div class="flex items-center">
               <div class="flex items-center">
-                <Icon
-                  :name="getSlotIcon(slot)"
+                <component
+                  :is="getSlotIcon(slot)"
                   :class="['w-4 h-4 mr-3', getSlotIconColor(slot)]"
                 />
                 <div>
@@ -150,8 +149,7 @@
                 class="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors"
                 @click.stop="handleBookSlot(slot)"
               >
-                <Icon
-                  name="mdi:plus-circle"
+                <IconPlusCircle
                   class="w-4 h-4"
                 />
               </button>
@@ -162,8 +160,7 @@
                 class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                 @click.stop="handleEditJob(slot)"
               >
-                <Icon
-                  name="mdi:pencil"
+                <IconPencil
                   class="w-4 h-4"
                 />
               </button>
@@ -174,8 +171,7 @@
                 class="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
                 @click.stop="handleBlockSlot(slot)"
               >
-                <Icon
-                  name="mdi:block-helper"
+                <IconBlockHelper
                   class="w-4 h-4"
                 />
               </button>
@@ -186,8 +182,7 @@
                 class="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors"
                 @click.stop="handleUnblockSlot(slot)"
               >
-                <Icon
-                  name="mdi:check-circle"
+                <IconCheckCircle
                   class="w-4 h-4"
                 />
               </button>
@@ -202,8 +197,7 @@
       v-else
       class="text-center py-12"
     >
-      <Icon
-        name="mdi:calendar-remove"
+      <IconCalendarRemove
         class="w-16 h-16 text-gray-300 mx-auto mb-4"
       />
       <h3 class="text-lg font-medium text-gray-900 mb-2">
@@ -265,8 +259,17 @@
 </template>
 
 <script setup lang="ts">
+import IconClockOutline from '~icons/mdi/clock-outline'
+import IconPlusCircle from '~icons/mdi/plus-circle'
+import IconPencil from '~icons/mdi/pencil'
+import IconBlockHelper from '~icons/mdi/block-helper'
+import IconCheckCircle from '~icons/mdi/check-circle'
+import IconCalendarRemove from '~icons/mdi/calendar-remove'
+import IconCheckCircleOutline from '~icons/mdi/check-circle-outline'
+import IconCalendarCheck from '~icons/mdi/calendar-check'
+import IconCoffeeOutline from '~icons/mdi/coffee-outline'
 import type { TimeSlot, Job, ScheduleDay } from '~/types'
-import { isTodayInBuenosAires } from '~/utils/timezone'
+import { isTodayInBuenosAires, toBuenosAires, nowInBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -313,17 +316,13 @@ const isToday = computed(() => {
 })
 
 const dayName = computed(() => {
-  const date = new Date(props.date)
-  return new Intl.DateTimeFormat('es-ES', { weekday: 'long' }).format(date)
+  const date = toBuenosAires(props.date + 'T00:00:00')
+  return date.format('dddd')
 })
 
 const formattedDate = computed(() => {
-  const date = new Date(props.date)
-  return new Intl.DateTimeFormat('es-ES', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  }).format(date)
+  const date = toBuenosAires(props.date + 'T00:00:00')
+  return date.format('D [de] MMMM [de] YYYY')
 })
 
 const groupedTimeSlots = computed(() => {
@@ -335,8 +334,8 @@ const groupedTimeSlots = computed(() => {
 const currentTimeSlot = computed(() => {
   if (!isToday.value) return null
   
-  const now = new Date()
-  const currentTimeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+  const now = nowInBuenosAires()
+  const currentTimeString = now.format('HH:mm')
   
   return scheduleDay.value.timeSlots.find(slot => 
     slot.startTime <= currentTimeString && slot.endTime > currentTimeString
@@ -354,11 +353,8 @@ const dayUtilization = computed(() => {
 // ==========================================
 
 const updateCurrentTime = (): void => {
-  const now = new Date()
-  currentTime.value = now.toLocaleTimeString('es-ES', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
-  })
+  const now = nowInBuenosAires()
+  currentTime.value = now.format('HH:mm')
 }
 
 const isCurrentTimeSlot = (slot: TimeSlot): boolean => {
@@ -382,18 +378,18 @@ const getSlotClasses = (slot: TimeSlot): string => {
   }
 }
 
-const getSlotIcon = (slot: TimeSlot): string => {
+const getSlotIcon = (slot: TimeSlot) => {
   switch (slot.status) {
     case 'available':
-      return 'mdi:check-circle-outline'
+      return IconCheckCircleOutline
     case 'booked':
-      return 'mdi:calendar-check'
+      return IconCalendarCheck
     case 'blocked':
-      return 'mdi:block-helper'
+      return IconBlockHelper
     case 'break':
-      return 'mdi:coffee-outline'
+      return IconCoffeeOutline
     default:
-      return 'mdi:clock-outline'
+      return IconClockOutline
   }
 }
 

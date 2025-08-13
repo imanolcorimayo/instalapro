@@ -27,10 +27,7 @@
       class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
     >
       <div class="flex">
-        <Icon
-          name="mdi:alert-circle-outline"
-          class="w-5 h-5 text-red-400 mt-0.5"
-        />
+        <IconAlertCircleOutline class="w-5 h-5 text-red-400 mt-0.5" />
         <div class="ml-3">
           <h3 class="text-sm font-medium text-red-800">
             Error
@@ -123,10 +120,7 @@
               class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center"
               @click="openAvailabilityModal"
             >
-              <Icon
-                name="mdi:pencil"
-                class="w-4 h-4 mr-2"
-              />
+              <IconPencil class="w-4 h-4 mr-2" />
               Editar Horarios
             </button>
           </div>
@@ -152,10 +146,7 @@
               type="button"
               class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors flex items-center"
             >
-              <Icon
-                name="mdi:plus"
-                class="w-4 h-4 mr-2"
-              />
+              <IconPlus class="w-4 h-4 mr-2" />
               Nuevo Servicio
             </button>
           </div>
@@ -179,16 +170,10 @@
                     {{ service.description }}
                   </p>
                   <div class="flex items-center mt-2 text-sm text-gray-500">
-                    <Icon
-                      name="mdi:currency-usd"
-                      class="w-4 h-4 mr-1"
-                    />
+                    <IconCurrencyUsd class="w-4 h-4 mr-1" />
                     ${{ service.basePrice.toLocaleString() }}
                     <span class="mx-2">•</span>
-                    <Icon
-                      name="mdi:clock-outline"
-                      class="w-4 h-4 mr-1"
-                    />
+                    <IconClockOutline class="w-4 h-4 mr-1" />
                     {{ service.estimatedDuration }}min
                   </div>
                 </div>
@@ -196,10 +181,7 @@
                   type="button"
                   class="text-gray-400 hover:text-gray-600 p-1"
                 >
-                  <Icon
-                    name="mdi:dots-vertical"
-                    class="w-4 h-4"
-                  />
+                  <IconDotsVertical class="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -208,10 +190,7 @@
             v-else
             class="text-center py-8"
           >
-            <Icon
-              name="mdi:tools"
-              class="w-12 h-12 text-gray-300 mx-auto mb-4"
-            />
+            <IconTools class="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <h3 class="text-lg font-medium text-gray-900 mb-2">
               No hay servicios configurados
             </h3>
@@ -256,19 +235,13 @@
                 type="button"
                 class="bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
               >
-                <Icon
-                  name="mdi:content-copy"
-                  class="w-4 h-4"
-                />
+                <IconContentCopy class="w-4 h-4" />
               </button>
               <button
                 type="button"
                 class="bg-green-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
               >
-                <Icon
-                  name="mdi:whatsapp"
-                  class="w-4 h-4"
-                />
+                <IconWhatsapp class="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -284,6 +257,17 @@
 </template>
 
 <script setup lang="ts">
+// Icons
+import IconAlertCircleOutline from '~icons/mdi/alert-circle-outline'
+import IconPencil from '~icons/mdi/pencil'
+import IconPlus from '~icons/mdi/plus'
+import IconCurrencyUsd from '~icons/mdi/currency-usd'
+import IconClockOutline from '~icons/mdi/clock-outline'
+import IconDotsVertical from '~icons/mdi/dots-vertical'
+import IconTools from '~icons/mdi/tools'
+import IconContentCopy from '~icons/mdi/content-copy'
+import IconWhatsapp from '~icons/mdi/whatsapp'
+
 // ==========================================
 // PAGE METADATA
 // ==========================================

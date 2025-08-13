@@ -85,8 +85,8 @@
               @click="handleJobClick(job)"
             >
               <div class="flex items-center">
-                <Icon
-                  :name="getJobStatusIcon(job.status)"
+                <component
+                  :is="getJobStatusIcon(job.status)"
                   :class="['w-5 h-5 mr-3', getJobStatusIconColor(job.status)]"
                 />
                 <div>
@@ -113,7 +113,7 @@
         v-if="weekSummary.totalJobs === 0"
         class="text-center py-8"
       >
-        <Icon name="mdi:calendar-outline" class="w-12 h-12 text-gray-300 mx-auto mb-3" />
+        <IconCalendarOutline class="w-12 h-12 text-gray-300 mx-auto mb-3" />
         <p class="text-gray-500 mb-4">No hay trabajos programados para esta semana</p>
         <button
           type="button"
@@ -169,8 +169,15 @@
 </template>
 
 <script setup lang="ts">
+import IconCalendarOutline from '~icons/mdi/calendar-outline'
+import IconClockOutline from '~icons/mdi/clock-outline'
+import IconCheckCircleOutline from '~icons/mdi/check-circle-outline'
+import IconPlayCircleOutline from '~icons/mdi/play-circle-outline'
+import IconCheckAll from '~icons/mdi/check-all'
+import IconCloseCircleOutline from '~icons/mdi/close-circle-outline'
+import IconHelpCircleOutline from '~icons/mdi/help-circle-outline'
 import type { TimeSlot, Job, ScheduleWeek } from '~/types'
-import { isTodayInBuenosAires, formatInBuenosAires } from '~/utils/timezone'
+import { isTodayInBuenosAires, formatInBuenosAires, toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -206,7 +213,7 @@ const scheduleWeek = computed((): ScheduleWeek => {
 
 const weekDays = computed(() => {
   return scheduleWeek.value.days.map(day => {
-    const date = new Date(day.date)
+    const date = toBuenosAires(day.date + 'T00:00:00')
     const dayJobs = scheduleStore.jobs.filter(job => 
       formatInBuenosAires(job.scheduledDate, 'YYYY-MM-DD') === day.date
     ).sort((a, b) => 
@@ -217,8 +224,8 @@ const weekDays = computed(() => {
 
     return {
       date: day.date,
-      dayName: new Intl.DateTimeFormat('es-ES', { weekday: 'short' }).format(date),
-      dayNumber: date.getDate(),
+      dayName: date.format('ddd'),
+      dayNumber: date.date(),
       stats: {
         total: day.totalSlots,
         available: day.availableSlots,
@@ -280,20 +287,20 @@ const getJobStatusClasses = (status: string): string => {
   }
 }
 
-const getJobStatusIcon = (status: string): string => {
+const getJobStatusIcon = (status: string) => {
   switch (status) {
     case 'pending':
-      return 'mdi:clock-outline'
+      return IconClockOutline
     case 'confirmed':
-      return 'mdi:check-circle-outline'
+      return IconCheckCircleOutline
     case 'in_progress':
-      return 'mdi:play-circle-outline'
+      return IconPlayCircleOutline
     case 'completed':
-      return 'mdi:check-all'
+      return IconCheckAll
     case 'cancelled':
-      return 'mdi:close-circle-outline'
+      return IconCloseCircleOutline
     default:
-      return 'mdi:help-circle-outline'
+      return IconHelpCircleOutline
   }
 }
 

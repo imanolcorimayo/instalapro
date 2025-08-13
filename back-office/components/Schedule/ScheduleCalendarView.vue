@@ -28,7 +28,7 @@
             class="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
             @click="navigateDate(-1)"
           >
-            <Icon name="mdi:chevron-left" class="w-5 h-5" />
+            <IconChevronLeft class="w-5 h-5" />
           </button>
           
           <div class="text-center min-w-[200px]">
@@ -42,7 +42,7 @@
             class="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
             @click="navigateDate(1)"
           >
-            <Icon name="mdi:chevron-right" class="w-5 h-5" />
+            <IconChevronRight class="w-5 h-5" />
           </button>
         </div>
 
@@ -60,7 +60,7 @@
             class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
             @click="openNewJobModal"
           >
-            <Icon name="mdi:plus" class="w-4 h-4 mr-2" />
+            <IconPlus class="w-4 h-4 mr-2" />
             Nuevo Trabajo
           </button>
         </div>
@@ -85,7 +85,7 @@
         v-else-if="scheduleStore.error"
         class="bg-red-50 border border-red-200 rounded-lg p-6 text-center"
       >
-        <Icon name="mdi:alert-circle-outline" class="w-8 h-8 text-red-400 mx-auto mb-3" />
+        <IconAlertCircleOutline class="w-8 h-8 text-red-400 mx-auto mb-3" />
         <h3 class="text-sm font-medium text-red-800 mb-2">Error en la Agenda</h3>
         <p class="text-sm text-red-700">{{ scheduleStore.error }}</p>
         <button
@@ -156,8 +156,12 @@
 </template>
 
 <script setup lang="ts">
+import IconChevronLeft from '~icons/mdi/chevron-left'
+import IconChevronRight from '~icons/mdi/chevron-right'
+import IconPlus from '~icons/mdi/plus'
+import IconAlertCircleOutline from '~icons/mdi/alert-circle-outline'
 import type { ScheduleView, Job, TimeSlot } from '~/types'
-import { formatInBuenosAires, startOfWeekInBuenosAires } from '~/utils/timezone'
+import { formatInBuenosAires, startOfWeekInBuenosAires, nowInBuenosAires, toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -177,7 +181,7 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   initialView: 'week',
-  initialDate: () => formatInBuenosAires(new Date(), 'YYYY-MM-DD')
+  initialDate: () => formatInBuenosAires(nowInBuenosAires(), 'YYYY-MM-DD')
 })
 
 const emit = defineEmits<Emits>()
@@ -206,19 +210,14 @@ const viewOptions = computed(() => [
   { label: 'Mes', value: 'month' as ScheduleView }
 ])
 
-const currentYear = computed(() => new Date(currentDate.value).getFullYear())
-const currentMonth = computed(() => new Date(currentDate.value).getMonth())
+const currentYear = computed(() => toBuenosAires(currentDate.value + 'T00:00:00').year())
+const currentMonth = computed(() => toBuenosAires(currentDate.value + 'T00:00:00').month())
 
 const currentDateLabel = computed(() => {
-  const date = new Date(currentDate.value)
+  const date = toBuenosAires(currentDate.value + 'T00:00:00')
   
   if (currentView.value === 'day') {
-    return new Intl.DateTimeFormat('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }).format(date)
+    return date.format('dddd, D [de] MMMM [de] YYYY')
   }
   
   if (currentView.value === 'week') {
@@ -228,20 +227,17 @@ const currentDateLabel = computed(() => {
     return `${weekStart.format('D MMM')} - ${weekEnd.format('D MMM YYYY')}`
   }
   
-  return new Intl.DateTimeFormat('es-ES', {
-    year: 'numeric',
-    month: 'long'
-  }).format(date)
+  return date.format('MMMM [de] YYYY')
 })
 
 const weekStartDate = computed(() => {
-  const date = new Date(currentDate.value)
+  const date = toBuenosAires(currentDate.value + 'T00:00:00')
   const weekStart = startOfWeekInBuenosAires(date)
   return formatInBuenosAires(weekStart, 'YYYY-MM-DD')
 })
 
 const todaysStats = computed(() => {
-  const today = formatInBuenosAires(new Date(), 'YYYY-MM-DD')
+  const today = formatInBuenosAires(nowInBuenosAires(), 'YYYY-MM-DD')
   const scheduleDay = scheduleStore.getScheduleDay(today, props.technicianId)
   
   return {
@@ -263,25 +259,28 @@ const changeView = (view: ScheduleView): void => {
 }
 
 const navigateDate = (direction: number): void => {
-  const date = new Date(currentDate.value)
+  const date = toBuenosAires(currentDate.value + 'T00:00:00')
   
+  let newDate
   switch (currentView.value) {
     case 'day':
-      date.setDate(date.getDate() + direction)
+      newDate = date.add(direction, 'day')
       break
     case 'week':
-      date.setDate(date.getDate() + (direction * 7))
+      newDate = date.add(direction * 7, 'day')
       break
     case 'month':
-      date.setMonth(date.getMonth() + direction)
+      newDate = date.add(direction, 'month')
       break
+    default:
+      newDate = date
   }
   
-  currentDate.value = formatInBuenosAires(date, 'YYYY-MM-DD')
+  currentDate.value = formatInBuenosAires(newDate, 'YYYY-MM-DD')
 }
 
 const goToToday = (): void => {
-  currentDate.value = formatInBuenosAires(new Date(), 'YYYY-MM-DD')
+  currentDate.value = formatInBuenosAires(nowInBuenosAires(), 'YYYY-MM-DD')
 }
 
 const openNewJobModal = (): void => {

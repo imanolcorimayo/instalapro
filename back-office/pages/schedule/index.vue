@@ -16,10 +16,7 @@
       class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6"
     >
       <div class="flex">
-        <Icon
-          name="mdi:alert-outline"
-          class="w-6 h-6 text-yellow-600 mt-0.5 mr-3"
-        />
+        <IconAlertOutline class="w-6 h-6 text-yellow-600 mt-0.5 mr-3" />
         <div>
           <h3 class="text-lg font-medium text-yellow-800 mb-2">
             Configuración Requerida
@@ -44,10 +41,7 @@
       class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6"
     >
       <div class="flex">
-        <Icon
-          name="mdi:calendar-clock"
-          class="w-6 h-6 text-blue-600 mt-0.5 mr-3"
-        />
+        <IconCalendarClock class="w-6 h-6 text-blue-600 mt-0.5 mr-3" />
         <div>
           <h3 class="text-lg font-medium text-blue-800 mb-2">
             Configura tu Disponibilidad
@@ -103,6 +97,10 @@
 <script setup lang="ts">
 import type { Job, TimeSlot } from '~/types'
 import { formatInBuenosAires, startOfWeekInBuenosAires } from '~/utils/timezone'
+
+// Icons
+import IconAlertOutline from '~icons/mdi/alert-outline'
+import IconCalendarClock from '~icons/mdi/calendar-clock'
 
 // ==========================================
 // PAGE METADATA

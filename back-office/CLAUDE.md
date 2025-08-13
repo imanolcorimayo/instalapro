@@ -69,6 +69,7 @@ InstalarPro is an MVP back-office application for **self-employed** Air Conditio
 - **Design**: Tailwind CSS, icons via `~icons/pack-name/icon-name`, toast notifications
 - **Utils**: Common functions in `@/utils/index.ts`, dates with $dayjs
 - **Language**: All code and comments in English, UI text in Spanish
+- **Date Handling**: NEVER use Date objects, always use dayjs for all date operations
 
 #### Store Architecture & Database Strategy
 

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { nowInBuenosAires, toBuenosAires } from '~/utils/timezone'
 import type { 
   Technician, 
   TechnicianCreateInput, 
@@ -128,8 +129,8 @@ export const useTechnicianStore = defineStore('technician', () => {
       // Convert ISO strings back to Date objects
       return {
         ...parsed,
-        createdAt: new Date(parsed.createdAt),
-        updatedAt: new Date(parsed.updatedAt)
+        createdAt: toBuenosAires(parsed.createdAt),
+        updatedAt: toBuenosAires(parsed.updatedAt)
       }
     } catch (err) {
       console.error('Error loading technician from localStorage:', err)
@@ -146,7 +147,7 @@ export const useTechnicianStore = defineStore('technician', () => {
     error.value = null
 
     try {
-      const now = new Date()
+      const now = nowInBuenosAires()
       const technicianId = `tech_${Date.now()}`
       
       const newTechnician: Technician = {
@@ -188,7 +189,7 @@ export const useTechnicianStore = defineStore('technician', () => {
       technician.value = {
         ...technician.value,
         ...updates,
-        updatedAt: new Date()
+        updatedAt: nowInBuenosAires()
       }
 
       saveToLocalStorage()
@@ -232,7 +233,7 @@ export const useTechnicianStore = defineStore('technician', () => {
       technician.value = {
         ...technician.value,
         availability,
-        updatedAt: new Date()
+        updatedAt: nowInBuenosAires()
       }
 
       saveToLocalStorage()
@@ -260,7 +261,7 @@ export const useTechnicianStore = defineStore('technician', () => {
           ...technician.value.availability,
           [day]: schedule
         },
-        updatedAt: new Date()
+        updatedAt: nowInBuenosAires()
       }
 
       saveToLocalStorage()
@@ -307,7 +308,7 @@ export const useTechnicianStore = defineStore('technician', () => {
       technician.value = {
         ...technician.value,
         services: [...technician.value.services, newService],
-        updatedAt: new Date()
+        updatedAt: nowInBuenosAires()
       }
 
       saveToLocalStorage()
@@ -336,7 +337,7 @@ export const useTechnicianStore = defineStore('technician', () => {
             ? { ...service, ...updates }
             : service
         ),
-        updatedAt: new Date()
+        updatedAt: nowInBuenosAires()
       }
 
       saveToLocalStorage()
@@ -361,7 +362,7 @@ export const useTechnicianStore = defineStore('technician', () => {
       technician.value = {
         ...technician.value,
         services: technician.value.services.filter(service => service.id !== serviceId),
-        updatedAt: new Date()
+        updatedAt: nowInBuenosAires()
       }
 
       saveToLocalStorage()

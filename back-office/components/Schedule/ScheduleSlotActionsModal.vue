@@ -55,8 +55,7 @@
             class="flex flex-col items-center p-4 border-2 border-green-200 rounded-lg hover:bg-green-50 transition-colors"
             @click="handleBookSlot"
           >
-            <Icon
-              name="mdi:calendar-plus"
+            <IconCalendarPlus
               class="w-8 h-8 text-green-600 mb-2"
             />
             <span class="text-sm font-medium text-green-700">
@@ -69,8 +68,7 @@
             class="flex flex-col items-center p-4 border-2 border-red-200 rounded-lg hover:bg-red-50 transition-colors"
             @click="showBlockForm"
           >
-            <Icon
-              name="mdi:block-helper"
+            <IconBlockHelper
               class="w-8 h-8 text-red-600 mb-2"
             />
             <span class="text-sm font-medium text-red-700">
@@ -121,8 +119,7 @@
             class="flex flex-col items-center p-3 border-2 border-yellow-200 rounded-lg hover:bg-yellow-50 transition-colors"
             @click="handleRescheduleJob"
           >
-            <Icon
-              name="mdi:calendar-edit"
+            <IconCalendarEdit
               class="w-6 h-6 text-yellow-600 mb-1"
             />
             <span class="text-xs font-medium text-yellow-700">
@@ -135,8 +132,7 @@
             class="flex flex-col items-center p-3 border-2 border-red-200 rounded-lg hover:bg-red-50 transition-colors"
             @click="handleCancelJob"
           >
-            <Icon
-              name="mdi:calendar-remove"
+            <IconCalendarRemove
               class="w-6 h-6 text-red-600 mb-1"
             />
             <span class="text-xs font-medium text-red-700">
@@ -167,8 +163,7 @@
           class="w-full flex items-center justify-center p-3 border-2 border-green-200 rounded-lg hover:bg-green-50 transition-colors"
           @click="handleUnblockSlot"
         >
-          <Icon
-            name="mdi:check-circle"
+          <IconCheckCircle
             class="w-5 h-5 text-green-600 mr-2"
           />
           <span class="text-sm font-medium text-green-700">
@@ -183,8 +178,7 @@
         class="space-y-4"
       >
         <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
-          <Icon
-            name="mdi:coffee-outline"
+          <IconCoffeeOutline
             class="w-12 h-12 text-gray-500 mx-auto mb-2"
           />
           <h4 class="text-sm font-medium text-gray-900 mb-1">
@@ -298,7 +292,14 @@
 </template>
 
 <script setup lang="ts">
+import IconCalendarPlus from '~icons/mdi/calendar-plus'
+import IconBlockHelper from '~icons/mdi/block-helper'
+import IconCalendarEdit from '~icons/mdi/calendar-edit'
+import IconCalendarRemove from '~icons/mdi/calendar-remove'
+import IconCheckCircle from '~icons/mdi/check-circle'
+import IconCoffeeOutline from '~icons/mdi/coffee-outline'
 import type { TimeSlot, Job } from '~/types'
+import { toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // EMITS
@@ -469,13 +470,8 @@ const formatSlotTime = (slot: TimeSlot): string => {
 }
 
 const formatSlotDate = (dateString: string): string => {
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat('es-ES', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }).format(date)
+  const date = toBuenosAires(dateString + 'T00:00:00')
+  return date.format('dddd, D [de] MMMM [de] YYYY')
 }
 
 const getSlotStatusClasses = (status: string): string => {

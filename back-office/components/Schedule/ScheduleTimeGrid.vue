@@ -98,8 +98,7 @@
                 v-else-if="slot.status === 'blocked'"
                 class="text-xs text-center text-white"
               >
-                <Icon
-                  name="mdi:block-helper"
+                <IconBlockHelper
                   class="w-4 h-4 mx-auto mb-1"
                 />
                 <div class="text-[10px] truncate">
@@ -112,8 +111,7 @@
                 v-else-if="slot.status === 'break'"
                 class="text-xs text-center text-gray-600"
               >
-                <Icon
-                  name="mdi:coffee-outline"
+                <IconCoffeeOutline
                   class="w-4 h-4 mx-auto mb-1"
                 />
                 <div class="text-[10px] truncate">
@@ -126,8 +124,7 @@
                 v-else
                 class="text-xs text-center text-green-700 group-hover:text-green-800"
               >
-                <Icon
-                  name="mdi:plus-circle-outline"
+                <IconPlusCircleOutline
                   class="w-4 h-4 mx-auto mb-1 opacity-0 group-hover:opacity-100 transition-opacity"
                 />
                 <div class="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
@@ -145,8 +142,7 @@
                   class="p-1 bg-white rounded shadow text-green-600 hover:text-green-700"
                   @click.stop="handleBookSlot(slot)"
                 >
-                  <Icon
-                    name="mdi:plus"
+                  <IconPlus
                     class="w-3 h-3"
                   />
                 </button>
@@ -157,8 +153,7 @@
                   class="p-1 bg-white rounded shadow text-blue-600 hover:text-blue-700"
                   @click.stop="handleEditJob(slot)"
                 >
-                  <Icon
-                    name="mdi:pencil"
+                  <IconPencil
                     class="w-3 h-3"
                   />
                 </button>
@@ -169,8 +164,7 @@
                   class="p-1 bg-white rounded shadow text-red-600 hover:text-red-700"
                   @click.stop="handleBlockSlot(slot)"
                 >
-                  <Icon
-                    name="mdi:block-helper"
+                  <IconBlockHelper
                     class="w-3 h-3"
                   />
                 </button>
@@ -181,8 +175,7 @@
                   class="p-1 bg-white rounded shadow text-green-600 hover:text-green-700"
                   @click.stop="handleUnblockSlot(slot)"
                 >
-                  <Icon
-                    name="mdi:check"
+                  <IconCheck
                     class="w-3 h-3"
                   />
                 </button>
@@ -252,7 +245,14 @@
 </template>
 
 <script setup lang="ts">
+import IconBlockHelper from '~icons/mdi/block-helper'
+import IconCoffeeOutline from '~icons/mdi/coffee-outline'
+import IconPlusCircleOutline from '~icons/mdi/plus-circle-outline'
+import IconPlus from '~icons/mdi/plus'
+import IconPencil from '~icons/mdi/pencil'
+import IconCheck from '~icons/mdi/check'
 import type { TimeSlot, Job } from '~/types'
+import { formatInBuenosAires, nowInBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -333,7 +333,7 @@ const hours = computed(() => {
 })
 
 const isToday = computed(() => {
-  const today = new Date().toISOString().split('T')[0]
+  const today = formatInBuenosAires(nowInBuenosAires(), 'YYYY-MM-DD')
   return props.date === today
 })
 
@@ -342,14 +342,11 @@ const isToday = computed(() => {
 // ==========================================
 
 const updateCurrentTime = (): void => {
-  const now = new Date()
-  currentTime.value = now.toLocaleTimeString('es-ES', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
-  })
+  const now = nowInBuenosAires()
+  currentTime.value = now.format('HH:mm')
   
   if (isToday.value && hours.value.length > 0) {
-    const currentMinutes = now.getHours() * 60 + now.getMinutes()
+    const currentMinutes = now.hour() * 60 + now.minute()
     const startHour = Math.min(...hours.value)
     const startMinutes = startHour * 60
     

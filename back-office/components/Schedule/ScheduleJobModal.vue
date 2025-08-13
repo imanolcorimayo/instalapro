@@ -13,8 +13,8 @@
       <!-- Job Status Header -->
       <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
         <div class="flex items-center">
-          <Icon
-            :name="getJobStatusIcon(currentJob.status)"
+          <component
+            :is="getJobStatusIcon(currentJob.status)"
             :class="['w-6 h-6 mr-3', getJobStatusIconColor(currentJob.status)]"
           />
           <div>
@@ -103,8 +103,7 @@
                 class="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
                 @click="openWhatsApp(currentJob.clientPhone)"
               >
-                <Icon
-                  name="mdi:whatsapp"
+                <IconWhatsapp
                   class="w-5 h-5"
                 />
               </button>
@@ -361,8 +360,7 @@
       modal-class="max-w-md"
     >
       <div class="text-center py-4">
-        <Icon
-          name="mdi:alert-circle-outline"
+        <IconAlertCircleOutline
           class="w-12 h-12 text-red-500 mx-auto mb-4"
         />
         <h3 class="text-lg font-semibold text-gray-900 mb-2">
@@ -398,7 +396,16 @@
 </template>
 
 <script setup lang="ts">
+import IconWhatsapp from '~icons/mdi/whatsapp'
+import IconAlertCircleOutline from '~icons/mdi/alert-circle-outline'
+import IconClockOutline from '~icons/mdi/clock-outline'
+import IconCalendarCheck from '~icons/mdi/calendar-check'
+import IconProgressClock from '~icons/mdi/progress-clock'
+import IconCheckCircle from '~icons/mdi/check-circle'
+import IconCancel from '~icons/mdi/cancel'
+import IconHelpCircle from '~icons/mdi/help-circle'
 import type { Job, JobUpdateInput } from '~/types'
+import { toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // EMITS
@@ -515,7 +522,7 @@ const handleSave = async (): Promise<void> => {
     
     // Handle datetime change
     if (editForm.value.scheduledDateTime) {
-      updates.scheduledDate = new Date(editForm.value.scheduledDateTime)
+      updates.scheduledDate = toBuenosAires(editForm.value.scheduledDateTime)
     }
     
     await scheduleStore.updateJob(currentJob.value.id, updates)
@@ -605,15 +612,15 @@ const formatDateTimeForInput = (date: Date): string => {
   return date.toISOString().slice(0, 16)
 }
 
-const getJobStatusIcon = (status: string): string => {
+const getJobStatusIcon = (status: string) => {
   const icons = {
-    pending: 'mdi:clock-outline',
-    confirmed: 'mdi:calendar-check',
-    in_progress: 'mdi:progress-clock',
-    completed: 'mdi:check-circle',
-    cancelled: 'mdi:cancel'
+    pending: IconClockOutline,
+    confirmed: IconCalendarCheck,
+    in_progress: IconProgressClock,
+    completed: IconCheckCircle,
+    cancelled: IconCancel
   }
-  return icons[status as keyof typeof icons] || 'mdi:help-circle'
+  return icons[status as keyof typeof icons] || IconHelpCircle
 }
 
 const getJobStatusIconColor = (status: string): string => {

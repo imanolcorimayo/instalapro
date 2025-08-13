@@ -32,7 +32,7 @@
         class="mb-4 p-3 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg"
       >
         <div class="flex items-center">
-          <Icon name="mdi:clock-outline" class="w-5 h-5 text-blue-600 mr-3" />
+          <IconClockOutline class="w-5 h-5 text-blue-600 mr-3" />
           <div>
             <p class="text-sm font-medium text-blue-900">
               Ahora: {{ currentTime }}
@@ -59,8 +59,8 @@
           <div class="flex items-center justify-between">
             <!-- Time and Status -->
             <div class="flex items-center">
-              <Icon
-                :name="getSlotIcon(slot)"
+              <component
+                :is="getSlotIcon(slot)"
                 :class="['w-5 h-5 mr-3', getSlotIconColor(slot)]"
               />
               <div>
@@ -90,12 +90,12 @@
 
               <!-- Available Slot -->
               <div v-else-if="slot.status === 'available'" class="text-green-600">
-                <Icon name="mdi:plus-circle" class="w-6 h-6" />
+                <IconPlusCircle class="w-6 h-6" />
               </div>
 
               <!-- Break/Blocked -->
               <div v-else class="text-gray-500">
-                <Icon :name="getSlotIcon(slot)" class="w-6 h-6" />
+                <component :is="getSlotIcon(slot)" class="w-6 h-6" />
               </div>
             </div>
           </div>
@@ -133,7 +133,7 @@
 
     <!-- No Availability -->
     <div v-else class="text-center py-16">
-      <Icon name="mdi:calendar-remove" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
+      <IconCalendarRemove class="w-16 h-16 text-gray-300 mx-auto mb-4" />
       <h3 class="text-lg font-medium text-gray-900 mb-2">
         No hay disponibilidad
       </h3>
@@ -152,8 +152,15 @@
 </template>
 
 <script setup lang="ts">
+import IconClockOutline from '~icons/mdi/clock-outline'
+import IconPlusCircle from '~icons/mdi/plus-circle'
+import IconCalendarRemove from '~icons/mdi/calendar-remove'
+import IconCheckCircleOutline from '~icons/mdi/check-circle-outline'
+import IconCalendarCheck from '~icons/mdi/calendar-check'
+import IconBlockHelper from '~icons/mdi/block-helper'
+import IconCoffeeOutline from '~icons/mdi/coffee-outline'
 import type { TimeSlot, Job, ScheduleDay } from '~/types'
-import { isTodayInBuenosAires, formatInBuenosAires, nowInBuenosAires } from '~/utils/timezone'
+import { isTodayInBuenosAires, formatInBuenosAires, nowInBuenosAires, toBuenosAires } from '~/utils/timezone'
 
 // ==========================================
 // PROPS & EMITS
@@ -200,17 +207,13 @@ const isToday = computed(() => {
 })
 
 const dayName = computed(() => {
-  const date = new Date(props.date)
-  return new Intl.DateTimeFormat('es-ES', { weekday: 'long' }).format(date)
+  const date = toBuenosAires(props.date + 'T00:00:00')
+  return date.format('dddd')
 })
 
 const formattedDate = computed(() => {
-  const date = new Date(props.date)
-  return new Intl.DateTimeFormat('es-ES', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  }).format(date)
+  const date = toBuenosAires(props.date + 'T00:00:00')
+  return date.format('D [de] MMMM [de] YYYY')
 })
 
 const sortedTimeSlots = computed(() => {
@@ -294,18 +297,18 @@ const getSlotClasses = (slot: TimeSlot): string => {
   }
 }
 
-const getSlotIcon = (slot: TimeSlot): string => {
+const getSlotIcon = (slot: TimeSlot) => {
   switch (slot.status) {
     case 'available':
-      return 'mdi:check-circle-outline'
+      return IconCheckCircleOutline
     case 'booked':
-      return 'mdi:calendar-check'
+      return IconCalendarCheck
     case 'blocked':
-      return 'mdi:block-helper'
+      return IconBlockHelper
     case 'break':
-      return 'mdi:coffee-outline'
+      return IconCoffeeOutline
     default:
-      return 'mdi:clock-outline'
+      return IconClockOutline
   }
 }
 
