@@ -184,11 +184,11 @@ import { formatInBuenosAires, toBuenosAires, nowInBuenosAires } from '~/utils/ti
 const props = defineProps({
   year: {
     type: Number,
-    default: new Date().getFullYear()
+    default: nowInBuenosAires().year()
   },
   month: {
     type: Number,
-    default: new Date().getMonth()
+    default: nowInBuenosAires().month()
   },
   technicianId: {
     type: String,

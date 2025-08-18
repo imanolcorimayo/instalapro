@@ -30,7 +30,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 // SEO Meta for booking index
 useSeoMeta({
   title: 'Reservar Cita - InstalarPro',

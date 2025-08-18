@@ -101,7 +101,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 // SEO Meta
 useSeoMeta({
   title: 'InstalarPro - Software de Gestión para Técnicos de Aire Acondicionado',
