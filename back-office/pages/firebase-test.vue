@@ -6,10 +6,13 @@
       <!-- Connection Status -->
       <div class="mb-6">
         <div class="flex items-center gap-3">
-          <Icon 
-            :name="isConfigured ? 'mdi:check-circle' : 'mdi:alert-circle'" 
-            :class="isConfigured ? 'text-green-500' : 'text-red-500'" 
-            class="w-6 h-6"
+          <IconCheckCircle 
+            v-if="isConfigured"
+            class="w-6 h-6 text-green-500"
+          />
+          <IconAlertCircle 
+            v-else
+            class="w-6 h-6 text-red-500"
           />
           <span :class="isConfigured ? 'text-green-700' : 'text-red-700'" class="font-medium">
             Firebase {{ isConfigured ? 'Configured' : 'Not Configured' }}
@@ -88,14 +91,12 @@
               :disabled="loading"
               class="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center gap-2"
             >
-              <Icon 
+              <IconLoading 
                 v-if="loading" 
-                name="mdi:loading" 
                 class="w-4 h-4 animate-spin" 
               />
-              <Icon 
+              <IconPlus 
                 v-else 
-                name="mdi:plus" 
                 class="w-4 h-4" 
               />
               {{ loading ? 'Creando...' : 'Crear Técnico de Prueba' }}
@@ -112,7 +113,7 @@
               :disabled="loading"
               class="bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 text-white text-sm py-1 px-3 rounded transition-colors flex items-center gap-1"
             >
-              <Icon name="mdi:refresh" class="w-4 h-4" />
+              <IconRefresh class="w-4 h-4" />
               Actualizar
             </button>
           </div>
@@ -141,7 +142,7 @@
                   @click="deleteTechnician(technician.id)"
                   class="text-red-500 hover:text-red-700 transition-colors"
                 >
-                  <Icon name="mdi:delete" class="w-5 h-5" />
+                  <IconDelete class="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -151,7 +152,7 @@
         <!-- Error Display -->
         <div v-if="error" class="bg-red-50 border border-red-200 rounded-md p-4">
           <div class="flex items-center gap-2">
-            <Icon name="mdi:alert-circle" class="text-red-500 w-5 h-5" />
+            <IconAlertCircle class="text-red-500 w-5 h-5" />
             <p class="text-red-700 font-medium">Error:</p>
           </div>
           <p class="text-red-600 mt-1">{{ error }}</p>
@@ -161,28 +162,23 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { isFirebaseConfigured } from '~/utils/firebase'
+import IconCheckCircle from '~icons/mdi/check-circle'
+import IconAlertCircle from '~icons/mdi/alert-circle'
+import IconLoading from '~icons/mdi/loading'
+import IconPlus from '~icons/mdi/plus'
+import IconRefresh from '~icons/mdi/refresh'
+import IconDelete from '~icons/mdi/delete'
 
 // Page meta
 definePageMeta({
   layout: 'default'
 })
 
-// Test technician interface
-interface TestTechnician {
-  id: string
-  name: string
-  phone: string
-  email: string
-  serviceArea: string[]
-  createdAt?: Date
-  updatedAt?: Date
-}
-
 // Component state
 const isConfigured = isFirebaseConfigured()
-const { data: technicians, loading, error, add, list, remove } = useFirestore<TestTechnician>('technicians')
+const { data: technicians, loading, error, add, list, remove } = useFirestore('technicians')
 
 // Form data
 const testTechnician = ref({
@@ -236,7 +232,7 @@ const loadTechnicians = async () => {
 }
 
 // Delete technician
-const deleteTechnician = async (id: string) => {
+const deleteTechnician = async (id) => {
   try {
     await remove(id)
     await loadTechnicians()
