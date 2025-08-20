@@ -125,6 +125,11 @@
         <slot />
       </main>
     </div>
+
+    <!-- Toast Container -->
+    <Teleport to="body">
+      <div id="toast-container" />
+    </Teleport>
   </div>
 </template>
 

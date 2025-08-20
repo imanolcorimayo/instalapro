@@ -5,8 +5,10 @@
       "Bash(yarn dev)",
       "Bash(curl:*)",
       "Bash(mv:*)",
-      "Bash(yarn build)"
+      "Bash(yarn build)",
+      "Bash(yarn add:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }
