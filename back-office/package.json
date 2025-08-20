@@ -13,6 +13,7 @@
     "@nuxtjs/tailwindcss": "^6.12.3",
     "@pinia/nuxt": "^0.11.2",
     "@vueuse/nuxt": "13.2.0",
+    "dayjs-nuxt": "^2.1.11",
     "firebase": "^12.1.0",
     "nuxt": "^4.0.1",
     "pinia": "^3.0.3",
@@ -24,7 +25,6 @@
   },
   "devDependencies": {
     "@iconify/json": "^2.2.339",
-    "@iconify/utils": "^2.3.0",
-    "dayjs-nuxt": "^2.1.11"
+    "@iconify/utils": "^2.3.0"
   }
 }

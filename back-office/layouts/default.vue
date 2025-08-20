@@ -145,7 +145,6 @@ import IconViewDashboardOutline from '~icons/mdi/view-dashboard-outline'
 import IconCalendarOutline from '~icons/mdi/calendar-outline'
 import IconAccountGroupOutline from '~icons/mdi/account-group-outline'
 import IconFileDocumentOutline from '~icons/mdi/file-document-outline'
-import IconCashMultiple from '~icons/mdi/cash-multiple'
 
 // ==========================================
 // COMPOSABLES
@@ -175,7 +174,6 @@ const pageTitle = computed(() => {
     '/schedule': 'Agenda',
     '/clients': 'Clientes',
     '/quotes': 'Presupuestos',
-    '/cash-flow': 'Facturación',
     '/settings': 'Configuración'
   }
   
@@ -187,8 +185,7 @@ const iconComponents = {
   'mdi:cog-outline': IconCogOutline,
   'mdi:calendar-outline': IconCalendarOutline,
   'mdi:account-group-outline': IconAccountGroupOutline,
-  'mdi:file-document-outline': IconFileDocumentOutline,
-  'mdi:cash-multiple': IconCashMultiple
+  'mdi:file-document-outline': IconFileDocumentOutline
 }
 
 const navigationItems = computed(() => [
@@ -221,12 +218,6 @@ const navigationItems = computed(() => [
     href: '/quotes',
     icon: 'mdi:file-document-outline',
     component: IconFileDocumentOutline
-  },
-  {
-    name: 'Facturación',
-    href: '/cash-flow',
-    icon: 'mdi:cash-multiple',
-    component: IconCashMultiple
   }
 ])
 

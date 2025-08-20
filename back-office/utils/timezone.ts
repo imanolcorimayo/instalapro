@@ -16,7 +16,7 @@ export function nowInBuenosAires() {
 /**
  * Convert any date to Buenos Aires timezone
  */
-export function toBuenosAires(date: string | Date | any) {
+export function toBuenosAires(date) {
   const { $dayjs } = useNuxtApp()
   return $dayjs(date).tz(TIMEZONE)
 }
@@ -24,14 +24,14 @@ export function toBuenosAires(date: string | Date | any) {
 /**
  * Format date in Buenos Aires timezone
  */
-export function formatInBuenosAires(date: string | Date | any, format: string = 'YYYY-MM-DD HH:mm') {
+export function formatInBuenosAires(date, format = 'YYYY-MM-DD HH:mm') {
   return toBuenosAires(date).format(format)
 }
 
 /**
  * Get start of day in Buenos Aires timezone
  */
-export function startOfDayInBuenosAires(date?: string | Date | any) {
+export function startOfDayInBuenosAires(date) {
   const targetDate = date ? toBuenosAires(date) : nowInBuenosAires()
   return targetDate.startOf('day')
 }
@@ -39,7 +39,7 @@ export function startOfDayInBuenosAires(date?: string | Date | any) {
 /**
  * Get end of day in Buenos Aires timezone
  */
-export function endOfDayInBuenosAires(date?: string | Date | any) {
+export function endOfDayInBuenosAires(date) {
   const targetDate = date ? toBuenosAires(date) : nowInBuenosAires()
   return targetDate.endOf('day')
 }
@@ -47,7 +47,7 @@ export function endOfDayInBuenosAires(date?: string | Date | any) {
 /**
  * Get start of week in Buenos Aires timezone (Monday as first day)
  */
-export function startOfWeekInBuenosAires(date?: string | Date | any) {
+export function startOfWeekInBuenosAires(date) {
   const targetDate = date ? toBuenosAires(date) : nowInBuenosAires()
   const dayOfWeek = targetDate.day() // 0 = Sunday, 1 = Monday, etc.
   const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1 // If Sunday (0), go back 6 days, otherwise go back (dayOfWeek - 1) days
@@ -57,7 +57,7 @@ export function startOfWeekInBuenosAires(date?: string | Date | any) {
 /**
  * Get end of week in Buenos Aires timezone (Sunday as last day)
  */
-export function endOfWeekInBuenosAires(date?: string | Date | any) {
+export function endOfWeekInBuenosAires(date) {
   const startOfWeek = startOfWeekInBuenosAires(date)
   return startOfWeek.add(6, 'day').endOf('day')
 }
@@ -65,7 +65,7 @@ export function endOfWeekInBuenosAires(date?: string | Date | any) {
 /**
  * Get start of month in Buenos Aires timezone
  */
-export function startOfMonthInBuenosAires(date?: string | Date | any) {
+export function startOfMonthInBuenosAires(date) {
   const targetDate = date ? toBuenosAires(date) : nowInBuenosAires()
   return targetDate.startOf('month')
 }
@@ -73,7 +73,7 @@ export function startOfMonthInBuenosAires(date?: string | Date | any) {
 /**
  * Get end of month in Buenos Aires timezone
  */
-export function endOfMonthInBuenosAires(date?: string | Date | any) {
+export function endOfMonthInBuenosAires(date) {
   const targetDate = date ? toBuenosAires(date) : nowInBuenosAires()
   return targetDate.endOf('month')
 }
@@ -81,7 +81,7 @@ export function endOfMonthInBuenosAires(date?: string | Date | any) {
 /**
  * Check if a date is today in Buenos Aires timezone
  */
-export function isTodayInBuenosAires(date: string | Date | any) {
+export function isTodayInBuenosAires(date) {
   const today = nowInBuenosAires()
   let targetDate
   
@@ -98,7 +98,7 @@ export function isTodayInBuenosAires(date: string | Date | any) {
 /**
  * Check if a date is in the current week in Buenos Aires timezone
  */
-export function isThisWeekInBuenosAires(date: string | Date | any) {
+export function isThisWeekInBuenosAires(date) {
   const thisWeek = nowInBuenosAires()
   const targetDate = toBuenosAires(date)
   return thisWeek.isSame(targetDate, 'week')
@@ -107,7 +107,7 @@ export function isThisWeekInBuenosAires(date: string | Date | any) {
 /**
  * Check if a date is in the current month in Buenos Aires timezone
  */
-export function isThisMonthInBuenosAires(date: string | Date | any) {
+export function isThisMonthInBuenosAires(date) {
   const thisMonth = nowInBuenosAires()
   const targetDate = toBuenosAires(date)
   return thisMonth.isSame(targetDate, 'month')
@@ -116,7 +116,7 @@ export function isThisMonthInBuenosAires(date: string | Date | any) {
 /**
  * Parse time string (HH:mm) and create date in Buenos Aires timezone
  */
-export function parseTimeInBuenosAires(timeString: string, baseDate?: string | Date | any) {
+export function parseTimeInBuenosAires(timeString, baseDate) {
   const base = baseDate ? toBuenosAires(baseDate) : nowInBuenosAires()
   const [hours, minutes] = timeString.split(':').map(Number)
   return base.hour(hours).minute(minutes).second(0).millisecond(0)
@@ -125,7 +125,7 @@ export function parseTimeInBuenosAires(timeString: string, baseDate?: string | D
 /**
  * Get business hours time slots for Buenos Aires timezone
  */
-export function getBusinessHoursInBuenosAires(date?: string | Date | any) {
+export function getBusinessHoursInBuenosAires(date) {
   const targetDate = date ? toBuenosAires(date) : nowInBuenosAires()
   const startOfDay = targetDate.hour(8).minute(0).second(0) // 8:00 AM
   const endOfDay = targetDate.hour(18).minute(0).second(0) // 6:00 PM
