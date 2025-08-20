@@ -122,7 +122,9 @@
 
       <!-- Page content -->
       <main class="p-4 lg:p-6">
-        <slot />
+        <div class="max-w-7xl mx-auto">
+          <slot />
+        </div>
       </main>
     </div>
 
