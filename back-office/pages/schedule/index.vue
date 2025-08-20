@@ -124,30 +124,48 @@
     >
       <div class="space-y-4">
         <!-- Day Timeline with Hours -->
-        <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <div class="border border-gray-200 rounded-lg overflow-hidden relative">
+          <!-- Hour rows background -->
           <div
             v-for="hour in workingHours"
             :key="hour"
-            class="border-b border-gray-100 last:border-b-0"
+            class="border-b border-gray-100 last:border-b-0 h-16"
           >
-            <div class="flex">
+            <div class="flex h-full">
               <!-- Hour Column -->
-              <div class="w-16 bg-gray-50 p-2 text-center border-r border-gray-100">
+              <div class="w-16 bg-gray-50 flex items-center justify-center border-r border-gray-100">
                 <span class="text-xs font-medium text-gray-600">
                   {{ formatHour(hour) }}
                 </span>
               </div>
               
               <!-- Job Slot -->
-              <div class="flex-1 min-h-[50px] p-2 relative">
+              <div class="flex-1 relative">
+                <!-- Empty slot click area -->
                 <div
-                  v-for="job in getHourJobs(selectedDate, hour)"
+                  v-if="getHourJobs(selectedDate, hour).length === 0"
+                  class="absolute inset-0 hover:bg-blue-50 cursor-pointer transition-colors flex items-center justify-center"
+                  @click="createJobAtTime(selectedDate, hour)"
+                >
+                  <span class="text-xs text-gray-400">Click para agendar</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Jobs overlay with proper positioning -->
+          <div class="absolute inset-0 pointer-events-none">
+            <div class="relative h-full">
+              <!-- Left margin for hour column -->
+              <div class="ml-16 h-full relative">
+                <div
+                  v-for="job in getDayJobs(selectedDate)"
                   :key="job.id"
                   :class="[
-                    'absolute inset-x-2 rounded border-l-4 p-2 cursor-pointer hover:shadow-sm transition-all',
+                    'absolute left-2 right-2 rounded border-l-4 p-2 cursor-pointer hover:shadow-sm transition-all pointer-events-auto',
                     getJobStatusColor(job.status)
                   ]"
-                  :style="getJobPosition(job)"
+                  :style="getDayModalJobPosition(job)"
                   @click="editJob(job)"
                 >
                   <div class="text-sm font-medium text-gray-900 truncate">
@@ -160,13 +178,6 @@
                     ${{ job.price?.toLocaleString() || 0 }}
                   </div>
                 </div>
-                
-                <!-- Empty slot click area -->
-                <div
-                  v-if="getHourJobs(selectedDate, hour).length === 0"
-                  class="absolute inset-0 hover:bg-blue-50 rounded cursor-pointer transition-colors"
-                  @click="createJobAtTime(selectedDate, hour)"
-                />
               </div>
             </div>
           </div>
@@ -548,18 +559,25 @@ const getJobStatusColor = (status) => {
   return colors[status] || colors.pending
 }
 
-const getJobPosition = (job) => {
+const getDayModalJobPosition = (job) => {
   const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
-  const startHour = toBuenosAires(actualDate).hour()
-  const startMinute = toBuenosAires(actualDate).minute()
+  const jobStart = toBuenosAires(actualDate)
   const durationMinutes = job.estimatedDuration || 120
   
-  const topPercent = (startMinute / 60) * 100
-  const heightPercent = (durationMinutes / 60) * 100
+  const startHour = jobStart.hour()
+  const startMinute = jobStart.minute()
+  
+  // Calculate position relative to working hours (8 AM = hour 0, 6 PM = hour 10)
+  const hourFromStart = startHour - 8 // 8 AM is our starting hour
+  const hourHeight = 64 // Each hour row is h-16 (64px)
+  
+  // Position calculations
+  const topPosition = (hourFromStart * hourHeight) + (startMinute / 60 * hourHeight)
+  const jobHeight = (durationMinutes / 60) * hourHeight
   
   return {
-    top: `${topPercent}%`,
-    height: `${Math.min(heightPercent, 100 - topPercent)}%`
+    top: `${topPosition}px`,
+    height: `${jobHeight}px`
   }
 }
 
