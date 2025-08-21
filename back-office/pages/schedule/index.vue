@@ -201,7 +201,7 @@
             :value="clientSearchQuery"
             @input="handleClientNameInput"
             @focus="clientSearchQuery.trim() && (showClientDropdown = true)"
-            @blur="setTimeout(() => showClientDropdown = false, 150)"
+            @blur="handleClientNameBlur"
             type="text"
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -371,9 +371,18 @@
             <option value="pending">Pendiente</option>
             <option value="confirmed">Confirmado</option>
             <option value="in_progress">En Progreso</option>
-            <option value="completed">Completado</option>
+            <option 
+              value="completed" 
+              :disabled="isJobInFuture"
+              :class="{ 'text-gray-400': isJobInFuture }"
+            >
+              Completado{{ isJobInFuture ? ' (No disponible para trabajos futuros)' : '' }}
+            </option>
             <option value="cancelled">Cancelado</option>
           </select>
+          <p v-if="isJobInFuture && jobForm.status === 'completed'" class="text-sm text-amber-600 mt-1">
+            ⚠️ No se puede marcar como completado un trabajo programado para el futuro
+          </p>
         </div>
 
         <!-- Form Actions -->
@@ -410,14 +419,15 @@
 
     <!-- Client Creation Modal -->
     <ModalStructure
-      v-if="showClientModal"
+      ref="clientModalRef"
       title="Nuevo Cliente"
       @on-close="showClientModal = false"
     >
       <ClientModal
+        v-if="showClientModal"
         :initial-name="clientSearchQuery"
         @client-created="handleClientCreated"
-        @close="showClientModal = false"
+        @close="closeClientModal"
       />
     </ModalStructure>
   </div>
@@ -450,7 +460,7 @@ useSeoMeta({
 
 // Firebase integration
 const { data: jobs, loading, error, add, update, remove, list, subscribe } = useFirestore('jobs')
-const { data: clients, loading: clientsLoading, list: loadClients, add: addClient } = useFirestore('clients')
+const { data: clients, loading: clientsLoading, list: loadClients, add: addClient, update: updateClient } = useFirestore('clients')
 
 // Get dayjs instance
 const { $dayjs } = useNuxtApp()
@@ -470,6 +480,7 @@ const showClientModal = ref(false)
 // Modal refs
 const dayModal = ref()
 const jobModal = ref()
+const clientModalRef = ref()
 
 // Form data
 const jobForm = ref({
@@ -538,6 +549,16 @@ const workingHours = computed(() => {
 const selectedDayLabel = computed(() => {
   if (!selectedDate.value) return ''
   return toBuenosAires(selectedDate.value).format('dddd, D [de] MMMM')
+})
+
+// Check if the current job is in the future (prevent marking as completed)
+const isJobInFuture = computed(() => {
+  if (!editingJob.value || !jobForm.value.date || !jobForm.value.time) return false
+  
+  const jobDateTime = toBuenosAires(`${jobForm.value.date} ${jobForm.value.time}`)
+  const now = nowInBuenosAires()
+  
+  return jobDateTime.isAfter(now)
 })
 
 // Client auto-complete computed
@@ -793,15 +814,31 @@ const selectClient = (client) => {
 const createNewClient = () => {
   showClientDropdown.value = false
   showClientModal.value = true
+  // Use nextTick to ensure modal is in DOM before showing
+  nextTick(() => {
+    clientModalRef.value?.showModal()
+  })
 }
 
 const closeClientDropdown = () => {
   showClientDropdown.value = false
 }
 
+const handleClientNameBlur = () => {
+  // Use setTimeout to allow click events on dropdown items to fire first
+  setTimeout(() => {
+    showClientDropdown.value = false
+  }, 150)
+}
+
+const closeClientModal = () => {
+  showClientModal.value = false
+  clientModalRef.value?.closeModal()
+}
+
 const handleClientCreated = (newClient) => {
   // Close client modal
-  showClientModal.value = false
+  closeClientModal()
   
   // Auto-select the newly created client
   selectedClient.value = newClient
@@ -852,6 +889,13 @@ const saveJob = async () => {
   try {
     savingJob.value = true
     
+    // Prevent marking future jobs as completed
+    if (jobForm.value.status === 'completed' && isJobInFuture.value) {
+      useToast().error('No se puede marcar como completado un trabajo programado para el futuro')
+      savingJob.value = false
+      return
+    }
+    
     // Combine date and time
     const scheduledDateTime = toBuenosAires(`${jobForm.value.date} ${jobForm.value.time}`)
     const durationMinutes = parseInt(jobForm.value.duration) * 60
@@ -887,10 +931,28 @@ const saveJob = async () => {
     }
 
     if (editingJob.value) {
+      const oldJob = editingJob.value
       await update(editingJob.value.id, jobData)
+      
+      // Update client stats if job status changed to completed or price changed
+      if (selectedClient.value && (
+        (oldJob.status !== 'completed' && jobData.status === 'completed') ||
+        oldJob.price !== jobData.price
+      )) {
+        await updateClientStatsFromJob(selectedClient.value.id, jobData, oldJob)
+      }
+      
       useToast().success('Trabajo actualizado exitosamente')
     } else {
-      await add(jobData)
+      const newJobId = await add(jobData)
+      
+      // Update client stats when creating a new job
+      if (selectedClient.value) {
+        await updateClientStats(selectedClient.value.id, {
+          totalJobs: (selectedClient.value.totalJobs || 0) + 1
+        })
+      }
+      
       useToast().success('Trabajo creado exitosamente')
     }
 
@@ -926,6 +988,47 @@ const loadJobs = async () => {
   } catch (err) {
     console.error('Error loading jobs:', err)
     useToast().error('Error al cargar trabajos')
+  }
+}
+
+// Client stats update helpers
+const updateClientStats = async (clientId, updates) => {
+  try {
+    await updateClient(clientId, updates)
+    // Reload clients to get updated stats
+    await loadClients()
+  } catch (err) {
+    console.error('Error updating client stats:', err)
+  }
+}
+
+const updateClientStatsFromJob = async (clientId, newJob, oldJob = null) => {
+  try {
+    const client = clients.value.find(c => c.id === clientId)
+    if (!client) return
+
+    let totalSpentChange = 0
+    
+    if (newJob.status === 'completed') {
+      // Job completed - add price to total spent
+      totalSpentChange = newJob.price || 0
+      
+      // If this was an update and old job was also completed, subtract old price first
+      if (oldJob && oldJob.status === 'completed') {
+        totalSpentChange = (newJob.price || 0) - (oldJob.price || 0)
+      }
+    } else if (oldJob && oldJob.status === 'completed' && newJob.status !== 'completed') {
+      // Job status changed from completed to something else - subtract price
+      totalSpentChange = -(oldJob.price || 0)
+    }
+
+    if (totalSpentChange !== 0) {
+      await updateClientStats(clientId, {
+        totalSpent: Math.max(0, (client.totalSpent || 0) + totalSpentChange)
+      })
+    }
+  } catch (err) {
+    console.error('Error updating client stats from job:', err)
   }
 }
 
