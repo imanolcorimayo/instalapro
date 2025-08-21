@@ -934,11 +934,8 @@ const saveJob = async () => {
       const oldJob = editingJob.value
       await update(editingJob.value.id, jobData)
       
-      // Update client stats if job status changed to completed or price changed
-      if (selectedClient.value && (
-        (oldJob.status !== 'completed' && jobData.status === 'completed') ||
-        oldJob.price !== jobData.price
-      )) {
+      // Update client stats if job status changed
+      if (selectedClient.value) {
         await updateClientStatsFromJob(selectedClient.value.id, jobData, oldJob)
       }
       
@@ -946,11 +943,9 @@ const saveJob = async () => {
     } else {
       const newJobId = await add(jobData)
       
-      // Update client stats when creating a new job
-      if (selectedClient.value) {
-        await updateClientStats(selectedClient.value.id, {
-          totalJobs: (selectedClient.value.totalJobs || 0) + 1
-        })
+      // Update client stats only if job is completed at creation
+      if (selectedClient.value && jobData.status === 'completed') {
+        await updateClientStatsFromJob(selectedClient.value.id, jobData)
       }
       
       useToast().success('Trabajo creado exitosamente')
@@ -1007,26 +1002,36 @@ const updateClientStatsFromJob = async (clientId, newJob, oldJob = null) => {
     const client = clients.value.find(c => c.id === clientId)
     if (!client) return
 
-    let totalSpentChange = 0
+    // Recalculate totals from all jobs for this client
+    const allClientJobs = jobs.value.filter(job => job.clientId === clientId)
     
-    if (newJob.status === 'completed') {
-      // Job completed - add price to total spent
-      totalSpentChange = newJob.price || 0
-      
-      // If this was an update and old job was also completed, subtract old price first
-      if (oldJob && oldJob.status === 'completed') {
-        totalSpentChange = (newJob.price || 0) - (oldJob.price || 0)
+    let totalCompletedJobs = 0
+    let totalSpent = 0
+    
+    // Count only completed jobs and their prices
+    allClientJobs.forEach(job => {
+      // Handle both the new/updated job and existing jobs
+      let jobToCheck = job
+      if (job.id === newJob.id || (oldJob && job.id === oldJob.id)) {
+        jobToCheck = newJob // Use the updated job data
       }
-    } else if (oldJob && oldJob.status === 'completed' && newJob.status !== 'completed') {
-      // Job status changed from completed to something else - subtract price
-      totalSpentChange = -(oldJob.price || 0)
+      
+      if (jobToCheck.status === 'completed') {
+        totalCompletedJobs++
+        totalSpent += (jobToCheck.price || 0)
+      }
+    })
+    
+    // If this is a new job (no oldJob), include it in the count
+    if (!oldJob && newJob.status === 'completed') {
+      totalCompletedJobs++
+      totalSpent += (newJob.price || 0)
     }
 
-    if (totalSpentChange !== 0) {
-      await updateClientStats(clientId, {
-        totalSpent: Math.max(0, (client.totalSpent || 0) + totalSpentChange)
-      })
-    }
+    await updateClientStats(clientId, {
+      totalJobs: totalCompletedJobs,
+      totalSpent: totalSpent
+    })
   } catch (err) {
     console.error('Error updating client stats from job:', err)
   }
