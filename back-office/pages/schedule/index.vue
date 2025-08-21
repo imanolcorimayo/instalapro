@@ -192,18 +192,53 @@
       @on-close="resetJobForm"
     >
       <form @submit.prevent="saveJob" class="space-y-4">
-        <!-- Client Name -->
-        <div>
+        <!-- Client Name with Auto-complete -->
+        <div class="relative">
           <label class="block text-sm font-medium text-gray-700 mb-1">
             Cliente *
           </label>
           <input
-            v-model="jobForm.clientName"
+            :value="clientSearchQuery"
+            @input="handleClientNameInput"
+            @focus="clientSearchQuery.trim() && (showClientDropdown = true)"
+            @blur="setTimeout(() => showClientDropdown = false, 150)"
             type="text"
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Nombre del cliente"
+            placeholder="Buscar cliente o escribir nombre nuevo"
+            autocomplete="off"
           />
+          
+          <!-- Auto-complete Dropdown -->
+          <div
+            v-if="showClientDropdown && (filteredClients.length > 0 || !hasExactClientMatch)"
+            class="absolute z-50 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto mt-1 sm:max-h-48"
+          >
+            <!-- Existing clients -->
+            <div
+              v-for="client in filteredClients"
+              :key="client.id"
+              @click="selectClient(client)"
+              class="p-3 sm:p-2 hover:bg-blue-50 active:bg-blue-100 cursor-pointer border-b border-gray-100 last:border-b-0 touch-manipulation"
+            >
+              <div class="font-medium text-gray-900">{{ client.name }}</div>
+              <div class="text-sm text-gray-600">{{ client.phone }}</div>
+              <div class="text-xs text-gray-500 truncate">{{ client.address }}</div>
+            </div>
+            
+            <!-- Create new client option -->
+            <div
+              v-if="clientSearchQuery.trim() && !hasExactClientMatch"
+              @click="createNewClient"
+              class="p-3 sm:p-2 hover:bg-green-50 active:bg-green-100 cursor-pointer border-t border-gray-200 bg-green-25 touch-manipulation"
+            >
+              <div class="flex items-center gap-2 font-medium text-green-700">
+                <IconPlus class="w-4 h-4" />
+                Crear cliente "{{ clientSearchQuery.trim() }}"
+              </div>
+              <div class="text-sm text-green-600">Click para agregar como nuevo cliente</div>
+            </div>
+          </div>
         </div>
 
         <!-- Phone -->
@@ -372,6 +407,19 @@
         </div>
       </form>
     </ModalStructure>
+
+    <!-- Client Creation Modal -->
+    <ModalStructure
+      v-if="showClientModal"
+      title="Nuevo Cliente"
+      @on-close="showClientModal = false"
+    >
+      <ClientModal
+        :initial-name="clientSearchQuery"
+        @client-created="handleClientCreated"
+        @close="showClientModal = false"
+      />
+    </ModalStructure>
   </div>
 </template>
 
@@ -402,6 +450,7 @@ useSeoMeta({
 
 // Firebase integration
 const { data: jobs, loading, error, add, update, remove, list, subscribe } = useFirestore('jobs')
+const { data: clients, loading: clientsLoading, list: loadClients, add: addClient } = useFirestore('clients')
 
 // Get dayjs instance
 const { $dayjs } = useNuxtApp()
@@ -411,6 +460,12 @@ const currentWeekStart = ref(startOfWeekInBuenosAires())
 const selectedDate = ref(null)
 const editingJob = ref(null)
 const savingJob = ref(false)
+
+// Client auto-complete state
+const showClientDropdown = ref(false)
+const clientSearchQuery = ref('')
+const selectedClient = ref(null)
+const showClientModal = ref(false)
 
 // Modal refs
 const dayModal = ref()
@@ -483,6 +538,26 @@ const workingHours = computed(() => {
 const selectedDayLabel = computed(() => {
   if (!selectedDate.value) return ''
   return toBuenosAires(selectedDate.value).format('dddd, D [de] MMMM')
+})
+
+// Client auto-complete computed
+const filteredClients = computed(() => {
+  if (!clientSearchQuery.value.trim()) return []
+  
+  const query = clientSearchQuery.value.toLowerCase().trim()
+  return clients.value.filter(client =>
+    client.name.toLowerCase().includes(query) ||
+    client.phone.includes(query)
+  ).slice(0, 5) // Limit to 5 results for better UX
+})
+
+const hasExactClientMatch = computed(() => {
+  if (!clientSearchQuery.value.trim()) return false
+  
+  const query = clientSearchQuery.value.toLowerCase().trim()
+  return clients.value.some(client =>
+    client.name.toLowerCase() === query
+  )
 })
 
 // Methods
@@ -593,6 +668,9 @@ const closeDayModal = () => {
 
 const openNewJobModal = () => {
   editingJob.value = null
+  selectedClient.value = null
+  clientSearchQuery.value = ''
+  showClientDropdown.value = false
   jobForm.value = {
     clientName: '',
     clientPhone: '',
@@ -610,6 +688,17 @@ const openNewJobModal = () => {
 
 const editJob = (job) => {
   editingJob.value = job
+  
+  // Find matching client for auto-complete
+  const matchingClient = clients.value.find(client => 
+    client.name.toLowerCase() === job.clientName.toLowerCase() ||
+    client.phone === job.clientPhone
+  )
+  
+  selectedClient.value = matchingClient || null
+  clientSearchQuery.value = job.clientName
+  showClientDropdown.value = false
+  
   const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
   const jobDate = toBuenosAires(actualDate)
   jobForm.value = {
@@ -629,6 +718,9 @@ const editJob = (job) => {
 
 const createJobAtTime = (date, hour) => {
   editingJob.value = null
+  selectedClient.value = null
+  clientSearchQuery.value = ''
+  showClientDropdown.value = false
   jobForm.value = {
     clientName: '',
     clientPhone: '',
@@ -646,6 +738,10 @@ const createJobAtTime = (date, hour) => {
 
 const resetJobForm = () => {
   editingJob.value = null
+  selectedClient.value = null
+  clientSearchQuery.value = ''
+  showClientDropdown.value = false
+  showClientModal.value = false
   jobForm.value = {
     clientName: '',
     clientPhone: '',
@@ -662,6 +758,62 @@ const resetJobForm = () => {
 
 const closeJobModal = () => {
   jobModal.value?.closeModal()
+}
+
+// Client auto-complete methods
+const handleClientNameInput = (event) => {
+  const value = event.target.value
+  clientSearchQuery.value = value
+  jobForm.value.clientName = value
+  
+  if (value.trim().length > 0) {
+    showClientDropdown.value = true
+  } else {
+    showClientDropdown.value = false
+    selectedClient.value = null
+    // Clear auto-filled fields when name is cleared
+    if (!editingJob.value) {
+      jobForm.value.clientPhone = ''
+      jobForm.value.address = ''
+    }
+  }
+}
+
+const selectClient = (client) => {
+  selectedClient.value = client
+  clientSearchQuery.value = client.name
+  showClientDropdown.value = false
+  
+  // Auto-fill form fields
+  jobForm.value.clientName = client.name
+  jobForm.value.clientPhone = client.phone
+  jobForm.value.address = client.address
+}
+
+const createNewClient = () => {
+  showClientDropdown.value = false
+  showClientModal.value = true
+}
+
+const closeClientDropdown = () => {
+  showClientDropdown.value = false
+}
+
+const handleClientCreated = (newClient) => {
+  // Close client modal
+  showClientModal.value = false
+  
+  // Auto-select the newly created client
+  selectedClient.value = newClient
+  clientSearchQuery.value = newClient.name
+  
+  // Auto-fill form fields
+  jobForm.value.clientName = newClient.name
+  jobForm.value.clientPhone = newClient.phone
+  jobForm.value.address = newClient.address
+  
+  // Reload clients to ensure the new client is in the list
+  loadClients()
 }
 
 const checkTimeOverlap = (newJobStart, newJobDuration, excludeJobId = null) => {
@@ -730,7 +882,7 @@ const saveJob = async () => {
       notes: jobForm.value.notes.trim(),
       status: jobForm.value.status,
       description: `${jobForm.value.serviceType} - ${jobForm.value.clientName}`,
-      clientId: '',
+      clientId: selectedClient.value?.id || '',
       paid: false
     }
 
@@ -781,5 +933,7 @@ const loadJobs = async () => {
 onMounted(() => {
   // Subscribe to real-time updates
   subscribe()
+  // Load clients for auto-complete
+  loadClients()
 })
 </script>
