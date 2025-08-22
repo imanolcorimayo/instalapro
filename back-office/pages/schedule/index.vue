@@ -193,7 +193,13 @@
     >
       <!-- Status Pills (only when editing) -->
       <div v-if="editingJob" class="mb-6">
-        <h3 class="text-sm font-medium text-gray-700 mb-3">Estado del Trabajo</h3>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-medium text-gray-700">Estado del Trabajo</h3>
+          <div v-if="isJobInFuture" class="flex items-center gap-1 text-xs text-amber-600">
+            <IconAlertCircle class="w-3 h-3" />
+            <span>Trabajo futuro</span>
+          </div>
+        </div>
         <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
           <!-- Pendiente -->
           <button
@@ -228,12 +234,15 @@
           <!-- En Progreso -->
           <button
             type="button"
-            @click="jobForm.status = 'in_progress'"
+            @click="!isJobInFuture && (jobForm.status = 'in_progress')"
+            :disabled="isJobInFuture"
             :class="[
               'flex items-center justify-center gap-2 px-4 py-3 sm:px-3 sm:py-2 rounded-lg font-medium text-sm transition-all touch-manipulation',
-              jobForm.status === 'in_progress' 
-                ? 'bg-orange-100 text-orange-800 border-2 border-orange-300 shadow-sm' 
-                : 'bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100'
+              isJobInFuture 
+                ? 'bg-gray-50 text-gray-400 border border-gray-200 cursor-not-allowed'
+                : jobForm.status === 'in_progress' 
+                  ? 'bg-orange-100 text-orange-800 border-2 border-orange-300 shadow-sm' 
+                  : 'bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100'
             ]"
           >
             <IconProgressClock class="w-5 h-5 sm:w-4 sm:h-4" />
@@ -275,10 +284,25 @@
         </div>
         
         <!-- Future job warning -->
-        <p v-if="isJobInFuture && jobForm.status === 'completed'" class="text-sm text-amber-600 mt-2 flex items-start gap-2">
-          <IconAlertCircle class="w-4 h-4 mt-0.5 flex-shrink-0" />
-          <span>No se puede marcar como completado un trabajo programado para el futuro</span>
-        </p>
+        <div v-if="isJobInFuture && (jobForm.status === 'completed' || jobForm.status === 'in_progress')" 
+             class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
+          <div class="flex items-start gap-2">
+            <IconAlertCircle class="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-500" />
+            <div>
+              <p class="text-sm font-medium text-amber-800">
+                Restricción de Estado
+              </p>
+              <p class="text-sm text-amber-700 mt-1">
+                <span v-if="jobForm.status === 'completed'">
+                  No se puede marcar como "Completado" un trabajo programado para el futuro
+                </span>
+                <span v-else-if="jobForm.status === 'in_progress'">
+                  No se puede marcar como "En Progreso" un trabajo programado para el futuro
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
       
       <form @submit.prevent="saveJob" class="space-y-4">
@@ -530,6 +554,8 @@ import {
   endOfWeekInBuenosAires
 } from '~/utils/timezone'
 
+import { watch, nextTick } from 'vue'
+
 definePageMeta({
   layout: 'default'
 })
@@ -662,6 +688,20 @@ const hasExactClientMatch = computed(() => {
   return clients.value.some(client =>
     client.name.toLowerCase() === query
   )
+})
+
+// Helper to check if a status is valid for future jobs
+const isValidFutureJobStatus = (status) => {
+  return ['pending', 'confirmed', 'cancelled'].includes(status)
+}
+
+// Watch for invalid future job status changes to provide feedback
+watch(() => jobForm.value.status, (newStatus) => {
+  if (isJobInFuture.value && !isValidFutureJobStatus(newStatus)) {
+    // Show toast notification for better user feedback
+    // The UI already prevents the selection, but this handles edge cases
+    console.warn('Invalid status for future job:', newStatus)
+  }
 })
 
 // Methods
