@@ -101,25 +101,57 @@ subscribeToChanges()     // Real-time updates (Firestore only)
 - **TypeScript First**: All data structures defined with strict interfaces
 - **Error Handling**: Consistent error handling across both database implementations
 
-#### Component Naming Conventions
+#### Component Creation Guidelines
+
+**⚠️ CRITICAL: UNUSED COMPONENT PREVENTION**
+Before creating ANY new component, you MUST:
+1. **Verify immediate usage**: Component must be imported and used in at least one file
+2. **Document usage location**: Add comment in component showing where it's used
+3. **Follow proven patterns**: Use `ModalStructure.vue` + inline content instead of dedicated modal components
+4. **Check for existing solutions**: Extend existing components before creating new ones
 
 **Subfolder Component Naming Rule:**
 - Components in subfolders must be prefixed with the folder name when used
 - Format: `[FolderName][ComponentName].vue`
-- Usage: `<Schedule[ComponentName]>` for components in `/Schedule/` folder
+- Usage: Follow existing working patterns (Settings components, ClientModal)
 - Exception: If component name already starts with folder name, use full name without duplication
 
 **Examples:**
 ```vue
 <!-- ✅ Correct Usage -->
-<ScheduleCalendarView />     <!-- from /Schedule/ScheduleCalendarView.vue -->
-<ClientProfileModal />       <!-- from /Client/ClientProfileModal.vue -->
-<QuoteTemplateForm />        <!-- from /Quote/QuoteTemplateForm.vue -->
+<SettingsAvailabilityGrid />  <!-- from /Settings/SettingsAvailabilityGrid.vue -->
+<SettingsTimeSelector />      <!-- from /Settings/SettingsTimeSelector.vue -->
+<ClientProfileModal />        <!-- from /Client/ClientProfileModal.vue -->
 <CashFlowSummary />          <!-- from /CashFlow/CashFlowSummary.vue -->
 
 <!-- ❌ Incorrect Usage -->
-<CalendarView />             <!-- Wrong - missing Schedule prefix -->
+<CalendarView />             <!-- Wrong - missing folder prefix -->
 <ScheduleScheduleView />     <!-- Wrong - folder name duplicated -->
+```
+
+**PROVEN SUCCESSFUL PATTERNS (Use These):**
+- **Base Components**: `ModalStructure.vue`, `TooltipStructure.vue`, `Icon.vue` 
+- **Reusable Components**: `ClientModal.vue` (used in multiple pages)
+- **Specialized Components**: Settings folder components (all actively used)
+- **Modal Pattern**: Use `ModalStructure.vue` with slot content, NOT dedicated modal components
+
+**ANTI-PATTERNS (Avoid These):**
+- Creating dedicated modal components for single-use cases
+- Building complex nested component hierarchies
+- Creating "regular" and "simplified" versions of the same component
+- Components that are never imported or used anywhere
+
+**CURRENT CLEAN COMPONENT STRUCTURE (7 components, all used):**
+```
+/components/
+├── Icon.vue                          # ✅ Base component (used ~21 times)
+├── ModalStructure.vue                # ✅ Base modal (used 6 times)  
+├── TooltipStructure.vue              # ✅ Base tooltip (used 1 time)
+├── ClientModal.vue                   # ✅ Reusable modal (used 2 times)
+└── /Settings/
+    ├── SettingsAvailabilityGrid.vue  # ✅ Specialized (used 1 time)
+    ├── SettingsAvailabilityModal.vue # ✅ Specialized (used 1 time)
+    └── SettingsTimeSelector.vue      # ✅ Specialized (used 1 time)
 ```
 
 #### UI Components Structure
