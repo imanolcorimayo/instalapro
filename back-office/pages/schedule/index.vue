@@ -191,6 +191,96 @@
       :title="editingJob ? 'Editar Trabajo' : 'Nuevo Trabajo'"
       @on-close="resetJobForm"
     >
+      <!-- Status Pills (only when editing) -->
+      <div v-if="editingJob" class="mb-6">
+        <h3 class="text-sm font-medium text-gray-700 mb-3">Estado del Trabajo</h3>
+        <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
+          <!-- Pendiente -->
+          <button
+            type="button"
+            @click="jobForm.status = 'pending'"
+            :class="[
+              'flex items-center justify-center gap-2 px-4 py-3 sm:px-3 sm:py-2 rounded-lg font-medium text-sm transition-all touch-manipulation',
+              jobForm.status === 'pending' 
+                ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300 shadow-sm' 
+                : 'bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100'
+            ]"
+          >
+            <IconClock class="w-5 h-5 sm:w-4 sm:h-4" />
+            <span>Pendiente</span>
+          </button>
+          
+          <!-- Confirmado -->
+          <button
+            type="button"
+            @click="jobForm.status = 'confirmed'"
+            :class="[
+              'flex items-center justify-center gap-2 px-4 py-3 sm:px-3 sm:py-2 rounded-lg font-medium text-sm transition-all touch-manipulation',
+              jobForm.status === 'confirmed' 
+                ? 'bg-blue-100 text-blue-800 border-2 border-blue-300 shadow-sm' 
+                : 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
+            ]"
+          >
+            <IconCalendarCheck class="w-5 h-5 sm:w-4 sm:h-4" />
+            <span>Confirmado</span>
+          </button>
+          
+          <!-- En Progreso -->
+          <button
+            type="button"
+            @click="jobForm.status = 'in_progress'"
+            :class="[
+              'flex items-center justify-center gap-2 px-4 py-3 sm:px-3 sm:py-2 rounded-lg font-medium text-sm transition-all touch-manipulation',
+              jobForm.status === 'in_progress' 
+                ? 'bg-orange-100 text-orange-800 border-2 border-orange-300 shadow-sm' 
+                : 'bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100'
+            ]"
+          >
+            <IconProgressClock class="w-5 h-5 sm:w-4 sm:h-4" />
+            <span>En Progreso</span>
+          </button>
+          
+          <!-- Completado -->
+          <button
+            type="button"
+            @click="!isJobInFuture && (jobForm.status = 'completed')"
+            :disabled="isJobInFuture"
+            :class="[
+              'flex items-center justify-center gap-2 px-4 py-3 sm:px-3 sm:py-2 rounded-lg font-medium text-sm transition-all touch-manipulation',
+              isJobInFuture 
+                ? 'bg-gray-50 text-gray-400 border border-gray-200 cursor-not-allowed'
+                : jobForm.status === 'completed' 
+                  ? 'bg-green-100 text-green-800 border-2 border-green-300 shadow-sm' 
+                  : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
+            ]"
+          >
+            <IconCheckCircle class="w-5 h-5 sm:w-4 sm:h-4" />
+            <span>Completado</span>
+          </button>
+          
+          <!-- Cancelado -->
+          <button
+            type="button"
+            @click="jobForm.status = 'cancelled'"
+            :class="[
+              'flex items-center justify-center gap-2 px-4 py-3 sm:px-3 sm:py-2 rounded-lg font-medium text-sm transition-all touch-manipulation col-span-2 sm:col-span-1',
+              jobForm.status === 'cancelled' 
+                ? 'bg-red-100 text-red-800 border-2 border-red-300 shadow-sm' 
+                : 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
+            ]"
+          >
+            <IconCancel class="w-5 h-5 sm:w-4 sm:h-4" />
+            <span>Cancelado</span>
+          </button>
+        </div>
+        
+        <!-- Future job warning -->
+        <p v-if="isJobInFuture && jobForm.status === 'completed'" class="text-sm text-amber-600 mt-2 flex items-start gap-2">
+          <IconAlertCircle class="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <span>No se puede marcar como completado un trabajo programado para el futuro</span>
+        </p>
+      </div>
+      
       <form @submit.prevent="saveJob" class="space-y-4">
         <!-- Client Name with Auto-complete -->
         <div class="relative">
@@ -370,31 +460,6 @@
           />
         </div>
 
-        <!-- Status (only when editing) -->
-        <div v-if="editingJob">
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Estado
-          </label>
-          <select
-            v-model="jobForm.status"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="pending">Pendiente</option>
-            <option value="confirmed">Confirmado</option>
-            <option value="in_progress">En Progreso</option>
-            <option 
-              value="completed" 
-              :disabled="isJobInFuture"
-              :class="{ 'text-gray-400': isJobInFuture }"
-            >
-              Completado{{ isJobInFuture ? ' (No disponible para trabajos futuros)' : '' }}
-            </option>
-            <option value="cancelled">Cancelado</option>
-          </select>
-          <p v-if="isJobInFuture && jobForm.status === 'completed'" class="text-sm text-amber-600 mt-1">
-            ⚠️ No se puede marcar como completado un trabajo programado para el futuro
-          </p>
-        </div>
 
         <!-- Form Actions -->
         <div class="flex justify-end gap-3 pt-4">
@@ -450,6 +515,12 @@ import IconChevronLeft from '~icons/mdi/chevron-left'
 import IconChevronRight from '~icons/mdi/chevron-right'
 import IconCalendarBlank from '~icons/mdi/calendar-blank'
 import IconLoading from '~icons/mdi/loading'
+import IconClock from '~icons/mdi/clock-outline'
+import IconCalendarCheck from '~icons/mdi/calendar-check'
+import IconProgressClock from '~icons/mdi/progress-clock'
+import IconCheckCircle from '~icons/mdi/check-circle'
+import IconCancel from '~icons/mdi/cancel'
+import IconAlertCircle from '~icons/mdi/alert-circle'
 import { 
   nowInBuenosAires, 
   toBuenosAires, 
