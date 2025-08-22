@@ -202,6 +202,7 @@
             @input="handleClientNameInput"
             @focus="clientSearchQuery.trim() && (showClientDropdown = true)"
             @blur="handleClientNameBlur"
+            @keydown="handleClientInputKeydown"
             type="text"
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -216,10 +217,15 @@
           >
             <!-- Existing clients -->
             <div
-              v-for="client in filteredClients"
+              v-for="(client, index) in filteredClients"
               :key="client.id"
               @click="selectClient(client)"
-              class="p-3 sm:p-2 hover:bg-blue-50 active:bg-blue-100 cursor-pointer border-b border-gray-100 last:border-b-0 touch-manipulation"
+              :class="[
+                'p-3 sm:p-2 cursor-pointer border-b border-gray-100 last:border-b-0 touch-manipulation',
+                index === highlightedClientIndex 
+                  ? 'bg-blue-100 border-blue-200' 
+                  : 'hover:bg-blue-50 active:bg-blue-100'
+              ]"
             >
               <div class="font-medium text-gray-900">{{ client.name }}</div>
               <div class="text-sm text-gray-600">{{ client.phone }}</div>
@@ -230,7 +236,12 @@
             <div
               v-if="clientSearchQuery.trim() && !hasExactClientMatch"
               @click="createNewClient"
-              class="p-3 sm:p-2 hover:bg-green-50 active:bg-green-100 cursor-pointer border-t border-gray-200 bg-green-25 touch-manipulation"
+              :class="[
+                'p-3 sm:p-2 cursor-pointer border-t border-gray-200 bg-green-25 touch-manipulation',
+                highlightedClientIndex === filteredClients.length 
+                  ? 'bg-green-100 border-green-200' 
+                  : 'hover:bg-green-50 active:bg-green-100'
+              ]"
             >
               <div class="flex items-center gap-2 font-medium text-green-700">
                 <IconPlus class="w-4 h-4" />
@@ -476,6 +487,7 @@ const showClientDropdown = ref(false)
 const clientSearchQuery = ref('')
 const selectedClient = ref(null)
 const showClientModal = ref(false)
+const highlightedClientIndex = ref(-1)
 
 // Modal refs
 const dayModal = ref()
@@ -692,6 +704,7 @@ const openNewJobModal = () => {
   selectedClient.value = null
   clientSearchQuery.value = ''
   showClientDropdown.value = false
+  highlightedClientIndex.value = -1
   jobForm.value = {
     clientName: '',
     clientPhone: '',
@@ -719,6 +732,7 @@ const editJob = (job) => {
   selectedClient.value = matchingClient || null
   clientSearchQuery.value = job.clientName
   showClientDropdown.value = false
+  highlightedClientIndex.value = -1
   
   const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
   const jobDate = toBuenosAires(actualDate)
@@ -742,6 +756,7 @@ const createJobAtTime = (date, hour) => {
   selectedClient.value = null
   clientSearchQuery.value = ''
   showClientDropdown.value = false
+  highlightedClientIndex.value = -1
   jobForm.value = {
     clientName: '',
     clientPhone: '',
@@ -763,6 +778,7 @@ const resetJobForm = () => {
   clientSearchQuery.value = ''
   showClientDropdown.value = false
   showClientModal.value = false
+  highlightedClientIndex.value = -1
   jobForm.value = {
     clientName: '',
     clientPhone: '',
@@ -787,6 +803,9 @@ const handleClientNameInput = (event) => {
   clientSearchQuery.value = value
   jobForm.value.clientName = value
   
+  // Reset highlighted index when typing
+  highlightedClientIndex.value = -1
+  
   if (value.trim().length > 0) {
     showClientDropdown.value = true
   } else {
@@ -804,6 +823,7 @@ const selectClient = (client) => {
   selectedClient.value = client
   clientSearchQuery.value = client.name
   showClientDropdown.value = false
+  highlightedClientIndex.value = -1
   
   // Auto-fill form fields
   jobForm.value.clientName = client.name
@@ -814,6 +834,7 @@ const selectClient = (client) => {
 const createNewClient = () => {
   showClientDropdown.value = false
   showClientModal.value = true
+  highlightedClientIndex.value = -1
   // Use nextTick to ensure modal is in DOM before showing
   nextTick(() => {
     clientModalRef.value?.showModal()
@@ -822,13 +843,57 @@ const createNewClient = () => {
 
 const closeClientDropdown = () => {
   showClientDropdown.value = false
+  highlightedClientIndex.value = -1
 }
 
 const handleClientNameBlur = () => {
   // Use setTimeout to allow click events on dropdown items to fire first
   setTimeout(() => {
     showClientDropdown.value = false
+    highlightedClientIndex.value = -1
   }, 150)
+}
+
+// Handle keyboard navigation in client dropdown
+const handleClientInputKeydown = (event) => {
+  if (!showClientDropdown.value) return
+  
+  const totalOptions = filteredClients.value.length + (clientSearchQuery.value.trim() && !hasExactClientMatch.value ? 1 : 0)
+  
+  switch (event.key) {
+    case 'ArrowDown':
+      event.preventDefault()
+      highlightedClientIndex.value = highlightedClientIndex.value < totalOptions - 1 
+        ? highlightedClientIndex.value + 1 
+        : 0
+      break
+      
+    case 'ArrowUp':
+      event.preventDefault()
+      highlightedClientIndex.value = highlightedClientIndex.value > 0 
+        ? highlightedClientIndex.value - 1 
+        : totalOptions - 1
+      break
+      
+    case 'Enter':
+      event.preventDefault()
+      if (highlightedClientIndex.value >= 0) {
+        if (highlightedClientIndex.value < filteredClients.value.length) {
+          // Select existing client
+          selectClient(filteredClients.value[highlightedClientIndex.value])
+        } else {
+          // Create new client
+          createNewClient()
+        }
+      }
+      break
+      
+    case 'Escape':
+      event.preventDefault()
+      showClientDropdown.value = false
+      highlightedClientIndex.value = -1
+      break
+  }
 }
 
 const closeClientModal = () => {
