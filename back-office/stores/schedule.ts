@@ -2,11 +2,8 @@ import { defineStore } from 'pinia'
 import { 
   nowInBuenosAires,
   toBuenosAires,
-  startOfDayInBuenosAires,
-  endOfDayInBuenosAires,
   isTodayInBuenosAires,
   formatInBuenosAires,
-  startOfWeekInBuenosAires
 } from '~/utils/timezone'
 import type { 
   Job,
