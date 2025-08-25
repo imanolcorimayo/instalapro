@@ -21,14 +21,14 @@
 
     <!-- View Toggle Pills -->
     <div class="flex items-center justify-center mb-6">
-      <div class="inline-flex">
+      <div class="inline-flex bg-gray-100 rounded-xl p-1">
         <button
           @click="switchToWeeklyView"
           :class="[
-            'px-4 py-2 text-sm font-medium rounded-md transition-all',
+            'px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out',
             currentView === 'weekly'
-              ? 'bg-white text-blue-700 shadow-sm border border-blue-200'
-              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-800'
           ]"
         >
           Semanal
@@ -36,10 +36,10 @@
         <button
           @click="switchToDayView()"
           :class="[
-            'px-4 py-2 text-sm font-medium rounded-md transition-all ml-2',
+            'px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out',
             currentView === 'daily'
-              ? 'bg-white text-blue-700 shadow-sm border border-blue-200'
-              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-800'
           ]"
         >
           Día
@@ -911,7 +911,6 @@ const switchToDayView = (date = null) => {
 const getDayJobs = (date) => {
   const dayJobs = jobs.value.filter(job => {
     if (!job.scheduledDate) {
-      console.log('Job has no scheduledDate:', job)
       return false
     }
     
@@ -925,7 +924,6 @@ const getDayJobs = (date) => {
       jobDate = toBuenosAires(job.scheduledDate).format('YYYY-MM-DD')
     }
     
-    console.log('Comparing job date:', jobDate, 'with filter date:', date, 'for job:', job.clientName)
     return jobDate === date
   }).sort((a, b) => {
     const dateA = a.scheduledDate.toDate ? a.scheduledDate.toDate() : a.scheduledDate
@@ -933,7 +931,6 @@ const getDayJobs = (date) => {
     return toBuenosAires(dateA).diff(toBuenosAires(dateB))
   })
   
-  console.log(`Found ${dayJobs.length} jobs for date ${date}`)
   return dayJobs
 }
 
