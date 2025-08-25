@@ -615,6 +615,7 @@ interface PaymentUpdateInput {
 - **Iconify** (`@iconify/json`, `@iconify/utils`, `unplugin-icons`)
   - **MANDATORY** for all icons: Use `~icons/pack-name/icon-name` syntax
   - Never use other icon libraries (Font Awesome, Heroicons, etc.)
+  - Never use emojis as icons, always use Iconify
 - **Chart.js** - For data visualization and charts only
 - **Tailwind CSS** (`tailwindcss`, `@tailwindcss/vite`) - For all styling
 - **Pinia** (`pinia`, `@pinia/nuxt`) - For state management

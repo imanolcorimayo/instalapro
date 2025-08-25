@@ -4,7 +4,7 @@
       <!-- Logo and Title -->
       <div class="text-center mb-8">
         <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Icon name="mdi:air-conditioner" class="w-8 h-8 text-white" />
+          <IconAirConditioner class="w-8 h-8 text-white" />
         </div>
         <h1 class="text-2xl font-bold text-gray-900 mb-2">InstalarPro</h1>
         <p class="text-gray-600">Panel de administración para técnicos</p>
@@ -22,7 +22,7 @@
         class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg text-base font-medium hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <div v-if="authStore.loading" class="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
-        <Icon v-else name="logos:google-icon" class="w-5 h-5" />
+        <IconGoogle v-else class="w-5 h-5" />
         <span>{{ authStore.loading ? 'Iniciando sesión...' : 'Continuar con Google' }}</span>
       </button>
 
@@ -37,6 +37,10 @@
 </template>
 
 <script setup lang="ts">
+// Icons
+import IconAirConditioner from '~icons/mdi/air-conditioner'
+import IconGoogle from '~icons/logos/google-icon'
+
 definePageMeta({
   layout: false,
   middleware: 'guest'
