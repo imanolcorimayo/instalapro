@@ -236,7 +236,7 @@
                 <!-- Empty slot click area -->
                 <div
                   v-if="getHourJobs(currentDayView, hour).length === 0"
-                  class="absolute inset-0 hover:bg-blue-50 cursor-pointer transition-colors flex items-center justify-center"
+                  class="absolute inset-0 hover:bg-gray-50 cursor-pointer transition-colors flex items-center pl-3"
                   @click="createJobAtTime(currentDayView, hour)"
                 >
                   <span class="text-xs text-gray-400">Click para agendar</span>
@@ -306,7 +306,7 @@
                 <!-- Empty slot click area -->
                 <div
                   v-if="getHourJobs(selectedDate, hour).length === 0"
-                  class="absolute inset-0 hover:bg-blue-50 cursor-pointer transition-colors flex items-center justify-center"
+                  class="absolute inset-0 hover:bg-gray-50 cursor-pointer transition-colors flex items-center pl-3"
                   @click="createJobAtTime(selectedDate, hour)"
                 >
                   <span class="text-xs text-gray-400">Click para agendar</span>
@@ -805,7 +805,7 @@ const weekDays = computed(() => {
     const date = startOfWeek.add(i, 'day')
     days.push({
       date: date.format('YYYY-MM-DD'),
-      dayName: date.format('ddd'),
+      dayName: date.format('ddd').charAt(0).toUpperCase() + date.format('ddd').slice(1),
       dayNumber: date.format('D')
     })
   }
@@ -823,11 +823,13 @@ const workingHours = computed(() => {
 
 const selectedDayLabel = computed(() => {
   if (!selectedDate.value) return ''
-  return toBuenosAires(selectedDate.value).format('dddd, D [de] MMMM')
+  const formatted = toBuenosAires(selectedDate.value).format('dddd, D [de] MMMM')
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 })
 
 const currentDayViewLabel = computed(() => {
-  return toBuenosAires(currentDayView.value).format('dddd, D [de] MMMM YYYY')
+  const formatted = toBuenosAires(currentDayView.value).format('dddd, D [de] MMMM YYYY')
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 })
 
 // Check if the current job is in the future (prevent marking as completed)
