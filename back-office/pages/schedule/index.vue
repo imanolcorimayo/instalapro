@@ -20,32 +20,30 @@
     </div>
 
     <!-- View Toggle Pills -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-      <div class="flex items-center justify-center">
-        <div class="bg-gray-100 p-1 rounded-lg inline-flex">
-          <button
-            @click="switchToWeeklyView"
-            :class="[
-              'px-4 py-2 text-sm font-medium rounded-md transition-all',
-              currentView === 'weekly'
-                ? 'bg-white text-blue-700 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            ]"
-          >
-            Semanal
-          </button>
-          <button
-            @click="switchToDayView()"
-            :class="[
-              'px-4 py-2 text-sm font-medium rounded-md transition-all',
-              currentView === 'daily'
-                ? 'bg-white text-blue-700 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            ]"
-          >
-            Día
-          </button>
-        </div>
+    <div class="flex items-center justify-center mb-6">
+      <div class="inline-flex">
+        <button
+          @click="switchToWeeklyView"
+          :class="[
+            'px-4 py-2 text-sm font-medium rounded-md transition-all',
+            currentView === 'weekly'
+              ? 'bg-white text-blue-700 shadow-sm border border-blue-200'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200'
+          ]"
+        >
+          Semanal
+        </button>
+        <button
+          @click="switchToDayView()"
+          :class="[
+            'px-4 py-2 text-sm font-medium rounded-md transition-all ml-2',
+            currentView === 'daily'
+              ? 'bg-white text-blue-700 shadow-sm border border-blue-200'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200'
+          ]"
+        >
+          Día
+        </button>
       </div>
     </div>
 
