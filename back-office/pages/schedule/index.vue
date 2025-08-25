@@ -19,8 +19,38 @@
       </button>
     </div>
 
-    <!-- Week Navigation -->
+    <!-- View Toggle Pills -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div class="flex items-center justify-center">
+        <div class="bg-gray-100 p-1 rounded-lg inline-flex">
+          <button
+            @click="switchToWeeklyView"
+            :class="[
+              'px-4 py-2 text-sm font-medium rounded-md transition-all',
+              currentView === 'weekly'
+                ? 'bg-white text-blue-700 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            ]"
+          >
+            Semanal
+          </button>
+          <button
+            @click="switchToDayView()"
+            :class="[
+              'px-4 py-2 text-sm font-medium rounded-md transition-all',
+              currentView === 'daily'
+                ? 'bg-white text-blue-700 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            ]"
+          >
+            Día
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Week Navigation (only show in weekly view) -->
+    <div v-if="currentView === 'weekly'" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
       <div class="flex items-center justify-between">
         <button
           @click="previousWeek"
@@ -47,8 +77,36 @@
       </div>
     </div>
 
+    <!-- Day Navigation (only show in day view) -->
+    <div v-if="currentView === 'daily'" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div class="flex items-center justify-between">
+        <button
+          @click="previousDay"
+          class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <IconChevronLeft class="w-5 h-5" />
+        </button>
+        
+        <div class="text-center">
+          <h2 class="text-lg font-semibold text-gray-900">
+            {{ currentDayViewLabel }}
+          </h2>
+          <p class="text-sm text-gray-600">
+            {{ isToday(currentDayView) ? 'Hoy' : '' }}
+          </p>
+        </div>
+        
+        <button
+          @click="nextDay"
+          class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <IconChevronRight class="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+
     <!-- Weekly View -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
+    <div v-if="currentView === 'weekly'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
       <div
         v-for="day in weekDays"
         :key="day.date"
@@ -60,7 +118,7 @@
             'p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors',
             isToday(day.date) ? 'bg-blue-50 border-blue-100' : 'bg-gray-50'
           ]"
-          @click="openDayView(day.date)"
+          @click="switchToDayView(day.date)"
         >
           <div class="text-center">
             <div :class="[
@@ -108,6 +166,112 @@
               </div>
               <div class="text-xs text-gray-400 mt-1">
                 ${{ job.price?.toLocaleString() || 0 }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day View -->
+    <div v-if="currentView === 'daily'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <!-- Mobile: List view for small screens -->
+      <div class="block sm:hidden">
+        <div class="p-4 border-b border-gray-100">
+          <h3 class="text-sm font-medium text-gray-700 mb-3">Trabajos del día</h3>
+          <div v-if="getDayJobs(currentDayView).length === 0" class="text-center py-8">
+            <IconCalendarBlank class="w-8 h-8 text-gray-300 mx-auto mb-2" />
+            <p class="text-sm text-gray-500 mb-4">Sin trabajos programados</p>
+            <button
+              @click="openNewJobModal"
+              class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium"
+            >
+              Agendar trabajo
+            </button>
+          </div>
+          <div v-else class="space-y-2">
+            <div
+              v-for="job in getDayJobs(currentDayView)"
+              :key="job.id"
+              :class="[
+                'p-3 rounded border-l-4 cursor-pointer transition-all',
+                getJobStatusColor(job.status)
+              ]"
+              @click="editJob(job)"
+            >
+              <div class="flex justify-between items-start mb-2">
+                <div class="font-medium text-gray-900">{{ job.clientName }}</div>
+                <div class="text-sm text-gray-600">
+                  {{ formatJobTime(job.scheduledDate, job.estimatedDuration) }}
+                </div>
+              </div>
+              <div class="text-sm text-gray-600 mb-1">{{ job.serviceType }}</div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-500 truncate">{{ job.address }}</span>
+                <span class="text-gray-600 font-medium ml-2">${{ job.price?.toLocaleString() || 0 }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop: Timeline view for larger screens -->
+      <div class="hidden sm:block">
+        <!-- Day Timeline with Hours -->
+        <div class="border border-gray-200 rounded-lg overflow-hidden relative">
+          <!-- Hour rows background -->
+          <div
+            v-for="hour in workingHours"
+            :key="hour"
+            class="border-b border-gray-100 last:border-b-0 h-16"
+          >
+            <div class="flex h-full">
+              <!-- Hour Column -->
+              <div class="w-16 bg-gray-50 flex items-center justify-center border-r border-gray-100">
+                <span class="text-xs font-medium text-gray-600">
+                  {{ formatHour(hour) }}
+                </span>
+              </div>
+              
+              <!-- Job Slot -->
+              <div class="flex-1 relative">
+                <!-- Empty slot click area -->
+                <div
+                  v-if="getHourJobs(currentDayView, hour).length === 0"
+                  class="absolute inset-0 hover:bg-blue-50 cursor-pointer transition-colors flex items-center justify-center"
+                  @click="createJobAtTime(currentDayView, hour)"
+                >
+                  <span class="text-xs text-gray-400">Click para agendar</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Jobs overlay with proper positioning -->
+          <div class="absolute inset-0 pointer-events-none">
+            <div class="relative h-full">
+              <!-- Left margin for hour column -->
+              <div class="ml-16 h-full relative">
+                <div
+                  v-for="job in getDayJobs(currentDayView)"
+                  :key="job.id"
+                  :class="[
+                    'absolute left-2 right-2 rounded border-l-4 p-2 cursor-pointer hover:shadow-sm transition-all pointer-events-auto',
+                    getJobStatusColor(job.status)
+                  ]"
+                  :style="getDayViewJobPosition(job)"
+                  @click="editJob(job)"
+                >
+                  <div class="text-sm font-medium text-gray-900 truncate">
+                    {{ job.clientName }}
+                  </div>
+                  <div class="text-xs text-gray-600 truncate">
+                    {{ job.serviceType }}
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    ${{ job.price?.toLocaleString() || 0 }}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -579,6 +743,10 @@ const selectedDate = ref(null)
 const editingJob = ref(null)
 const savingJob = ref(false)
 
+// View state
+const currentView = ref('weekly') // 'weekly' or 'daily'
+const currentDayView = ref(nowInBuenosAires().format('YYYY-MM-DD'))
+
 // Client auto-complete state
 const showClientDropdown = ref(false)
 const clientSearchQuery = ref('')
@@ -660,6 +828,10 @@ const selectedDayLabel = computed(() => {
   return toBuenosAires(selectedDate.value).format('dddd, D [de] MMMM')
 })
 
+const currentDayViewLabel = computed(() => {
+  return toBuenosAires(currentDayView.value).format('dddd, D [de] MMMM YYYY')
+})
+
 // Check if the current job is in the future (prevent marking as completed)
 const isJobInFuture = computed(() => {
   if (!editingJob.value || !jobForm.value.date || !jobForm.value.time) return false
@@ -715,6 +887,27 @@ const previousWeek = () => {
 
 const nextWeek = () => {
   currentWeekStart.value = currentWeekStart.value.add(1, 'week')
+}
+
+// Day view navigation
+const previousDay = () => {
+  currentDayView.value = toBuenosAires(currentDayView.value).subtract(1, 'day').format('YYYY-MM-DD')
+}
+
+const nextDay = () => {
+  currentDayView.value = toBuenosAires(currentDayView.value).add(1, 'day').format('YYYY-MM-DD')
+}
+
+// View switching
+const switchToWeeklyView = () => {
+  currentView.value = 'weekly'
+}
+
+const switchToDayView = (date = null) => {
+  currentView.value = 'daily'
+  if (date) {
+    currentDayView.value = date
+  }
 }
 
 const getDayJobs = (date) => {
@@ -779,6 +972,28 @@ const getJobStatusColor = (status) => {
 }
 
 const getDayModalJobPosition = (job) => {
+  const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
+  const jobStart = toBuenosAires(actualDate)
+  const durationMinutes = job.estimatedDuration || 120
+  
+  const startHour = jobStart.hour()
+  const startMinute = jobStart.minute()
+  
+  // Calculate position relative to working hours (8 AM = hour 0, 6 PM = hour 10)
+  const hourFromStart = startHour - 8 // 8 AM is our starting hour
+  const hourHeight = 64 // Each hour row is h-16 (64px)
+  
+  // Position calculations
+  const topPosition = (hourFromStart * hourHeight) + (startMinute / 60 * hourHeight)
+  const jobHeight = (durationMinutes / 60) * hourHeight
+  
+  return {
+    top: `${topPosition}px`,
+    height: `${jobHeight}px`
+  }
+}
+
+const getDayViewJobPosition = (job) => {
   const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
   const jobStart = toBuenosAires(actualDate)
   const durationMinutes = job.estimatedDuration || 120
