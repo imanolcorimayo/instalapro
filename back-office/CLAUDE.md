@@ -511,12 +511,6 @@ interface PaymentUpdateInput {
 - **Variable Names**: English, descriptive, camelCase
 - **Function Names**: English, verb-based, descriptive
 
-### No Authentication System
-- No login/logout functionality
-- No user roles or permissions
-- Single technician assumption
-- Direct access to all modules
-
 ### Data Persistence Strategy
 
 **LocalStorage (MVP Phase)**:

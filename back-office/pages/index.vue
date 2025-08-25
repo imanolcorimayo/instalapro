@@ -164,7 +164,8 @@ import IconClipboardText from '~icons/mdi/clipboard-text'
 // ==========================================
 
 definePageMeta({
-  layout: 'default'
+  layout: 'default',
+  middleware: 'auth'
 })
 
 // SEO Meta

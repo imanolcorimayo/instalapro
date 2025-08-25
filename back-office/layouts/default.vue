@@ -62,20 +62,36 @@
 
       <!-- Bottom section -->
       <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
-        <div class="flex items-center cursor-default">
-          <div class="flex-shrink-0">
-            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <IconAccount class="w-5 h-5 text-blue-600" />
+        <div class="flex items-center justify-between">
+          <div class="flex items-center cursor-default min-w-0 flex-1">
+            <div class="flex-shrink-0">
+              <img 
+                v-if="authStore.userPhoto" 
+                :src="authStore.userPhoto" 
+                :alt="authStore.userName" 
+                class="w-10 h-10 rounded-lg"
+              />
+              <div v-else class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <IconAccount class="w-5 h-5 text-blue-600" />
+              </div>
+            </div>
+            <div class="ml-3 min-w-0 flex-1">
+              <p class="text-sm font-medium text-gray-700 truncate">
+                {{ authStore.userName || technicianName || 'Técnico' }}
+              </p>
+              <p class="text-xs text-gray-500">
+                Back Office
+              </p>
             </div>
           </div>
-          <div class="ml-3">
-            <p class="text-sm font-medium text-gray-700 truncate">
-              {{ technicianName || 'Técnico' }}
-            </p>
-            <p class="text-xs text-gray-500">
-              Back Office
-            </p>
-          </div>
+          <button
+            @click="handleSignOut"
+            :disabled="authStore.loading"
+            class="p-2 text-gray-400 hover:text-red-600 rounded-lg transition-colors disabled:opacity-50"
+            title="Cerrar sesión"
+          >
+            <IconLogoutVariant class="w-4 h-4" />
+          </button>
         </div>
       </div>
     </div>
@@ -147,6 +163,7 @@ import IconViewDashboardOutline from '~icons/mdi/view-dashboard-outline'
 import IconCalendarOutline from '~icons/mdi/calendar-outline'
 import IconAccountGroupOutline from '~icons/mdi/account-group-outline'
 import IconFileDocumentOutline from '~icons/mdi/file-document-outline'
+import IconLogoutVariant from '~icons/mdi/logout-variant'
 
 // ==========================================
 // COMPOSABLES
@@ -154,6 +171,8 @@ import IconFileDocumentOutline from '~icons/mdi/file-document-outline'
 
 const route = useRoute()
 const technicianStore = useTechnicianStore()
+const authStore = useAuthStore()
+const { $toast } = useNuxtApp()
 
 // ==========================================
 // STATE
@@ -235,13 +254,24 @@ const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
 }
 
+const handleSignOut = async () => {
+  try {
+    await authStore.signOut()
+    $toast.success('Sesión cerrada correctamente')
+  } catch (error) {
+    console.error('Sign out error:', error)
+    $toast.error('Error al cerrar sesión')
+  }
+}
+
 // ==========================================
 // LIFECYCLE
 // ==========================================
 
 onMounted(() => {
-  // Initialize technician store
+  // Initialize stores
   technicianStore.initialize()
+  authStore.initializeAuthListener()
   
   // Close mobile menu on route change
   watch(

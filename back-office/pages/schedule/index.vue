@@ -719,7 +719,8 @@ import {
 import { watch, nextTick } from 'vue'
 
 definePageMeta({
-  layout: 'default'
+  layout: 'default',
+  middleware: 'auth'
 })
 
 useSeoMeta({

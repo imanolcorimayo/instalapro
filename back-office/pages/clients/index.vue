@@ -249,7 +249,8 @@ import IconEmail from '~icons/mdi/email'
 
 // Page meta
 definePageMeta({
-  layout: 'default'
+  layout: 'default',
+  middleware: 'auth'
 })
 
 useSeoMeta({

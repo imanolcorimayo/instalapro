@@ -273,7 +273,8 @@ import IconWhatsapp from '~icons/mdi/whatsapp'
 // ==========================================
 
 definePageMeta({
-  layout: 'default'
+  layout: 'default',
+  middleware: 'auth'
 })
 
 // ==========================================
