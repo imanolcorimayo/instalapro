@@ -447,48 +447,8 @@
 
     <!-- Day View -->
     <div v-if="currentView === 'daily'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <!-- Mobile: List view for small screens -->
-      <div class="block sm:hidden">
-        <div class="p-4 border-b border-gray-100">
-          <h3 class="text-sm font-medium text-gray-700 mb-3">Trabajos del día</h3>
-          <div v-if="getDayJobs(currentDayView).length === 0" class="text-center py-8">
-            <IconCalendarBlank class="w-8 h-8 text-gray-300 mx-auto mb-2" />
-            <p class="text-sm text-gray-500 mb-4">Sin trabajos programados</p>
-            <button
-              @click="openNewJobModal"
-              class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium"
-            >
-              Agendar trabajo
-            </button>
-          </div>
-          <div v-else class="space-y-2">
-            <div
-              v-for="job in getDayJobs(currentDayView)"
-              :key="job.id"
-              :class="[
-                'p-3 rounded border-l-4 cursor-pointer transition-all',
-                getJobStatusColor(job.status)
-              ]"
-              @click="editJob(job)"
-            >
-              <div class="flex justify-between items-start mb-2">
-                <div class="font-medium text-gray-900">{{ job.clientName }}</div>
-                <div class="text-sm text-gray-600">
-                  {{ formatJobTime(job.scheduledDate, job.estimatedDuration) }}
-                </div>
-              </div>
-              <div class="text-sm text-gray-600 mb-1">{{ job.serviceType }}</div>
-              <div class="flex justify-between items-center text-xs">
-                <span class="text-gray-500 truncate">{{ job.address }}</span>
-                <span class="text-gray-600 font-medium ml-2">${{ job.price?.toLocaleString() || 0 }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Desktop: Timeline view for larger screens -->
-      <div class="hidden sm:block">
+      <!-- Timeline view for all screen sizes -->
+      <div>
         <!-- Day Timeline with Hours -->
         <div class="border border-gray-200 rounded-lg overflow-hidden relative">
           <!-- Hour rows background -->
@@ -499,7 +459,7 @@
           >
             <div class="flex h-full">
               <!-- Hour Column -->
-              <div class="w-16 bg-gray-50 flex items-center justify-center border-r border-gray-100">
+              <div class="w-12 sm:w-16 bg-gray-50 flex items-center justify-center border-r border-gray-100 flex-shrink-0">
                 <span class="text-xs font-medium text-gray-600">
                   {{ formatHour(hour) }}
                 </span>
@@ -510,7 +470,7 @@
                 <!-- Empty slot click area -->
                 <div
                   v-if="getHourJobs(currentDayView, hour).length === 0"
-                  class="absolute inset-0 hover:bg-gray-50 cursor-pointer transition-colors flex items-center pl-3"
+                  class="absolute inset-0 hover:bg-gray-50 cursor-pointer transition-colors flex items-center pl-2 sm:pl-3"
                   @click="createJobAtTime(currentDayView, hour)"
                 >
                   <span class="text-xs text-gray-400">Click para agendar</span>
@@ -523,24 +483,24 @@
           <div class="absolute inset-0 pointer-events-none">
             <div class="relative h-full">
               <!-- Left margin for hour column -->
-              <div class="ml-16 h-full relative">
+              <div class="ml-12 sm:ml-16 h-full relative">
                 <div
                   v-for="job in getDayJobs(currentDayView)"
                   :key="job.id"
                   :class="[
-                    'absolute left-2 right-2 rounded border-l-4 p-2 cursor-pointer hover:shadow-sm transition-all pointer-events-auto',
+                    'absolute left-1 right-1 sm:left-2 sm:right-2 rounded border-l-4 p-1 sm:p-2 cursor-pointer hover:shadow-sm transition-all pointer-events-auto',
                     getJobStatusColor(job.status)
                   ]"
                   :style="getDayViewJobPosition(job)"
                   @click="editJob(job)"
                 >
-                  <div class="text-sm font-medium text-gray-900 truncate">
+                  <div class="text-xs sm:text-sm font-medium text-gray-900 truncate">
                     {{ job.clientName }}
                   </div>
                   <div class="text-xs text-gray-600 truncate">
                     {{ job.serviceType }}
                   </div>
-                  <div class="text-xs text-gray-500">
+                  <div class="text-xs text-gray-500 hidden sm:block">
                     ${{ job.price?.toLocaleString() || 0 }}
                   </div>
                 </div>
