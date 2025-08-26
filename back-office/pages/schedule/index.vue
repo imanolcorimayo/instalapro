@@ -188,31 +188,33 @@
       <div class="block sm:hidden overflow-x-auto">
         <div class="min-w-[640px]">
           <!-- Header with day names and numbers -->
-          <div class="grid grid-cols-8 border-b border-gray-200">
+          <div class="flex border-b border-gray-200">
             <!-- Hour header -->
-            <div class="w-12 bg-gray-50 p-2 border-r border-gray-200">
+            <div class="w-12 bg-gray-50 p-2 border-r border-gray-200 flex-shrink-0">
               <div class="text-xs font-medium text-gray-600 text-center">Hora</div>
             </div>
             <!-- Day headers -->
-            <div 
-              v-for="day in weekDays"
-              :key="day.date"
-              :class="[
-                'p-2 border-r border-gray-100 last:border-r-0 text-center min-w-[80px]',
-                isToday(day.date) ? 'bg-blue-50' : 'bg-gray-50'
-              ]"
-            >
-              <div :class="[
-                'text-xs font-medium mb-1',
-                isToday(day.date) ? 'text-blue-700' : 'text-gray-600'
-              ]">
-                {{ day.dayName }}
-              </div>
-              <div :class="[
-                'text-sm font-bold',
-                isToday(day.date) ? 'text-blue-600' : 'text-gray-900'
-              ]">
-                {{ day.dayNumber }}
+            <div class="flex flex-1">
+              <div 
+                v-for="day in weekDays"
+                :key="day.date"
+                :class="[
+                  'flex-1 p-2 border-r border-gray-100 last:border-r-0 text-center min-w-[80px]',
+                  isToday(day.date) ? 'bg-blue-50' : 'bg-gray-50'
+                ]"
+              >
+                <div :class="[
+                  'text-xs font-medium mb-1',
+                  isToday(day.date) ? 'text-blue-700' : 'text-gray-600'
+                ]">
+                  {{ day.dayName }}
+                </div>
+                <div :class="[
+                  'text-sm font-bold',
+                  isToday(day.date) ? 'text-blue-600' : 'text-gray-900'
+                ]">
+                  {{ day.dayNumber }}
+                </div>
               </div>
             </div>
           </div>
@@ -223,58 +225,62 @@
             <div 
               v-for="hour in workingHours"
               :key="hour"
-              class="grid grid-cols-8 border-b border-gray-100 last:border-b-0 h-16"
+              class="flex border-b border-gray-100 last:border-b-0 h-16"
             >
               <!-- Hour column -->
-              <div class="w-12 bg-gray-50 flex items-center justify-center border-r border-gray-200">
+              <div class="w-12 bg-gray-50 flex items-center justify-center border-r border-gray-200 flex-shrink-0">
                 <span class="text-xs font-medium text-gray-600">
                   {{ formatHour(hour) }}
                 </span>
               </div>
               
               <!-- Day columns -->
-              <div 
-                v-for="day in weekDays"
-                :key="`${day.date}-${hour}`"
-                class="border-r border-gray-100 last:border-r-0 relative min-w-[80px]"
-              >
-                <!-- Empty slot click area -->
-                <div
-                  v-if="getHourJobs(day.date, hour).length === 0"
-                  class="absolute inset-0 hover:bg-gray-50 cursor-pointer transition-colors"
-                  @click="createJobAtTime(day.date, hour)"
+              <div class="flex flex-1">
+                <div 
+                  v-for="day in weekDays"
+                  :key="`${day.date}-${hour}`"
+                  class="flex-1 border-r border-gray-100 last:border-r-0 relative min-w-[80px]"
                 >
+                  <!-- Empty slot click area -->
+                  <div
+                    v-if="getHourJobs(day.date, hour).length === 0"
+                    class="absolute inset-0 hover:bg-gray-50 cursor-pointer transition-colors"
+                    @click="createJobAtTime(day.date, hour)"
+                  >
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Jobs overlay -->
             <div class="absolute inset-0 pointer-events-none">
-              <div class="grid grid-cols-8 h-full">
+              <div class="flex h-full">
                 <!-- Skip hour column -->
-                <div class="w-12"></div>
+                <div class="w-12 flex-shrink-0"></div>
                 
                 <!-- Day columns with jobs -->
-                <div 
-                  v-for="(day, dayIndex) in weekDays"
-                  :key="day.date"
-                  class="relative min-w-[80px]"
-                >
-                  <div
-                    v-for="job in getDayJobs(day.date)"
-                    :key="job.id"
-                    :class="[
-                      'absolute left-1 right-1 rounded border-l-2 p-1 cursor-pointer hover:shadow-sm transition-all pointer-events-auto',
-                      getJobStatusColor(job.status)
-                    ]"
-                    :style="getWeeklyTimelineJobPosition(job)"
-                    @click="editJob(job)"
+                <div class="flex flex-1">
+                  <div 
+                    v-for="(day, dayIndex) in weekDays"
+                    :key="day.date"
+                    class="flex-1 relative min-w-[80px]"
                   >
-                    <div class="text-xs font-medium text-gray-900 truncate">
-                      {{ job.clientName }}
-                    </div>
-                    <div class="text-xs text-gray-600 truncate">
-                      {{ job.serviceType }}
+                    <div
+                      v-for="job in getDayJobs(day.date)"
+                      :key="job.id"
+                      :class="[
+                        'absolute left-1 right-1 rounded border-l-2 p-1 cursor-pointer hover:shadow-sm transition-all pointer-events-auto',
+                        getJobStatusColor(job.status)
+                      ]"
+                      :style="getWeeklyTimelineJobPosition(job)"
+                      @click="editJob(job)"
+                    >
+                      <div class="text-xs font-medium text-gray-900 truncate">
+                        {{ job.clientName }}
+                      </div>
+                      <div class="text-xs text-gray-600 truncate">
+                        {{ job.serviceType }}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -287,32 +293,34 @@
       <!-- Desktop: Full timeline view -->
       <div class="hidden sm:block">
         <!-- Header with day names and numbers -->
-        <div class="grid grid-cols-8 border-b border-gray-200">
+        <div class="flex border-b border-gray-200">
           <!-- Hour header -->
-          <div class="w-16 bg-gray-50 p-3 border-r border-gray-200">
+          <div class="w-16 bg-gray-50 p-3 border-r border-gray-200 flex-shrink-0">
             <div class="text-sm font-medium text-gray-700 text-center">Hora</div>
           </div>
           <!-- Day headers -->
-          <div 
-            v-for="day in weekDays"
-            :key="day.date"
-            :class="[
-              'p-3 border-r border-gray-100 last:border-r-0 text-center cursor-pointer hover:bg-gray-100 transition-colors',
-              isToday(day.date) ? 'bg-blue-50' : 'bg-gray-50'
-            ]"
-            @click="switchToDayView(day.date)"
-          >
-            <div :class="[
-              'text-sm font-medium mb-1',
-              isToday(day.date) ? 'text-blue-700' : 'text-gray-600'
-            ]">
-              {{ day.dayName }}
-            </div>
-            <div :class="[
-              'text-lg font-bold',
-              isToday(day.date) ? 'text-blue-600' : 'text-gray-900'
-            ]">
-              {{ day.dayNumber }}
+          <div class="flex flex-1">
+            <div 
+              v-for="day in weekDays"
+              :key="day.date"
+              :class="[
+                'flex-1 p-3 border-r border-gray-100 last:border-r-0 text-center cursor-pointer hover:bg-gray-100 transition-colors',
+                isToday(day.date) ? 'bg-blue-50' : 'bg-gray-50'
+              ]"
+              @click="switchToDayView(day.date)"
+            >
+              <div :class="[
+                'text-sm font-medium mb-1',
+                isToday(day.date) ? 'text-blue-700' : 'text-gray-600'
+              ]">
+                {{ day.dayName }}
+              </div>
+              <div :class="[
+                'text-lg font-bold',
+                isToday(day.date) ? 'text-blue-600' : 'text-gray-900'
+              ]">
+                {{ day.dayNumber }}
+              </div>
             </div>
           </div>
         </div>
@@ -323,64 +331,68 @@
           <div 
             v-for="hour in workingHours"
             :key="hour"
-            class="grid grid-cols-8 border-b border-gray-100 last:border-b-0 h-16"
+            class="flex border-b border-gray-100 last:border-b-0 h-16"
           >
             <!-- Hour column -->
-            <div class="w-16 bg-gray-50 flex items-center justify-center border-r border-gray-200">
+            <div class="w-16 bg-gray-50 flex items-center justify-center border-r border-gray-200 flex-shrink-0">
               <span class="text-sm font-medium text-gray-600">
                 {{ formatHour(hour) }}
               </span>
             </div>
             
             <!-- Day columns -->
-            <div 
-              v-for="day in weekDays"
-              :key="`${day.date}-${hour}`"
-              class="border-r border-gray-100 last:border-r-0 relative"
-            >
-              <!-- Empty slot click area -->
-              <div
-                v-if="getHourJobs(day.date, hour).length === 0"
-                class="absolute inset-0 hover:bg-gray-50 cursor-pointer transition-colors flex items-center justify-center"
-                @click="createJobAtTime(day.date, hour)"
+            <div class="flex flex-1">
+              <div 
+                v-for="day in weekDays"
+                :key="`${day.date}-${hour}`"
+                class="flex-1 border-r border-gray-100 last:border-r-0 relative"
               >
-                <span class="text-xs text-gray-400 opacity-0 hover:opacity-100 transition-opacity">
-                  +
-                </span>
+                <!-- Empty slot click area -->
+                <div
+                  v-if="getHourJobs(day.date, hour).length === 0"
+                  class="absolute inset-0 hover:bg-gray-50 cursor-pointer transition-colors flex items-center justify-center"
+                  @click="createJobAtTime(day.date, hour)"
+                >
+                  <span class="text-xs text-gray-400 opacity-0 hover:opacity-100 transition-opacity">
+                    +
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Jobs overlay -->
           <div class="absolute inset-0 pointer-events-none">
-            <div class="grid grid-cols-8 h-full">
+            <div class="flex h-full">
               <!-- Skip hour column -->
-              <div class="w-16"></div>
+              <div class="w-16 flex-shrink-0"></div>
               
               <!-- Day columns with jobs -->
-              <div 
-                v-for="(day, dayIndex) in weekDays"
-                :key="day.date"
-                class="relative"
-              >
-                <div
-                  v-for="job in getDayJobs(day.date)"
-                  :key="job.id"
-                  :class="[
-                    'absolute left-2 right-2 rounded border-l-4 p-2 cursor-pointer hover:shadow-sm transition-all pointer-events-auto',
-                    getJobStatusColor(job.status)
-                  ]"
-                  :style="getWeeklyTimelineJobPosition(job)"
-                  @click="editJob(job)"
+              <div class="flex flex-1">
+                <div 
+                  v-for="(day, dayIndex) in weekDays"
+                  :key="day.date"
+                  class="flex-1 relative"
                 >
-                  <div class="text-sm font-medium text-gray-900 truncate">
-                    {{ job.clientName }}
-                  </div>
-                  <div class="text-xs text-gray-600 truncate">
-                    {{ job.serviceType }}
-                  </div>
-                  <div class="text-xs text-gray-500">
-                    ${{ job.price?.toLocaleString() || 0 }}
+                  <div
+                    v-for="job in getDayJobs(day.date)"
+                    :key="job.id"
+                    :class="[
+                      'absolute left-2 right-2 rounded border-l-4 p-2 cursor-pointer hover:shadow-sm transition-all pointer-events-auto',
+                      getJobStatusColor(job.status)
+                    ]"
+                    :style="getWeeklyTimelineJobPosition(job)"
+                    @click="editJob(job)"
+                  >
+                    <div class="text-sm font-medium text-gray-900 truncate">
+                      {{ job.clientName }}
+                    </div>
+                    <div class="text-xs text-gray-600 truncate">
+                      {{ job.serviceType }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      ${{ job.price?.toLocaleString() || 0 }}
+                    </div>
                   </div>
                 </div>
               </div>
