@@ -184,8 +184,50 @@
 
     <!-- Weekly Timeline View (Semanal 2) -->
     <div v-if="currentView === 'weekly-timeline'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <!-- Mobile: Simplified horizontal scroll view -->
-      <div class="block sm:hidden overflow-x-auto">
+      <!-- Mobile: Enhanced horizontal scroll view -->
+      <div class="block sm:hidden relative">
+        <!-- Scroll indicator text -->
+        <div class="bg-blue-50 px-4 py-2 text-center border-b border-blue-200">
+          <p class="text-xs text-blue-700 font-medium flex items-center justify-center gap-1">
+            <IconChevronLeft class="w-3 h-3" />
+            <span>Desliza para ver todos los días</span>
+            <IconChevronRight class="w-3 h-3" />
+          </p>
+        </div>
+        
+        <!-- Scroll arrows -->
+        <button
+          v-if="canScrollLeft"
+          @click="scrollMobileTimeline('left')"
+          class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-full p-2 shadow-md hover:bg-white transition-all"
+        >
+          <IconChevronLeft class="w-4 h-4 text-gray-600" />
+        </button>
+        
+        <button
+          v-if="canScrollRight"
+          @click="scrollMobileTimeline('right')"
+          class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-full p-2 shadow-md hover:bg-white transition-all"
+        >
+          <IconChevronRight class="w-4 h-4 text-gray-600" />
+        </button>
+        
+        <!-- Gradient overlays -->
+        <div
+          v-if="canScrollLeft"
+          class="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"
+        ></div>
+        <div
+          v-if="canScrollRight"
+          class="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"
+        ></div>
+        
+        <!-- Scrollable content -->
+        <div 
+          ref="mobileScrollContainer"
+          @scroll="updateScrollIndicators"
+          class="overflow-x-auto scrollbar-hide"
+        >
         <div class="min-w-[640px]">
           <!-- Header with day names and numbers -->
           <div class="flex border-b border-gray-200">
@@ -287,6 +329,7 @@
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
 
@@ -973,6 +1016,11 @@ const selectedDate = ref(null)
 const editingJob = ref(null)
 const savingJob = ref(false)
 
+// Mobile scroll state for weekly timeline
+const mobileScrollContainer = ref()
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
+
 // View state
 const currentView = ref('weekly') // 'weekly', 'weekly-timeline', or 'daily'
 const currentDayView = ref(nowInBuenosAires().format('YYYY-MM-DD'))
@@ -1107,6 +1155,27 @@ watch(() => jobForm.value.status, (newStatus) => {
     console.warn('Invalid status for future job:', newStatus)
   }
 })
+
+// Mobile scroll methods
+const updateScrollIndicators = () => {
+  if (!mobileScrollContainer.value) return
+  
+  const container = mobileScrollContainer.value
+  canScrollLeft.value = container.scrollLeft > 0
+  canScrollRight.value = container.scrollLeft < (container.scrollWidth - container.clientWidth - 1)
+}
+
+const scrollMobileTimeline = (direction) => {
+  if (!mobileScrollContainer.value) return
+  
+  const container = mobileScrollContainer.value
+  const scrollAmount = direction === 'left' ? -200 : 200
+  
+  container.scrollTo({
+    left: container.scrollLeft + scrollAmount,
+    behavior: 'smooth'
+  })
+}
 
 // Methods
 const isToday = (date) => {
@@ -1689,5 +1758,19 @@ onMounted(() => {
   subscribe()
   // Load clients for auto-complete
   loadClients()
+  
+  // Setup mobile scroll indicators
+  nextTick(() => {
+    updateScrollIndicators()
+  })
+})
+
+// Watch for view changes to update scroll indicators
+watch(currentView, (newView) => {
+  if (newView === 'weekly-timeline') {
+    nextTick(() => {
+      updateScrollIndicators()
+    })
+  }
 })
 </script>
