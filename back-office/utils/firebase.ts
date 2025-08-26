@@ -1,7 +1,7 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
 import { getFirestore, type Firestore } from 'firebase/firestore'
 import { getAnalytics, type Analytics } from 'firebase/analytics'
-import { getAuth, type Auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
+import { getAuth, type Auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User, setPersistence, browserLocalPersistence } from 'firebase/auth'
 
 // Firebase configuration interface
 interface FirebaseConfig {
@@ -84,6 +84,13 @@ export const getAuthInstance = (): Auth => {
 
   const app = initializeFirebase()
   auth = getAuth(app)
+  
+  // Ensure persistence is set to local storage (this is the default, but being explicit)
+  if (typeof window !== 'undefined') {
+    setPersistence(auth, browserLocalPersistence).catch((error) => {
+      console.warn('Failed to set auth persistence:', error)
+    })
+  }
   
   return auth
 }

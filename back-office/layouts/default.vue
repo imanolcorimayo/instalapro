@@ -85,10 +85,10 @@
             </div>
           </div>
           <button
-            @click="handleSignOut"
-            :disabled="authStore.loading"
-            class="p-2 text-gray-400 hover:text-red-600 rounded-lg transition-colors disabled:opacity-50"
+            @click.prevent="handleSignOut"
+            class="p-2 text-gray-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
             title="Cerrar sesión"
+            type="button"
           >
             <IconLogoutVariant class="w-4 h-4" />
           </button>
@@ -271,7 +271,6 @@ const handleSignOut = async () => {
 onMounted(() => {
   // Initialize stores
   technicianStore.initialize()
-  authStore.initializeAuthListener()
   
   // Close mobile menu on route change
   watch(

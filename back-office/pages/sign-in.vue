@@ -36,7 +36,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 // Icons
 import IconAirConditioner from '~icons/mdi/air-conditioner'
 import IconGoogle from '~icons/logos/google-icon'
@@ -58,14 +58,10 @@ const handleGoogleSignIn = async () => {
     
     // Redirect to dashboard after successful sign in
     await navigateTo('/')
-  } catch (error: any) {
+  } catch (error) {
     console.error('Sign in failed:', error)
     $toast.error('Error al iniciar sesión. Por favor, intenta de nuevo.')
   }
 }
 
-// Initialize auth listener when component mounts
-onMounted(() => {
-  authStore.initializeAuthListener()
-})
 </script>
