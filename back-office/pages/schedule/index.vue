@@ -23,17 +23,6 @@
     <div class="flex items-center justify-center mb-6">
       <div class="inline-flex bg-gray-100 rounded-xl p-1 overflow-x-auto">
         <button
-          @click="switchToWeeklyView"
-          :class="[
-            'px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out whitespace-nowrap',
-            currentView === 'weekly'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-800'
-          ]"
-        >
-          Semanal
-        </button>
-        <button
           @click="switchToWeeklyTimelineView"
           :class="[
             'px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out whitespace-nowrap',
@@ -42,7 +31,7 @@
               : 'text-gray-600 hover:text-gray-800'
           ]"
         >
-          Semanal 2
+          Semanal
         </button>
         <button
           @click="switchToDayView()"
@@ -58,8 +47,8 @@
       </div>
     </div>
 
-    <!-- Week Navigation (only show in weekly views) -->
-    <div v-if="currentView === 'weekly' || currentView === 'weekly-timeline'" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+    <!-- Week Navigation (only show in weekly timeline view) -->
+    <div v-if="currentView === 'weekly-timeline'" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
       <div class="flex items-center justify-between">
         <button
           @click="previousWeek"
@@ -114,75 +103,7 @@
       </div>
     </div>
 
-    <!-- Weekly View -->
-    <div v-if="currentView === 'weekly'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
-      <div
-        v-for="day in weekDays"
-        :key="day.date"
-        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
-      >
-        <!-- Day Header -->
-        <div
-          :class="[
-            'p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors',
-            isToday(day.date) ? 'bg-blue-50 border-blue-100' : 'bg-gray-50'
-          ]"
-          @click="switchToDayView(day.date)"
-        >
-          <div class="text-center">
-            <div :class="[
-              'text-xs font-medium',
-              isToday(day.date) ? 'text-blue-700' : 'text-gray-600'
-            ]">
-              {{ day.dayName }}
-            </div>
-            <div :class="[
-              'text-lg font-bold mt-1',
-              isToday(day.date) ? 'text-blue-600' : 'text-gray-900'
-            ]">
-              {{ day.dayNumber }}
-            </div>
-          </div>
-        </div>
-
-        <!-- Day Jobs Timeline -->
-        <div class="p-2 min-h-[200px] max-h-[400px] overflow-y-auto">
-          <!-- No jobs message -->
-          <div v-if="getDayJobs(day.date).length === 0" class="text-center py-8">
-            <IconCalendarBlank class="w-8 h-8 text-gray-300 mx-auto mb-2" />
-            <p class="text-xs text-gray-500">Sin trabajos</p>
-          </div>
-
-          <!-- Jobs Timeline -->
-          <div v-else class="space-y-1">
-            <div
-              v-for="job in getDayJobs(day.date)"
-              :key="job.id"
-              :class="[
-                'p-2 rounded border-l-4 cursor-pointer hover:shadow-sm transition-all text-xs',
-                getJobStatusColor(job.status)
-              ]"
-              @click="editJob(job)"
-            >
-              <div class="font-medium text-gray-900 truncate mb-1">
-                {{ job.clientName }}
-              </div>
-              <div class="text-gray-600 mb-1">
-                {{ formatJobTime(job.scheduledDate, job.estimatedDuration) }}
-              </div>
-              <div class="text-gray-500 truncate">
-                {{ job.serviceType }}
-              </div>
-              <div class="text-xs text-gray-400 mt-1">
-                ${{ job.price?.toLocaleString() || 0 }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Weekly Timeline View (Semanal 2) -->
+    <!-- Weekly Timeline View -->
     <div v-if="currentView === 'weekly-timeline'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <!-- Mobile: Enhanced horizontal scroll view -->
       <div class="block sm:hidden relative">
@@ -982,7 +903,7 @@ const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
 
 // View state
-const currentView = ref('weekly') // 'weekly', 'weekly-timeline', or 'daily'
+const currentView = ref('weekly-timeline') // 'weekly-timeline' or 'daily'
 const currentDayView = ref(nowInBuenosAires().format('YYYY-MM-DD'))
 
 // Client auto-complete state
@@ -1160,10 +1081,6 @@ const nextDay = () => {
 }
 
 // View switching
-const switchToWeeklyView = () => {
-  currentView.value = 'weekly'
-}
-
 const switchToWeeklyTimelineView = () => {
   currentView.value = 'weekly-timeline'
 }
