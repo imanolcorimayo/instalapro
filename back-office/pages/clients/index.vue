@@ -259,8 +259,9 @@ useSeoMeta({
   robots: 'noindex, nofollow'
 })
 
-// Firebase integration
-const { data: clients, loading, error, add, update, remove, list } = useFirestore('clients')
+// Store integration
+const clientsStore = useClientsStore()
+const { clients, loading, error } = storeToRefs(clientsStore)
 
 // Component state
 const searchQuery = ref('')
@@ -295,7 +296,7 @@ const filteredClients = computed(() => {
 // Methods
 const loadClients = async () => {
   try {
-    await list()
+    await clientsStore.loadClients()
   } catch (err) {
     console.error('Error loading clients:', err)
     useToast().error('Error al cargar clientes')
@@ -357,11 +358,11 @@ const saveClient = async () => {
 
     if (editingClient.value) {
       // Update existing client
-      await update(editingClient.value.id, clientData)
+      await clientsStore.updateClient(editingClient.value.id, clientData)
       useToast().success('Cliente actualizado exitosamente')
     } else {
       // Create new client
-      await add(clientData)
+      await clientsStore.createClient(clientData)
       useToast().success('Cliente creado exitosamente')
     }
 
@@ -382,7 +383,7 @@ const deleteClient = async (clientId, clientName) => {
   }
 
   try {
-    await remove(clientId)
+    await clientsStore.deleteClient(clientId)
     useToast().success('Cliente eliminado exitosamente')
     await loadClients()
   } catch (err) {
@@ -397,8 +398,8 @@ const openWhatsApp = (phone) => {
   window.open(whatsappUrl, '_blank')
 }
 
-// Load clients on mount
-onMounted(() => {
-  loadClients()
+// Initialize store on mount
+onMounted(async () => {
+  await clientsStore.initialize()
 })
 </script>

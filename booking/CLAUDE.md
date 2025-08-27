@@ -229,31 +229,6 @@ function calculateAvailability(
 - **Form Fields**: Large, clearly labeled input fields
 - **Loading States**: Clear feedback for all user actions
 
-### Component Examples
-```vue
-<!-- Service Selection Cards -->
-<div class="grid gap-4 p-4">
-  <div class="bg-white rounded-lg border-2 border-gray-200 p-4 active:border-blue-500">
-    <div class="flex items-center space-x-3">
-      <Icon name="mdi:air-conditioner" class="w-8 h-8 text-blue-600" />
-      <div class="flex-1">
-        <h3 class="font-semibold text-lg">Instalación Split</h3>
-        <p class="text-gray-600 text-sm">Instalación completa</p>
-        <p class="text-blue-600 font-medium">$15,000 - $25,000</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Time Slot Selection -->
-<div class="grid grid-cols-2 gap-3 p-4">
-  <button class="bg-white border-2 border-gray-200 rounded-lg py-3 px-4 text-center hover:border-blue-500">
-    <div class="font-semibold">09:00</div>
-    <div class="text-sm text-gray-600">Disponible</div>
-  </button>
-</div>
-```
-
 ## Integration with Back Office
 
 ### Real-Time Data Flow

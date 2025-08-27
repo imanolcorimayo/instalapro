@@ -5,10 +5,6 @@ export class ClientSchema extends Schema {
   protected collectionName = 'clients';
   
   protected schema: SchemaDefinition = {
-    id: {
-      type: 'string',
-      required: true
-    },
     name: {
       type: 'string',
       required: true,
@@ -62,9 +58,9 @@ export class ClientSchema extends Schema {
       maxLength: 1000,
       default: ''
     },
-    technicianId: {
+    userUid: {
       type: 'string',
-      required: false // Will be added automatically by schema base class
+      required: true // Added automatically by schema base class
     },
     isActive: {
       type: 'boolean',
@@ -89,7 +85,7 @@ export class ClientSchema extends Schema {
     }
   };
 
-  // Client-specific methods
+  // Client-specific query methods (validation and basic queries only)
   async findByPhone(phone: string) {
     return this.find({
       where: [{ field: 'phone', operator: '==', value: phone }],
@@ -109,106 +105,15 @@ export class ClientSchema extends Schema {
   }
 
   async findByName(name: string) {
-    // For localStorage implementation, we'll do a case-insensitive search
-    const allClients = await this.findActive();
-    
-    if (!allClients.success) {
-      return allClients;
+    // Basic name search - for more complex searches, use store methods
+    if (!name.trim()) {
+      return { success: true, data: [] };
     }
-
-    const filtered = allClients.data?.filter(client => 
-      client.name.toLowerCase().includes(name.toLowerCase())
-    ) || [];
-
-    return { success: true, data: filtered };
-  }
-
-  async findTopClients(limit: number = 10) {
-    return this.findActive({
-      orderBy: [{ field: 'totalSpent', direction: 'desc' }],
-      limit
-    });
-  }
-
-  async findFrequentClients(limit: number = 10) {
-    return this.findActive({
-      orderBy: [{ field: 'totalJobs', direction: 'desc' }],
-      limit
-    });
-  }
-
-  async findRecentClients(limit: number = 10) {
-    return this.findActive({
-      orderBy: [{ field: 'createdAt', direction: 'desc' }],
-      limit
-    });
-  }
-
-  async updateServiceHistory(clientId: string, jobHistoryEntry: any) {
-    const clientResult = await this.findById(clientId);
     
-    if (!clientResult.success || !clientResult.data) {
-      return { success: false, error: 'Client not found' };
-    }
-
-    const client = clientResult.data;
-    const updatedHistory = [...(client.serviceHistory || []), jobHistoryEntry];
-    const newTotalJobs = updatedHistory.length;
-    const newTotalSpent = updatedHistory.reduce((sum, entry) => sum + (entry.price || 0), 0);
-
-    return this.update(clientId, {
-      serviceHistory: updatedHistory,
-      totalJobs: newTotalJobs,
-      totalSpent: newTotalSpent
+    // Note: Firestore doesn't support case-insensitive queries natively
+    // For now, we'll search by exact name match. Complex search logic should be in store.
+    return this.find({
+      where: [{ field: 'name', operator: '>=', value: name }, { field: 'name', operator: '<=', value: name + '\uf8ff' }]
     });
-  }
-
-  async updatePreferredServices(clientId: string, serviceTypes: string[]) {
-    return this.update(clientId, {
-      preferredServiceTypes: serviceTypes
-    });
-  }
-
-  async addNote(clientId: string, note: string) {
-    const clientResult = await this.findById(clientId);
-    
-    if (!clientResult.success || !clientResult.data) {
-      return { success: false, error: 'Client not found' };
-    }
-
-    const client = clientResult.data;
-    const existingNotes = client.notes || '';
-    const timestamp = new Date().toLocaleDateString('es-AR');
-    const updatedNotes = existingNotes 
-      ? `${existingNotes}\n\n[${timestamp}] ${note}`
-      : `[${timestamp}] ${note}`;
-
-    return this.update(clientId, {
-      notes: updatedNotes
-    });
-  }
-
-  async getClientStats() {
-    const allClients = await this.findActive();
-    
-    if (!allClients.success) {
-      return { success: false, error: 'Failed to load clients' };
-    }
-
-    const clients = allClients.data || [];
-    const totalClients = clients.length;
-    const totalRevenue = clients.reduce((sum, client) => sum + (client.totalSpent || 0), 0);
-    const totalJobs = clients.reduce((sum, client) => sum + (client.totalJobs || 0), 0);
-    const averageRevenuePerClient = totalClients > 0 ? totalRevenue / totalClients : 0;
-
-    return {
-      success: true,
-      data: {
-        totalClients,
-        totalRevenue,
-        totalJobs,
-        averageRevenuePerClient
-      }
-    };
   }
 }

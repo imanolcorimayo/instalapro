@@ -21,7 +21,8 @@ InstalarPro is an MVP back-office application for **self-employed** Air Conditio
 ## Tech Stack
 - Nuxt 4 (Vue 3), Tailwind CSS, Pinia
 - Package manager: yarn (not npm)
-- **Database Strategy**: LocalStorage for MVP → Firebase/Firestore for production
+- **Database**: Firebase/Firestore with user-scoped collections
+- **Authentication**: Firebase Auth with Google OAuth
 - TypeScript interfaces for all data structures
 
 ## Code Architecture
@@ -73,33 +74,38 @@ InstalarPro is an MVP back-office application for **self-employed** Air Conditio
 
 #### Store Architecture & Database Strategy
 
-**MVP Phase (LocalStorage)**:
-- Stores handle all data persistence logic internally
-- LocalStorage operations abstracted within store methods
-- Consistent CRUD interface across all stores
-- Real-time reactive state management with Pinia
-
-**Production Phase (Firebase/Firestore)**:
-- Same store interface, different implementation
-- Stores contain all Firestore logic (queries, mutations, subscriptions)
-- Real-time listeners for live data updates
+**Firestore Implementation**:
+- Stores handle all Firestore operations and caching
+- Schema classes handle validation and basic CRUD operations
+- Real-time listeners for live data updates across devices
+- User-scoped data isolation through `userUid` field
 - Offline support with Firestore caching
 
-**Store Method Pattern** (consistent across both phases):
+**Data Architecture**:
 ```typescript
-// Store methods that work for both LocalStorage and Firestore
-loadData()        // Initial data fetch
-addItem(item)     // Create new item
-updateItem(id, updates)  // Update existing item
-deleteItem(id)    // Delete item
-subscribeToChanges()     // Real-time updates (Firestore only)
+// Firestore Collections (Flat Structure with userUid field)
+/clients/{docId} -> { userUid, name, phone, address, ... }
+/jobs/{docId} -> { userUid, clientId, serviceType, scheduledDate, ... }
+/quotes/{docId} -> { userUid, clientId, items, total, ... }
+/payments/{docId} -> { userUid, jobId, amount, paymentDate, ... }
+```
+
+**Store Method Pattern**:
+```typescript
+// Standard store methods for Firestore operations
+loadData()           // Fetch user's documents from Firestore
+createItem(data)     // Create new document with userUid
+updateItem(id, data) // Update existing document (user verification)
+deleteItem(id)       // Delete document (user verification)
+subscribeToChanges() // Real-time Firestore listeners
 ```
 
 **Implementation Guidelines**:
-- **Separation of Concerns**: Database logic stays in stores, components only call store methods
-- **Future-Proof Interface**: Store methods designed to work with both LocalStorage and Firestore
-- **TypeScript First**: All data structures defined with strict interfaces
-- **Error Handling**: Consistent error handling across both database implementations
+- **User Isolation**: All queries automatically filter by authenticated user's UID
+- **Schema Validation**: All data validated through ODM schemas before Firestore operations
+- **Business Logic**: Complex logic handled in stores, not schemas
+- **Real-time Updates**: Firestore listeners for cross-device synchronization
+- **Error Handling**: Consistent error handling with user-friendly messages
 
 #### Component Creation Guidelines
 
@@ -191,27 +197,27 @@ Before creating ANY new component, you MUST:
 - **Features**: Service configuration, availability setup, pricing definition, booking page customization
 - **Data**: Technician profile, service catalog, availability schedule, booking preferences
 - **Integration**: Generates individual technician booking page
-- **Store**: `technician.ts` | **LocalStorage Keys**: `technicianProfile`, `servicesCatalog`, `availability`
+- **Store**: `technician.ts` | **Collection**: `/technicians` (userUid-scoped)
 
 ### 2. Job Schedule Management
 - **Purpose**: Daily business operations and appointment management
 - **Features**: Daily/weekly calendar view, job status tracking, booking confirmations from client pages
 - **Data**: Job appointments, client assignments, service types, status updates
-- **Store**: `schedule.ts` | **LocalStorage Keys**: `jobs`, `jobHistory`
+- **Store**: `schedule.ts` | **Collections**: `/jobs`, `/timeSlots` (userUid-scoped)
 
 ### 3. Client Management
 - **Purpose**: Comprehensive client database and relationship management
 - **Features**: Client profiles with contact info, service history, WhatsApp integration
 - **Data**: Client information, address, phone (with WhatsApp button), service history
 - **Integration**: Direct WhatsApp messaging, service history tracking
-- **Store**: `clients.ts` | **LocalStorage Keys**: `clients`, `clientHistory`
+- **Store**: `clients.ts` | **Collection**: `/clients` (userUid-scoped)
 
 ### 4. Quote Management
 - **Purpose**: Professional quote generation and client communication
 - **Features**: Quick quote templates, service pricing, PDF export, WhatsApp sending
 - **Templates**: Standard installation templates (e.g., "3500 BTU Split Installation = $xx")
 - **Export**: PDF generation, WhatsApp sharing
-- **Store**: `quotes.ts` | **LocalStorage Keys**: `quotes`, `quoteTemplates`
+- **Store**: `quotes.ts` | **Collection**: `/quotes` (userUid-scoped)
 
 ### 5. Basic Cash Flow
 - **Purpose**: Simple financial tracking for self-employed technicians
@@ -219,7 +225,7 @@ Before creating ANY new component, you MUST:
 - **Scope**: Basic numbers for self-employed technicians (no complex accounting)
 - **Data**: Monthly billing summary, paid/pending job status
 - **Reports**: Clear, understandable financial overview
-- **Store**: `cashFlow.ts` | **LocalStorage Keys**: `payments`, `monthlyReports`
+- **Store**: `cashFlow.ts` | **Collection**: `/payments` (userUid-scoped)
 
 ## Page Structure
 
@@ -237,9 +243,10 @@ All pages use modal-based entity management:
 
 **Interface Organization**:
 - Each store has dedicated TypeScript interfaces
-- Interfaces designed for both LocalStorage and Firestore compatibility
+- Interfaces designed for Firestore compatibility
 - Consistent naming: `[Entity]`, `[Entity]CreateInput`, `[Entity]UpdateInput`
-- Common fields: `id`, `createdAt`, `updatedAt` (Firestore timestamps compatible)
+- Common fields: `id`, `userUid`, `createdAt`, `updatedAt` (Firestore timestamps)
+- User isolation: All entities automatically include `userUid` field
 
 ### Technician Store Interfaces
 ```typescript
@@ -364,6 +371,7 @@ interface JobUpdateInput {
 // Core Client entity
 interface Client {
   id: string
+  userUid: string // Firebase Auth user ID - automatically added
   name: string
   phone: string
   address: string
@@ -373,8 +381,11 @@ interface Client {
   totalSpent: number
   preferredServiceTypes: string[]
   notes: string
+  isActive: boolean
   createdAt: Date
   updatedAt: Date
+  createdBy?: string
+  archivedAt?: Date
 }
 
 interface JobHistory {
@@ -513,25 +524,25 @@ interface PaymentUpdateInput {
 
 ### Data Persistence Strategy
 
-**LocalStorage (MVP Phase)**:
-- Use consistent key naming: `instalapro_[module]_[dataType]`
-- JSON serialization with proper Date handling
-- Data validation on load with TypeScript interfaces
-- Graceful fallback for missing/corrupted data
-- Export/import functionality for data backup
+**Firestore Architecture**:
+- **Collection Structure**: Flat collections (`/clients`, `/jobs`, `/quotes`, `/payments`)
+- **User Isolation**: Every document contains `userUid` field for automatic filtering
+- **Security**: Firestore security rules ensure users only access their own data
+- **Real-time Updates**: Live listeners for cross-device synchronization
+- **Offline Support**: Firestore offline persistence for mobile usage
+- **Indexing**: Automatic indexing on `userUid` for fast user-scoped queries
 
-**Firestore (Production Phase)**:
-- Collection-based structure: `jobs`, `clients`, `quotes`, `payments`
-- Real-time listeners for live updates
-- Optimistic updates with offline support
-- Proper indexing for query performance
-- Security rules for data protection
+**Schema & Validation Layer**:
+- **ODM Schemas**: TypeScript schema classes handle validation and basic CRUD
+- **Business Logic**: Complex operations handled in Pinia stores
+- **Data Validation**: All documents validated against schema before Firestore operations
+- **Reference Validation**: Cross-document references automatically validated
 
-**Store Implementation Requirements**:
-- Same public API for both localStorage and Firestore
-- Internal adapter pattern to switch between implementations
-- Consistent error handling and loading states
-- TypeScript interfaces enforced at runtime
+**Store Implementation**:
+- **Caching**: In-memory Map cache for performance optimization
+- **Error Handling**: Consistent error handling with user-friendly messages
+- **Loading States**: Reactive loading states for UI feedback
+- **Type Safety**: Full TypeScript support with runtime validation
 
 ### UI/UX Principles
 
@@ -608,6 +619,38 @@ interface PaymentUpdateInput {
 <div class="custom-container">
 ```
 
+## Firestore Security Rules
+
+**User Data Isolation**:
+```javascript
+// Firestore Security Rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only access documents with their userUid
+    match /clients/{document} {
+      allow read, write: if request.auth != null && resource.data.userUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userUid == request.auth.uid;
+    }
+    
+    match /jobs/{document} {
+      allow read, write: if request.auth != null && resource.data.userUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userUid == request.auth.uid;
+    }
+    
+    match /quotes/{document} {
+      allow read, write: if request.auth != null && resource.data.userUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userUid == request.auth.uid;
+    }
+    
+    match /payments/{document} {
+      allow read, write: if request.auth != null && resource.data.userUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userUid == request.auth.uid;
+    }
+  }
+}
+```
+
 ### Library & Dependencies Guidelines
 
 **ALLOWED LIBRARIES ONLY** - Do not add any libraries beyond this approved list:
@@ -634,17 +677,6 @@ interface PaymentUpdateInput {
 1. Check if functionality exists in approved libraries
 2. Check if it can be implemented with native JavaScript/Vue
 3. Only request new libraries if absolutely critical for core functionality
-
-**Examples**:
-```vue
-<!-- ✅ Correct: Using approved libraries -->
-<Icon name="mdi:calendar" class="w-5 h-5" />
-<Toast :message="success" type="success" />
-
-<!-- ❌ Incorrect: Using non-approved libraries -->
-<FontAwesomeIcon :icon="['fas', 'calendar']" />
-<VButton variant="primary">Click me</VButton>
-```
 
 ---
 

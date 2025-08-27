@@ -143,8 +143,9 @@ export class Validator {
         const isDayjs = value && typeof value.format === 'function' && typeof value.isValid === 'function';
         const isDate = value instanceof Date;
         const isTimestamp = value && typeof value.toDate === 'function';
-        
-        if (!isDayjs && !isDate && !isTimestamp) {
+        const isServerTimestamp = value && value._methodName === 'serverTimestamp';
+
+        if (!isDayjs && !isDate && !isTimestamp && !isServerTimestamp) {
           errors.push({
             field: fieldName,
             message: `${fieldName} must be a Date, dayjs object, or Timestamp`,

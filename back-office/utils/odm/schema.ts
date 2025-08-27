@@ -1,5 +1,24 @@
 import { nowInBuenosAires, toBuenosAires } from '~/utils/timezone'
 import { Validator } from './validator';
+import { 
+  collection, 
+  doc, 
+  addDoc, 
+  getDoc, 
+  getDocs, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy, 
+  limit,
+  onSnapshot,
+  serverTimestamp,
+  type DocumentData,
+  type QueryConstraint,
+  type Unsubscribe
+} from 'firebase/firestore'
+import { getFirestoreInstance, getCurrentUser } from '~/utils/firebase'
 import type { 
   SchemaDefinition, 
   ValidationResult, 
@@ -18,23 +37,16 @@ export abstract class Schema {
   
   // Reference cache to avoid duplicate fetches
   private referenceCache = new Map<string, any>();
+  
+  // Firestore instances
+  private db = getFirestoreInstance();
 
   constructor() {}
 
-  // Get current technician ID (instead of business ID for this single-technician app)
-  protected getCurrentTechnicianId(): string | null {
-    if (typeof localStorage !== 'undefined') {
-      const technicianProfile = localStorage.getItem('instalapro_technician_profile');
-      if (technicianProfile) {
-        try {
-          const parsed = JSON.parse(technicianProfile);
-          return parsed.id;
-        } catch {
-          return null;
-        }
-      }
-    }
-    return null;
+  // Get current user UID from Firebase Auth
+  protected getCurrentUserUid(): string | null {
+    const user = getCurrentUser();
+    return user ? user.uid : null;
   }
 
   // Format date for display using dayjs
@@ -68,16 +80,48 @@ export abstract class Schema {
     return Validator.applyDefaults(data, this.schema);
   }
 
-  // Validate references exist (placeholder for localStorage - in Firestore implementation this would check actual refs)
+  // Validate references exist in Firestore
   async validateReferences(data: any): Promise<ValidationResult> {
     const errors: any[] = [];
+    const userUid = this.getCurrentUserUid();
     
-    // For localStorage implementation, we'll skip reference validation
-    // In production Firestore implementation, this would validate actual document references
+    if (!userUid) {
+      errors.push({
+        field: 'userUid',
+        message: 'User must be authenticated to validate references'
+      });
+      return { valid: false, errors };
+    }
+    
+    // Validate each reference field
     for (const [fieldName, definition] of Object.entries(this.schema)) {
       if (definition.type === 'reference' && definition.referenceTo && data[fieldName]) {
-        // For MVP/localStorage, we assume references are valid
-        // TODO: Implement actual reference validation when moving to Firestore
+        try {
+          const refCollection = collection(this.db, definition.referenceTo);
+          const refDoc = doc(refCollection, data[fieldName]);
+          const refSnapshot = await getDoc(refDoc);
+          
+          if (!refSnapshot.exists()) {
+            errors.push({
+              field: fieldName,
+              message: `Referenced document ${data[fieldName]} does not exist in ${definition.referenceTo}`
+            });
+          } else {
+            // Verify reference belongs to same user
+            const refData = refSnapshot.data();
+            if (refData.userUid !== userUid) {
+              errors.push({
+                field: fieldName,
+                message: `Referenced document ${data[fieldName]} does not belong to current user`
+              });
+            }
+          }
+        } catch (error) {
+          errors.push({
+            field: fieldName,
+            message: `Error validating reference ${data[fieldName]}: ${error}`
+          });
+        }
       }
     }
 
@@ -87,96 +131,94 @@ export abstract class Schema {
     };
   }
 
-  // Prepare document for saving (add timestamps, technicianId, etc.)
+  // Prepare document for saving (add timestamps, userUid, etc.)
   protected prepareForSave(data: any, isUpdate = false): any {
-    const technicianId = this.getCurrentTechnicianId();
+    const userUid = this.getCurrentUserUid();
+    
+    if (!userUid) {
+      throw new Error('User must be authenticated to save documents');
+    }
 
     let prepared = { ...data };
 
     // Apply defaults
     prepared = this.applyDefaults(prepared);
 
-    // Add technician ID if not present and needed
-    if (!prepared.technicianId && technicianId && this.schema.technicianId) {
-      prepared.technicianId = technicianId;
+    // Add userUid if not present (required for all documents)
+    if (!prepared.userUid && this.schema.userUid) {
+      prepared.userUid = userUid;
     }
 
     if (!isUpdate) {
       // For new documents
-      if (technicianId) {
-        prepared.createdBy = technicianId;
-      }
-      prepared.createdAt = nowInBuenosAires();
+      prepared.createdBy = userUid;
+      prepared.createdAt = serverTimestamp();
     }
 
     // Always update timestamp
-    prepared.updatedAt = nowInBuenosAires();
+    prepared.updatedAt = serverTimestamp();
 
     return prepared;
   }
 
-  // Add document ID to fetched data
-  protected addDocumentId(doc: any, id: string): DocumentWithId {
-    return {
+  // Convert Firestore document to DocumentWithId
+  protected convertFirestoreDoc(docSnapshot: any): DocumentWithId {
+    const data = docSnapshot.data();
+    const id = docSnapshot.id;
+    
+    // Convert Firestore timestamps to dayjs objects
+    const convertedData = {
       id,
-      ...doc,
+      ...data,
       // Format common timestamp fields for display
-      createdAtFormatted: doc.createdAt ? this.formatDate(doc.createdAt) : undefined,
-      updatedAtFormatted: doc.updatedAt ? this.formatDate(doc.updatedAt) : undefined,
-      // Keep original timestamps as dayjs objects
-      createdAt: doc.createdAt ? toBuenosAires(doc.createdAt) : undefined,
-      updatedAt: doc.updatedAt ? toBuenosAires(doc.updatedAt) : undefined,
+      createdAtFormatted: data.createdAt ? this.formatDate(data.createdAt) : undefined,
+      updatedAtFormatted: data.updatedAt ? this.formatDate(data.updatedAt) : undefined,
+      // Convert Firestore timestamps to dayjs objects
+      createdAt: data.createdAt ? toBuenosAires(data.createdAt.toDate()) : undefined,
+      updatedAt: data.updatedAt ? toBuenosAires(data.updatedAt.toDate()) : undefined,
     };
+    
+    return convertedData;
   }
 
-  // Generate unique ID
-  protected generateId(prefix: string = 'doc'): string {
-    return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // Get Firestore collection reference
+  protected getCollectionRef() {
+    return collection(this.db, this.collectionName);
   }
-
-  // Get localStorage key for this collection
-  protected getStorageKey(): string {
-    return `instalapro_${this.collectionName}`;
-  }
-
-  // Load all documents from localStorage
-  protected loadFromStorage(): any[] {
-    try {
-      const stored = localStorage.getItem(this.getStorageKey());
-      if (!stored) return [];
-      
-      const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      console.error(`Error loading ${this.collectionName} from localStorage:`, error);
-      return [];
+  
+  // Build user-scoped query
+  protected buildUserQuery(additionalConstraints: QueryConstraint[] = []): any {
+    const userUid = this.getCurrentUserUid();
+    if (!userUid) {
+      throw new Error('User must be authenticated to query documents');
     }
+    
+    const baseConstraints = [where('userUid', '==', userUid)];
+    return query(this.getCollectionRef(), ...baseConstraints, ...additionalConstraints);
   }
 
-  // Save all documents to localStorage
-  protected saveToStorage(documents: any[]): void {
-    try {
-      // Serialize dayjs objects to ISO strings for storage
-      const serialized = documents.map(doc => ({
-        ...doc,
-        createdAt: doc.createdAt && typeof doc.createdAt.toISOString === 'function' 
-          ? doc.createdAt.toISOString() 
-          : doc.createdAt,
-        updatedAt: doc.updatedAt && typeof doc.updatedAt.toISOString === 'function' 
-          ? doc.updatedAt.toISOString() 
-          : doc.updatedAt
-      }));
-      
-      localStorage.setItem(this.getStorageKey(), JSON.stringify(serialized));
-    } catch (error) {
-      console.error(`Error saving ${this.collectionName} to localStorage:`, error);
-      throw new Error(`Failed to save ${this.collectionName} data`);
+  // Add system fields and create document
+  protected addSystemFields(data: any): any {
+    const userUid = this.getCurrentUserUid();
+    if (!userUid) {
+      throw new Error('User must be authenticated to create documents');
     }
+
+    return {
+      ...data,
+      userUid,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
   }
 
   // Create a new document
   async create(data: any, validateRefs = false): Promise<CreateResult> {
     try {
+
+      // Add system fields
+      data = this.addSystemFields(data);
+
       // Validate schema
       const validation = this.validate(data);
       if (!validation.valid) {
@@ -200,23 +242,20 @@ export abstract class Schema {
       // Prepare document for saving
       const prepared = this.prepareForSave(data, false);
       
-      // Generate ID
-      const id = this.generateId(this.collectionName);
-      const documentWithId = { ...prepared, id };
-
-      // Load existing documents
-      const documents = this.loadFromStorage();
+      // Add to Firestore
+      const docRef = await addDoc(this.getCollectionRef(), prepared);
       
-      // Add new document
-      documents.push(documentWithId);
+      // Get the created document to return
+      const docSnapshot = await getDoc(docRef);
       
-      // Save back to storage
-      this.saveToStorage(documents);
+      if (!docSnapshot.exists()) {
+        return { success: false, error: 'Document was not created successfully' };
+      }
 
       // Return with proper formatting
       return { 
         success: true, 
-        data: this.addDocumentId(prepared, id)
+        data: this.convertFirestoreDoc(docSnapshot)
       };
     } catch (error) {
       console.error(`Error creating ${this.collectionName}:`, error);
@@ -227,15 +266,25 @@ export abstract class Schema {
   // Update an existing document
   async update(id: string, data: any, validateRefs = false): Promise<UpdateResult> {
     try {
-      // Load existing documents
-      const documents = this.loadFromStorage();
-      const docIndex = documents.findIndex(doc => doc.id === id);
-
-      if (docIndex === -1) {
+      const userUid = this.getCurrentUserUid();
+      if (!userUid) {
+        return { success: false, error: 'User must be authenticated to update documents' };
+      }
+      
+      // Get document reference
+      const docRef = doc(this.getCollectionRef(), id);
+      const docSnapshot = await getDoc(docRef);
+      
+      if (!docSnapshot.exists()) {
         return { success: false, error: 'Document not found' };
       }
-
-      const existingDoc = documents[docIndex];
+      
+      const existingDoc = docSnapshot.data();
+      
+      // Verify user owns this document
+      if (existingDoc.userUid !== userUid) {
+        return { success: false, error: 'Document does not belong to current user' };
+      }
 
       // Validate schema (merge with existing data)
       const mergedData = { ...existingDoc, ...data };
@@ -261,11 +310,8 @@ export abstract class Schema {
       // Prepare document for saving
       const prepared = this.prepareForSave(data, true);
 
-      // Update document
-      documents[docIndex] = { ...existingDoc, ...prepared };
-
-      // Save back to storage
-      this.saveToStorage(documents);
+      // Update document in Firestore
+      await updateDoc(docRef, prepared);
 
       return { success: true };
     } catch (error) {
@@ -277,19 +323,28 @@ export abstract class Schema {
   // Delete a document
   async delete(id: string): Promise<DeleteResult> {
     try {
-      // Load existing documents
-      const documents = this.loadFromStorage();
-      const docIndex = documents.findIndex(doc => doc.id === id);
-
-      if (docIndex === -1) {
+      const userUid = this.getCurrentUserUid();
+      if (!userUid) {
+        return { success: false, error: 'User must be authenticated to delete documents' };
+      }
+      
+      // Get document reference
+      const docRef = doc(this.getCollectionRef(), id);
+      const docSnapshot = await getDoc(docRef);
+      
+      if (!docSnapshot.exists()) {
         return { success: false, error: 'Document not found' };
       }
+      
+      const existingDoc = docSnapshot.data();
+      
+      // Verify user owns this document
+      if (existingDoc.userUid !== userUid) {
+        return { success: false, error: 'Document does not belong to current user' };
+      }
 
-      // Remove document
-      documents.splice(docIndex, 1);
-
-      // Save back to storage
-      this.saveToStorage(documents);
+      // Delete document from Firestore
+      await deleteDoc(docRef);
 
       return { success: true };
     } catch (error) {
@@ -302,7 +357,7 @@ export abstract class Schema {
   async archive(id: string): Promise<UpdateResult> {
     return this.update(id, {
       isActive: false,
-      archivedAt: nowInBuenosAires()
+      archivedAt: serverTimestamp()
     }, false);
   }
 
@@ -317,16 +372,29 @@ export abstract class Schema {
   // Find by ID
   async findById(id: string): Promise<FetchSingleResult> {
     try {
-      const documents = this.loadFromStorage();
-      const doc = documents.find(d => d.id === id);
-
-      if (!doc) {
+      const userUid = this.getCurrentUserUid();
+      if (!userUid) {
+        return { success: false, error: 'User must be authenticated to find documents' };
+      }
+      
+      // Get document reference
+      const docRef = doc(this.getCollectionRef(), id);
+      const docSnapshot = await getDoc(docRef);
+      
+      if (!docSnapshot.exists()) {
         return { success: false, error: 'Document not found' };
+      }
+      
+      const docData = docSnapshot.data();
+      
+      // Verify user owns this document
+      if (docData.userUid !== userUid) {
+        return { success: false, error: 'Document does not belong to current user' };
       }
 
       return { 
         success: true, 
-        data: this.addDocumentId(doc, id)
+        data: this.convertFirestoreDoc(docSnapshot)
       };
     } catch (error) {
       console.error(`Error finding ${this.collectionName} by ID:`, error);
@@ -337,100 +405,99 @@ export abstract class Schema {
   // Find multiple documents with query options
   async find(options: QueryOptions = {}): Promise<FetchResult> {
     try {
-      let documents = this.loadFromStorage();
-
+      const userUid = this.getCurrentUserUid();
+      if (!userUid) {
+        return { success: false, error: 'User must be authenticated to find documents' };
+      }
+      
+      // Build Firestore query constraints
+      const constraints: QueryConstraint[] = [];
+      
       // Apply where clauses
       if (options.where) {
         for (const condition of options.where) {
-          documents = documents.filter(doc => {
-            const fieldValue = doc[condition.field];
-            
-            switch (condition.operator) {
-              case '==':
-                return fieldValue === condition.value;
-              case '!=':
-                return fieldValue !== condition.value;
-              case '<':
-                return fieldValue < condition.value;
-              case '<=':
-                return fieldValue <= condition.value;
-              case '>':
-                return fieldValue > condition.value;
-              case '>=':
-                return fieldValue >= condition.value;
-              case 'in':
-                return Array.isArray(condition.value) && condition.value.includes(fieldValue);
-              case 'not-in':
-                return Array.isArray(condition.value) && !condition.value.includes(fieldValue);
-              case 'array-contains':
-                return Array.isArray(fieldValue) && fieldValue.includes(condition.value);
-              default:
-                return true;
-            }
-          });
+          constraints.push(where(condition.field, condition.operator, condition.value));
         }
       }
 
       // Apply ordering
       if (options.orderBy) {
-        documents = documents.sort((a, b) => {
-          for (const order of options.orderBy!) {
-            const aValue = a[order.field];
-            const bValue = b[order.field];
-            
-            let comparison = 0;
-            if (aValue < bValue) comparison = -1;
-            else if (aValue > bValue) comparison = 1;
-            
-            if (comparison !== 0) {
-              return order.direction === 'desc' ? -comparison : comparison;
-            }
-          }
-          return 0;
-        });
+        for (const order of options.orderBy) {
+          constraints.push(orderBy(order.field, order.direction));
+        }
       }
 
       // Apply limit
       if (options.limit) {
-        documents = documents.slice(0, options.limit);
+        constraints.push(limit(options.limit));
       }
+      
+      // Build user-scoped query
+      const q = this.buildUserQuery(constraints);
+      
+      // Execute query
+      const querySnapshot = await getDocs(q);
+      
+      // Convert documents
+      const documents = querySnapshot.docs.map(doc => this.convertFirestoreDoc(doc));
 
-      // Add IDs and format dates
-      const formatted = documents.map(doc => this.addDocumentId(doc, doc.id));
-
-      return { success: true, data: formatted };
+      return { success: true, data: documents };
     } catch (error) {
       console.error(`Error finding ${this.collectionName}:`, error);
       return { success: false, error: `Failed to find documents: ${error}` };
     }
   }
 
-  // Find all active documents
-  async findActive(additionalOptions: QueryOptions = {}): Promise<FetchResult> {
-    const options: QueryOptions = {
-      ...additionalOptions,
-      where: [
-        ...(additionalOptions.where || []),
-        { field: 'isActive', operator: '==', value: true }
-      ]
-    };
+  // Subscribe to real-time updates
+  subscribeToCollection(
+    callback: (documents: DocumentWithId[]) => void,
+    options: QueryOptions = {}
+  ): Unsubscribe | null {
+    try {
+      const userUid = this.getCurrentUserUid();
+      if (!userUid) {
+        console.error('User must be authenticated to subscribe to documents');
+        return null;
+      }
+      
+      // Build Firestore query constraints
+      const constraints: QueryConstraint[] = [];
+      
+      // Apply where clauses
+      if (options.where) {
+        for (const condition of options.where) {
+          constraints.push(where(condition.field, condition.operator, condition.value));
+        }
+      }
 
-    return this.find(options);
+      // Apply ordering
+      if (options.orderBy) {
+        for (const order of options.orderBy) {
+          constraints.push(orderBy(order.field, order.direction));
+        }
+      }
+
+      // Apply limit
+      if (options.limit) {
+        constraints.push(limit(options.limit));
+      }
+      
+      // Build user-scoped query
+      const q = this.buildUserQuery(constraints);
+      
+      // Set up real-time listener
+      return onSnapshot(q, (querySnapshot) => {
+        const documents = querySnapshot.docs.map(doc => this.convertFirestoreDoc(doc));
+        callback(documents);
+      }, (error) => {
+        console.error(`Error in ${this.collectionName} subscription:`, error);
+      });
+    } catch (error) {
+      console.error(`Error setting up ${this.collectionName} subscription:`, error);
+      return null;
+    }
   }
-
-  // Find all archived documents
-  async findArchived(additionalOptions: QueryOptions = {}): Promise<FetchResult> {
-    const options: QueryOptions = {
-      ...additionalOptions,
-      where: [
-        ...(additionalOptions.where || []),
-        { field: 'isActive', operator: '==', value: false }
-      ]
-    };
-
-    return this.find(options);
-  }
-
+  
   // Clear reference cache
   clearCache(): void {
     this.referenceCache.clear();
