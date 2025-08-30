@@ -92,167 +92,108 @@
               </p>
             </div>
           </div>
-          <div class="mt-4">
-            <button
-              type="button"
-              class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-            >
-              Editar Perfil
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Availability Section -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-lg font-semibold text-gray-900">
-                Horarios de Atención
-              </h2>
-              <p class="text-sm text-gray-600 mt-1">
-                Configura cuándo estás disponible para recibir trabajos
-              </p>
-            </div>
+          <div class="mt-6 flex items-center justify-between">
             <button
               type="button"
               class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center"
-              @click="openAvailabilityModal"
+              @click="openEditProfileModal"
             >
               <IconPencil class="w-4 h-4 mr-2" />
-              Editar Horarios
+              Editar Perfil
             </button>
-          </div>
-        </div>
-        <div class="px-6 py-4">
-          <SettingsAvailabilityGrid />
-        </div>
-      </div>
-
-      <!-- Services Section -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-lg font-semibold text-gray-900">
-                Servicios Ofrecidos
-              </h2>
-              <p class="text-sm text-gray-600 mt-1">
-                Los servicios que ofreces a tus clientes
-              </p>
-            </div>
             <button
               type="button"
-              class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors flex items-center"
+              class="bg-red-50 text-red-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors border border-red-200"
             >
-              <IconPlus class="w-4 h-4 mr-2" />
-              Nuevo Servicio
-            </button>
-          </div>
-        </div>
-        <div class="px-6 py-4">
-          <div
-            v-if="technicianStore.activeServices.length > 0"
-            class="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
-            <div
-              v-for="service in technicianStore.activeServices"
-              :key="service.id"
-              class="border border-gray-200 rounded-lg p-4"
-            >
-              <div class="flex items-start justify-between">
-                <div class="flex-1">
-                  <h3 class="font-medium text-gray-900">
-                    {{ service.name }}
-                  </h3>
-                  <p class="text-sm text-gray-600 mt-1">
-                    {{ service.description }}
-                  </p>
-                  <div class="flex items-center mt-2 text-sm text-gray-500">
-                    <IconCurrencyUsd class="w-4 h-4 mr-1" />
-                    ${{ service.basePrice.toLocaleString() }}
-                    <span class="mx-2">•</span>
-                    <IconClockOutline class="w-4 h-4 mr-1" />
-                    {{ service.estimatedDuration }}min
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  class="text-gray-400 hover:text-gray-600 p-1"
-                >
-                  <IconDotsVertical class="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-          <div
-            v-else
-            class="text-center py-8"
-          >
-            <IconTools class="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 class="text-lg font-medium text-gray-900 mb-2">
-              No hay servicios configurados
-            </h3>
-            <p class="text-gray-600 mb-4">
-              Agrega los servicios que ofreces para que tus clientes puedan contratarte
-            </p>
-            <button
-              type="button"
-              class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-            >
-              Agregar Primer Servicio
+              Cerrar Cuenta
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Booking Page Section -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-900">
-            Página de Reservas
-          </h2>
-          <p class="text-sm text-gray-600 mt-1">
-            Tu enlace personalizado para que clientes agenden citas
-          </p>
-        </div>
-        <div class="px-6 py-4">
-          <div
-            v-if="technicianStore.technician"
-            class="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200"
-          >
-            <div class="flex-1">
-              <p class="text-sm font-medium text-blue-900 mb-1">
-                Tu enlace de reservas:
-              </p>
-              <p class="text-blue-700 font-mono text-sm">
-                {{ technicianStore.technician.bookingUrl }}
-              </p>
-            </div>
-            <div class="flex items-center space-x-2">
-              <button
-                type="button"
-                class="bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
-              >
-                <IconContentCopy class="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                class="bg-green-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
-              >
-                <IconWhatsapp class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+
+
     </div>
 
-    <!-- Availability Management Modal -->
-    <SettingsAvailabilityModal
-      ref="availabilityModalRef"
-    />
+    <!-- Edit Profile Modal -->
+    <ModalStructure
+      ref="editProfileModalRef"
+      title="Editar Perfil"
+      @on-close="closeEditProfileModal"
+    >
+      <form @submit.prevent="saveProfile" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Nombre Completo *
+            </label>
+            <input
+              v-model="editForm.name"
+              type="text"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Ingrese su nombre completo"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Teléfono *
+            </label>
+            <input
+              v-model="editForm.phone"
+              type="tel"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="+54 11 1234-5678"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Email *
+            </label>
+            <input
+              v-model="editForm.email"
+              type="email"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="correo@ejemplo.com"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              WhatsApp *
+            </label>
+            <input
+              v-model="editForm.whatsappNumber"
+              type="tel"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="+54 9 11 1234-5678"
+            />
+          </div>
+        </div>
+        
+        <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button
+            type="button"
+            @click="closeEditProfileModal"
+            class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            :disabled="isLoading"
+          >
+            {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
+          </button>
+        </div>
+      </form>
+    </ModalStructure>
   </div>
 </template>
 
@@ -260,13 +201,6 @@
 // Icons
 import IconAlertCircleOutline from '~icons/mdi/alert-circle-outline'
 import IconPencil from '~icons/mdi/pencil'
-import IconPlus from '~icons/mdi/plus'
-import IconCurrencyUsd from '~icons/mdi/currency-usd'
-import IconClockOutline from '~icons/mdi/clock-outline'
-import IconDotsVertical from '~icons/mdi/dots-vertical'
-import IconTools from '~icons/mdi/tools'
-import IconContentCopy from '~icons/mdi/content-copy'
-import IconWhatsapp from '~icons/mdi/whatsapp'
 
 // ==========================================
 // PAGE METADATA
@@ -284,18 +218,64 @@ definePageMeta({
 const technicianStore = useTechnicianStore()
 
 // ==========================================
-// REFS
+// REFS & REACTIVE DATA
 // ==========================================
 
-const availabilityModalRef = ref()
+const editProfileModalRef = ref()
+const isLoading = ref(false)
+
+const editForm = reactive({
+  name: '',
+  phone: '',
+  email: '',
+  whatsappNumber: ''
+})
 
 // ==========================================
 // METHODS
 // ==========================================
 
-const openAvailabilityModal = () => {
-  if (availabilityModalRef.value) {
-    availabilityModalRef.value.showModal()
+const openEditProfileModal = () => {
+  if (technicianStore.technician) {
+    // Pre-fill form with current data
+    editForm.name = technicianStore.technician.name || ''
+    editForm.phone = technicianStore.technician.phone || ''
+    editForm.email = technicianStore.technician.email || ''
+    editForm.whatsappNumber = technicianStore.technician.whatsappNumber || ''
+  }
+  
+  if (editProfileModalRef.value) {
+    editProfileModalRef.value.showModal()
+  }
+}
+
+const closeEditProfileModal = () => {
+  if (editProfileModalRef.value) {
+    editProfileModalRef.value.closeModal()
+  }
+}
+
+const saveProfile = async () => {
+  try {
+    isLoading.value = true
+    
+    // TODO: Implement update functionality when users collection is ready
+    // For now, we'll just close the modal
+    console.log('Profile data to save:', editForm)
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    closeEditProfileModal()
+    
+    // Show success message
+    // toast.success('Perfil actualizado correctamente')
+    
+  } catch (error) {
+    console.error('Error saving profile:', error)
+    // toast.error('Error al actualizar el perfil')
+  } finally {
+    isLoading.value = false
   }
 }
 

@@ -125,14 +125,6 @@
           >
             <IconBellOutline class="w-5 h-5" />
           </button>
-
-          <!-- Settings -->
-          <NuxtLink
-            to="/settings"
-            class="p-2 text-gray-400 hover:text-gray-600 rounded-md"
-          >
-            <IconCogOutline class="w-5 h-5" />
-          </NuxtLink>
         </div>
       </div>
 
@@ -191,7 +183,6 @@ const technicianName = computed(() => {
 const pageTitle = computed(() => {
   const titles = {
     '/': 'Panel Principal',
-    '/setup': 'Configuración Inicial',
     '/schedule': 'Agenda',
     '/clients': 'Clientes',
     '/quotes': 'Presupuestos',
@@ -200,14 +191,6 @@ const pageTitle = computed(() => {
   
   return titles[route.path] || 'InstalarPro'
 })
-
-const iconComponents = {
-  'mdi:view-dashboard-outline': IconViewDashboardOutline,
-  'mdi:cog-outline': IconCogOutline,
-  'mdi:calendar-outline': IconCalendarOutline,
-  'mdi:account-group-outline': IconAccountGroupOutline,
-  'mdi:file-document-outline': IconFileDocumentOutline
-}
 
 const navigationItems = computed(() => [
   {
@@ -218,7 +201,7 @@ const navigationItems = computed(() => [
   },
   {
     name: 'Configuración',
-    href: '/setup',
+    href: '/settings',
     icon: 'mdi:cog-outline',
     component: IconCogOutline
   },

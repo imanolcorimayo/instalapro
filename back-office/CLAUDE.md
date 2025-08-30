@@ -122,19 +122,6 @@ Before creating ANY new component, you MUST:
 - Usage: Follow existing working patterns (Settings components, ClientModal)
 - Exception: If component name already starts with folder name, use full name without duplication
 
-**Examples:**
-```vue
-<!-- ✅ Correct Usage -->
-<SettingsAvailabilityGrid />  <!-- from /Settings/SettingsAvailabilityGrid.vue -->
-<SettingsTimeSelector />      <!-- from /Settings/SettingsTimeSelector.vue -->
-<ClientProfileModal />        <!-- from /Client/ClientProfileModal.vue -->
-<CashFlowSummary />          <!-- from /CashFlow/CashFlowSummary.vue -->
-
-<!-- ❌ Incorrect Usage -->
-<CalendarView />             <!-- Wrong - missing folder prefix -->
-<ScheduleScheduleView />     <!-- Wrong - folder name duplicated -->
-```
-
 **PROVEN SUCCESSFUL PATTERNS (Use These):**
 - **Base Components**: `ModalStructure.vue`, `TooltipStructure.vue`, `Icon.vue` 
 - **Reusable Components**: `ClientModal.vue` (used in multiple pages)
@@ -154,10 +141,6 @@ Before creating ANY new component, you MUST:
 ├── ModalStructure.vue                # ✅ Base modal (used 6 times)  
 ├── TooltipStructure.vue              # ✅ Base tooltip (used 1 time)
 ├── ClientModal.vue                   # ✅ Reusable modal (used 2 times)
-└── /Settings/
-    ├── SettingsAvailabilityGrid.vue  # ✅ Specialized (used 1 time)
-    ├── SettingsAvailabilityModal.vue # ✅ Specialized (used 1 time)
-    └── SettingsTimeSelector.vue      # ✅ Specialized (used 1 time)
 ```
 
 #### UI Components Structure
@@ -192,12 +175,12 @@ Before creating ANY new component, you MUST:
 
 ## Core System Modules
 
-### 1. Technician Account Setup & Configuration
-- **Purpose**: Initial technician onboarding and profile setup
-- **Features**: Service configuration, availability setup, pricing definition, booking page customization
-- **Data**: Technician profile, service catalog, availability schedule, booking preferences
-- **Integration**: Generates individual technician booking page
-- **Store**: `technician.ts` | **Collection**: `/technicians` (userUid-scoped)
+### 1. Settings & Profile Management
+- **Purpose**: Unified technician configuration, profile management, and account setup
+- **Features**: Profile editing (name, phone, email, WhatsApp), account closure, initial technician onboarding
+- **Data**: Technician personal information, account status, configuration settings
+- **Location**: `/settings` page with modal-based profile editing
+- **Store**: `technician.ts` | **Collection**: `/users` (future implementation)
 
 ### 2. Job Schedule Management
 - **Purpose**: Daily business operations and appointment management
@@ -232,12 +215,11 @@ Before creating ANY new component, you MUST:
 All pages use modal-based entity management:
 
 - **Dashboard**: `/index.vue` - Main overview with key metrics and recent activities
-- **Setup**: `/setup/index.vue` - Initial technician onboarding, service configuration, availability setup
+- **Settings**: `/settings/index.vue` - Unified technician configuration including profile editing, account management, and initial setup functionality
 - **Schedule**: `/schedule/index.vue` - Daily/weekly job calendar and appointment management
 - **Clients**: `/clients/index.vue` - Client directory with profiles and history
 - **Quotes**: `/quotes/index.vue` - Quote templates and generation
 - **Cash Flow**: `/cash-flow/index.vue` - Payment tracking and monthly reports
-- **Settings**: `/settings/index.vue` - Technician profile, booking page customization, service management
 
 ## TypeScript Interfaces & Data Structures
 
