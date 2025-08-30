@@ -14,8 +14,8 @@ import {
   limit,
   onSnapshot,
   serverTimestamp,
-  type DocumentData,
   type QueryConstraint,
+  type QuerySnapshot,
   type Unsubscribe
 } from 'firebase/firestore'
 import { getFirestoreInstance, getCurrentUser } from '~/utils/firebase'
@@ -151,12 +151,51 @@ export abstract class Schema {
 
     if (!isUpdate) {
       // For new documents
-      prepared.createdBy = userUid;
+      if (userUid) {
+        prepared.createdBy = userUid;
+      }
       prepared.createdAt = serverTimestamp();
     }
 
     // Always update timestamp
     prepared.updatedAt = serverTimestamp();
+
+    // Ensure date fields are properly handled for Firestore
+    // Convert any $dayjs or Date objects to Firestore timestamps or serverTimestamp
+    for (const [fieldName, definition] of Object.entries(this.schema)) {
+      if (definition.type === 'date' && prepared[fieldName] !== undefined) {
+        const dateValue = prepared[fieldName];
+        
+        // Skip if already a serverTimestamp or null
+        if (dateValue === null || (dateValue && typeof dateValue === 'object' && dateValue.constructor.name === 'ServerTimestampTransform')) {
+          continue;
+        }
+        
+        // Convert $dayjs objects, Date objects, or invalid dates to proper Firestore timestamps
+        if (dateValue && typeof dateValue === 'object') {
+          if (typeof dateValue.toDate === 'function') {
+            // Already a Firestore timestamp, keep as is
+            continue;
+          } else if (dateValue._isAMomentObject || (dateValue.constructor && dateValue.constructor.name === 'Dayjs')) {
+            // Convert dayjs to JavaScript Date, then let Firestore handle it
+            prepared[fieldName] = dateValue.toDate ? dateValue.toDate() : new Date(dateValue.valueOf());
+          } else if (dateValue instanceof Date) {
+            // Keep Date objects as is - Firestore will convert them
+            continue;
+          }
+        } else if (typeof dateValue === 'string') {
+          // Convert string dates to Date objects
+          const parsedDate = new Date(dateValue);
+          if (!isNaN(parsedDate.getTime())) {
+            prepared[fieldName] = parsedDate;
+          } else {
+            // Invalid date string, remove the field or set to null
+            console.warn(`Invalid date string for field ${fieldName}:`, dateValue);
+            prepared[fieldName] = null;
+          }
+        }
+      }
+    }
 
     return prepared;
   }
@@ -204,12 +243,24 @@ export abstract class Schema {
       throw new Error('User must be authenticated to create documents');
     }
 
-    return {
-      ...data,
-      userUid,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    };
+    let updatedData = { ...data };
+    const schemaFields = this.schema;
+
+    // For new documents
+    if (userUid && !updatedData.createdBy && schemaFields.createdBy?.required) {
+      updatedData.createdBy = userUid;
+    }
+
+    // If userUid is part of schema, ensure it's set
+    if (schemaFields.userUid?.required) {
+      updatedData.userUid = userUid;
+    }
+
+    // These fields will always be required
+    updatedData.createdAt = serverTimestamp();
+    updatedData.updatedAt = serverTimestamp();
+
+    return updatedData;
   }
 
   // Create a new document
@@ -486,7 +537,7 @@ export abstract class Schema {
       const q = this.buildUserQuery(constraints);
       
       // Set up real-time listener
-      return onSnapshot(q, (querySnapshot) => {
+      return onSnapshot(q, (querySnapshot: QuerySnapshot) => {
         const documents = querySnapshot.docs.map(doc => this.convertFirestoreDoc(doc));
         callback(documents);
       }, (error) => {

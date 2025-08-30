@@ -5,6 +5,10 @@ export class ClientSchema extends Schema {
   protected collectionName = 'clients';
   
   protected schema: SchemaDefinition = {
+    userUid: {
+      type: 'string',
+      required: true // Added automatically by schema base class
+    },
     name: {
       type: 'string',
       required: true,
@@ -57,10 +61,6 @@ export class ClientSchema extends Schema {
       required: false,
       maxLength: 1000,
       default: ''
-    },
-    userUid: {
-      type: 'string',
-      required: true // Added automatically by schema base class
     },
     isActive: {
       type: 'boolean',
