@@ -432,75 +432,6 @@
       </div>
     </div>
 
-    <!-- Day View Modal -->
-    <ModalStructure
-      ref="dayModal"
-      :title="selectedDayLabel"
-      modal-class="max-w-2xl"
-      @on-close="closeDayModal"
-    >
-      <div class="space-y-4">
-        <!-- Day Timeline with Hours -->
-        <div class="border border-gray-200 rounded-lg overflow-hidden relative">
-          <!-- Hour rows background -->
-          <div
-            v-for="hour in workingHours"
-            :key="hour"
-            class="border-b border-gray-100 last:border-b-0 h-16"
-          >
-            <div class="flex h-full">
-              <!-- Hour Column -->
-              <div class="w-16 bg-gray-50 flex items-center justify-center border-r border-gray-100">
-                <span class="text-xs font-medium text-gray-600">
-                  {{ formatHour(hour) }}
-                </span>
-              </div>
-              
-              <!-- Job Slot -->
-              <div class="flex-1 relative">
-                <!-- Empty slot click area -->
-                <div
-                  v-if="getHourJobs(selectedDate, hour).length === 0"
-                  class="absolute inset-0 hover:bg-gray-50 cursor-pointer transition-colors flex items-center pl-3"
-                  @click="createJobAtTime(selectedDate, hour)"
-                >
-                  <span class="text-xs text-gray-400">Click para agendar</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Jobs overlay with proper positioning -->
-          <div class="absolute inset-0 pointer-events-none">
-            <div class="relative h-full">
-              <!-- Left margin for hour column -->
-              <div class="ml-16 h-full relative">
-                <div
-                  v-for="job in getDayJobs(selectedDate)"
-                  :key="job.id"
-                  :class="[
-                    'absolute left-2 right-2 rounded border-l-4 p-2 cursor-pointer hover:shadow-sm transition-all pointer-events-auto',
-                    getJobStatusColor(job.status)
-                  ]"
-                  :style="getDayModalJobPosition(job)"
-                  @click="editJob(job)"
-                >
-                  <div class="text-sm font-medium text-gray-900 truncate">
-                    {{ job.clientName }}
-                  </div>
-                  <div class="text-xs text-gray-600 truncate">
-                    {{ job.serviceType }}
-                  </div>
-                  <div class="text-xs text-gray-500">
-                    ${{ job.price?.toLocaleString() || 0 }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </ModalStructure>
 
     <!-- Job Form Modal -->
     <ModalStructure
@@ -751,19 +682,21 @@
         <!-- Duration -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            Duración (horas)
+            Duración (minutos) *
           </label>
-          <select
+          <input
             v-model="jobForm.duration"
+            type="number"
+            min="15"
+            max="480"
+            step="15"
+            required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="1">1 hora</option>
-            <option value="2">2 horas</option>
-            <option value="3">3 horas</option>
-            <option value="4">4 horas</option>
-            <option value="6">6 horas</option>
-            <option value="8">8 horas</option>
-          </select>
+            placeholder="120"
+          />
+          <p class="text-xs text-gray-500 mt-1">
+            Entre 15 minutos y 8 horas ({{ Math.round((jobForm.duration || 0) / 60) }}h {{ (jobForm.duration || 0) % 60 }}min)
+          </p>
         </div>
 
         <!-- Address -->
@@ -861,7 +794,6 @@
 import IconPlus from '~icons/mdi/plus'
 import IconChevronLeft from '~icons/mdi/chevron-left'
 import IconChevronRight from '~icons/mdi/chevron-right'
-import IconCalendarBlank from '~icons/mdi/calendar-blank'
 import IconLoading from '~icons/mdi/loading'
 import IconClock from '~icons/mdi/clock-outline'
 import IconCalendarCheck from '~icons/mdi/calendar-check'
@@ -872,7 +804,6 @@ import IconAlertCircle from '~icons/mdi/alert-circle'
 import { 
   nowInBuenosAires, 
   toBuenosAires, 
-  formatInBuenosAires, 
   isTodayInBuenosAires,
   startOfWeekInBuenosAires,
   endOfWeekInBuenosAires
@@ -903,7 +834,6 @@ const { $dayjs } = useNuxtApp()
 
 // Component state
 const currentWeekStart = ref(startOfWeekInBuenosAires())
-const selectedDate = ref(null)
 const editingJob = ref(null)
 const savingJob = ref(false)
 
@@ -924,7 +854,6 @@ const showClientModal = ref(false)
 const highlightedClientIndex = ref(-1)
 
 // Modal refs
-const dayModal = ref()
 const jobModal = ref()
 const clientModalRef = ref()
 
@@ -935,7 +864,7 @@ const jobForm = ref({
   serviceType: '',
   date: '',
   time: '',
-  duration: '2',
+  duration: '120',
   address: '',
   price: '',
   notes: '',
@@ -992,11 +921,6 @@ const workingHours = computed(() => {
   return hours
 })
 
-const selectedDayLabel = computed(() => {
-  if (!selectedDate.value) return ''
-  const formatted = toBuenosAires(selectedDate.value).format('dddd, D [de] MMMM')
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
-})
 
 const currentDayViewLabel = computed(() => {
   const formatted = toBuenosAires(currentDayView.value).format('dddd, D [de] MMMM YYYY')
@@ -1165,27 +1089,6 @@ const getJobStatusColor = (status) => {
   return colors[status] || colors.pending
 }
 
-const getDayModalJobPosition = (job) => {
-  const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
-  const jobStart = toBuenosAires(actualDate)
-  const durationMinutes = job.estimatedDuration || 120
-  
-  const startHour = jobStart.hour()
-  const startMinute = jobStart.minute()
-  
-  // Calculate position relative to working hours (8 AM = hour 0, 6 PM = hour 10)
-  const hourFromStart = startHour - 8 // 8 AM is our starting hour
-  const hourHeight = 64 // Each hour row is h-16 (64px)
-  
-  // Position calculations
-  const topPosition = (hourFromStart * hourHeight) + (startMinute / 60 * hourHeight)
-  const jobHeight = (durationMinutes / 60) * hourHeight
-  
-  return {
-    top: `${topPosition}px`,
-    height: `${jobHeight}px`
-  }
-}
 
 const getDayViewJobPosition = (job) => {
   const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
@@ -1232,14 +1135,6 @@ const getWeeklyTimelineJobPosition = (job) => {
 }
 
 // Modal actions
-const openDayView = (date) => {
-  selectedDate.value = date
-  dayModal.value?.showModal()
-}
-
-const closeDayModal = () => {
-  selectedDate.value = null
-}
 
 const openNewJobModal = () => {
   editingJob.value = null
@@ -1253,7 +1148,7 @@ const openNewJobModal = () => {
     serviceType: '',
     date: nowInBuenosAires().format('YYYY-MM-DD'),
     time: '09:00',
-    duration: '2',
+    duration: '120',
     address: '',
     price: '',
     notes: '',
@@ -1284,7 +1179,7 @@ const editJob = (job) => {
     serviceType: job.serviceType,
     date: jobDate.format('YYYY-MM-DD'),
     time: jobDate.format('HH:mm'),
-    duration: (job.estimatedDuration / 60).toString(),
+    duration: job.estimatedDuration.toString(),
     address: job.address,
     price: job.price?.toString() || '',
     notes: job.notes || '',
@@ -1305,7 +1200,7 @@ const createJobAtTime = (date, hour) => {
     serviceType: '',
     date: date,
     time: `${hour.toString().padStart(2, '0')}:00`,
-    duration: '2',
+    duration: '120',
     address: '',
     price: '',
     notes: '',
@@ -1327,7 +1222,7 @@ const resetJobForm = () => {
     serviceType: '',
     date: '',
     time: '',
-    duration: '2',
+    duration: '120',
     address: '',
     price: '',
     notes: '',
@@ -1465,7 +1360,7 @@ const onServiceTypeChange = () => {
   if (service) {
     // Auto-fill price and duration based on selected service
     jobForm.value.price = service.basePrice.toString()
-    jobForm.value.duration = Math.round(service.estimatedDuration / 60).toString()
+    jobForm.value.duration = service.estimatedDuration.toString()
   }
 }
 
@@ -1514,7 +1409,7 @@ const saveJob = async () => {
     
     // Combine date and time
     const scheduledDateTime = toBuenosAires(`${jobForm.value.date} ${jobForm.value.time}`)
-    const durationMinutes = parseInt(jobForm.value.duration) * 60
+    const durationMinutes = parseInt(jobForm.value.duration)
     
     // Check for time overlap
     const overlapCheck = checkTimeOverlap(

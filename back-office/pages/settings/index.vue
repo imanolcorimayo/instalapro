@@ -687,7 +687,6 @@ const saveProfile = async () => {
     if (success) {
       closeEditProfileModal()
       // Toast notification would go here
-      console.log('Perfil guardado correctamente')
     }
     
   } catch (error) {
@@ -706,7 +705,6 @@ const handleCloseAccount = async () => {
     
     if (success) {
       closeCloseAccountModal()
-      console.log('Cuenta desactivada correctamente')
       // Toast notification would go here
     }
     
@@ -725,8 +723,7 @@ const handleReactivateAccount = async () => {
     const success = await techniciansStore.reactivateAccount()
     
     if (success) {
-      console.log('Cuenta reactivada correctamente')
-      // Toast notification would go here
+      useToast().success('Cuenta reactivada correctamente')
     }
     
   } catch (error) {
@@ -798,7 +795,6 @@ const saveService = async () => {
     
     if (success) {
       closeServiceModal()
-      console.log('Servicio guardado correctamente')
     }
     
   } catch (error) {
@@ -817,7 +813,7 @@ const deleteService = async (service) => {
     const success = await serviceTypesStore.deleteServiceType(service.id)
     
     if (success) {
-      console.log('Servicio eliminado correctamente')
+      useToast().success('Servicio eliminado correctamente')
     }
     
   } catch (error) {
