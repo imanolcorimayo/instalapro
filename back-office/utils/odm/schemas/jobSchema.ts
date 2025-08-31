@@ -5,14 +5,14 @@ export class JobSchema extends Schema {
   protected collectionName = 'jobs';
   
   protected schema: SchemaDefinition = {
-    id: {
+    userUid: {
       type: 'string',
-      required: true
+      required: true // Added automatically by schema base class
     },
     clientId: {
-      type: 'reference',
-      required: true,
-      referenceTo: 'clients'
+      type: 'string',
+      required: false, // Optional reference to client document
+      maxLength: 50
     },
     clientName: {
       type: 'string',
@@ -26,21 +26,27 @@ export class JobSchema extends Schema {
       maxLength: 20,
       pattern: /^[+]?[0-9\s\-()]+$/
     },
+    clientEmail: {
+      type: 'string',
+      required: false,
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    },
     serviceType: {
       type: 'string',
       required: true,
-      maxLength: 100
+      maxLength: 100,
+      minLength: 1
     },
     description: {
       type: 'string',
-      required: true,
+      required: false,
       maxLength: 500,
-      minLength: 1
+      default: ''
     },
     address: {
       type: 'string',
       required: true,
-      maxLength: 200,
+      maxLength: 300,
       minLength: 1
     },
     scheduledDate: {
@@ -50,8 +56,9 @@ export class JobSchema extends Schema {
     estimatedDuration: {
       type: 'number',
       required: true,
-      min: 30,
-      max: 480 // Max 8 hours
+      min: 15, // Minimum 15 minutes
+      max: 480, // Maximum 8 hours
+      default: 120
     },
     status: {
       type: 'string',
@@ -60,12 +67,13 @@ export class JobSchema extends Schema {
     },
     price: {
       type: 'number',
-      required: true,
-      min: 0
+      required: false,
+      min: 0,
+      default: 0
     },
     paid: {
       type: 'boolean',
-      required: true,
+      required: false,
       default: false
     },
     notes: {
@@ -74,9 +82,10 @@ export class JobSchema extends Schema {
       maxLength: 1000,
       default: ''
     },
-    technicianId: {
+    source: {
       type: 'string',
-      required: false // Will be added automatically by schema base class
+      required: false,
+      default: 'back_office'
     },
     isActive: {
       type: 'boolean',
@@ -101,78 +110,71 @@ export class JobSchema extends Schema {
     }
   };
 
-  // Job-specific methods
-  async findByStatus(status: string) {
-    return this.find({
-      where: [{ field: 'status', operator: '==', value: status }],
-      orderBy: [{ field: 'scheduledDate', direction: 'asc' }]
-    });
-  }
-
-  async findByClient(clientId: string) {
+  // Job-specific query methods (validation and basic queries only)
+  async findByClientId(clientId: string) {
+    if (!clientId) {
+      return { success: true, data: [] };
+    }
+    
     return this.find({
       where: [{ field: 'clientId', operator: '==', value: clientId }],
       orderBy: [{ field: 'scheduledDate', direction: 'desc' }]
     });
   }
 
-  async findUpcoming() {
-    const now = new Date();
-    return this.find({
-      where: [
-        { field: 'scheduledDate', operator: '>', value: now },
-        { field: 'status', operator: 'in', value: ['pending', 'confirmed'] }
-      ],
-      orderBy: [{ field: 'scheduledDate', direction: 'asc' }]
-    });
-  }
-
-  async findToday() {
-    const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-    
-    return this.find({
-      where: [
-        { field: 'scheduledDate', operator: '>=', value: startOfDay },
-        { field: 'scheduledDate', operator: '<', value: endOfDay }
-      ],
-      orderBy: [{ field: 'scheduledDate', direction: 'asc' }]
-    });
-  }
-
   async findByDateRange(startDate: Date, endDate: Date) {
+    if (!startDate || !endDate) {
+      return { success: true, data: [] };
+    }
+    
     return this.find({
       where: [
         { field: 'scheduledDate', operator: '>=', value: startDate },
         { field: 'scheduledDate', operator: '<=', value: endDate }
       ],
+    });
+  }
+
+  async findByStatus(status: string) {
+    if (!status) {
+      return { success: true, data: [] };
+    }
+    
+    return this.find({
+      where: [{ field: 'status', operator: '==', value: status }],
       orderBy: [{ field: 'scheduledDate', direction: 'asc' }]
     });
   }
 
-  async findPendingPayments() {
+  async findByPhone(phone: string) {
+    if (!phone) {
+      return { success: true, data: [] };
+    }
+    
     return this.find({
-      where: [
-        { field: 'paid', operator: '==', value: false },
-        { field: 'status', operator: '==', value: 'completed' }
-      ],
+      where: [{ field: 'clientPhone', operator: '==', value: phone }],
       orderBy: [{ field: 'scheduledDate', direction: 'desc' }]
     });
   }
 
-  async markAsPaid(jobId: string) {
-    return this.update(jobId, { paid: true });
+  async findUpcoming(limit: number = 10) {
+    const now = new Date();
+    
+    return this.find({
+      where: [
+        { field: 'scheduledDate', operator: '>=', value: now },
+        { field: 'status', operator: 'in', value: ['pending', 'confirmed', 'in_progress'] }
+      ],
+      orderBy: [{ field: 'scheduledDate', direction: 'asc' }],
+      limit
+    });
   }
 
-  async updateStatus(jobId: string, status: string) {
-    return this.update(jobId, { status });
-  }
-
-  async reschedule(jobId: string, newDate: Date) {
-    return this.update(jobId, { 
-      scheduledDate: newDate,
-      status: 'confirmed' // Auto-confirm when rescheduling
+  async findCompleted(limit: number = 50) {
+    return this.find({
+      where: [{ field: 'status', operator: '==', value: 'completed' }],
+      orderBy: [{ field: 'scheduledDate', direction: 'desc' }],
+      limit
     });
   }
 }

@@ -809,7 +809,7 @@ import {
   endOfWeekInBuenosAires
 } from '~/utils/timezone'
 
-import { watch, nextTick } from 'vue'
+import { watch, nextTick, onBeforeUnmount } from 'vue'
 
 definePageMeta({
   layout: 'default',
@@ -822,15 +822,12 @@ useSeoMeta({
   robots: 'noindex, nofollow'
 })
 
-// Firebase integration
-const { data: jobs, loading, error, add, update, remove, list, subscribe } = useFirestore('jobs')
-const { data: clients, loading: clientsLoading, list: loadClients, add: addClient, update: updateClient } = useFirestore('clients')
+// Store integration
+const jobsStore = useJobsStore()
+const clientsStore = useClientsStore()
 
-// Stores
+// Service types store
 const serviceTypesStore = useServiceTypesStore()
-
-// Get dayjs instance
-const { $dayjs } = useNuxtApp()
 
 // Component state
 const currentWeekStart = ref(startOfWeekInBuenosAires())
@@ -929,12 +926,8 @@ const currentDayViewLabel = computed(() => {
 
 // Check if the current job is in the future (prevent marking as completed)
 const isJobInFuture = computed(() => {
-  if (!editingJob.value || !jobForm.value.date || !jobForm.value.time) return false
-  
-  const jobDateTime = toBuenosAires(`${jobForm.value.date} ${jobForm.value.time}`)
-  const now = nowInBuenosAires()
-  
-  return jobDateTime.isAfter(now)
+  if (!editingJob.value) return false
+  return jobsStore.isJobInFuture(editingJob.value)
 })
 
 // Client auto-complete computed
@@ -942,7 +935,7 @@ const filteredClients = computed(() => {
   if (!clientSearchQuery.value.trim()) return []
   
   const query = clientSearchQuery.value.toLowerCase().trim()
-  return clients.value.filter(client =>
+  return clientsStore.activeClients.filter(client =>
     client.name.toLowerCase().includes(query) ||
     client.phone.includes(query)
   ).slice(0, 5) // Limit to 5 results for better UX
@@ -952,7 +945,7 @@ const hasExactClientMatch = computed(() => {
   if (!clientSearchQuery.value.trim()) return false
   
   const query = clientSearchQuery.value.toLowerCase().trim()
-  return clients.value.some(client =>
+  return clientsStore.activeClients.some(client =>
     client.name.toLowerCase() === query
   )
 })
@@ -1031,107 +1024,39 @@ const switchToDayView = (date = null) => {
   }
 }
 
+// Use store method for getting day jobs
 const getDayJobs = (date) => {
-  const dayJobs = jobs.value.filter(job => {
-    if (!job.scheduledDate) {
-      return false
-    }
-    
-    // Handle both Date objects and Firestore Timestamps
-    let jobDate
-    if (job.scheduledDate.toDate) {
-      // Firestore Timestamp
-      jobDate = toBuenosAires(job.scheduledDate.toDate()).format('YYYY-MM-DD')
-    } else {
-      // Regular Date object
-      jobDate = toBuenosAires(job.scheduledDate).format('YYYY-MM-DD')
-    }
-    
-    return jobDate === date
-  }).sort((a, b) => {
-    const dateA = a.scheduledDate.toDate ? a.scheduledDate.toDate() : a.scheduledDate
-    const dateB = b.scheduledDate.toDate ? b.scheduledDate.toDate() : b.scheduledDate
-    return toBuenosAires(dateA).diff(toBuenosAires(dateB))
-  })
-  
-  return dayJobs
+  return jobsStore.getDayJobs(date)
 }
 
+// Use store method for getting hour jobs
 const getHourJobs = (date, hour) => {
-  return jobs.value.filter(job => {
-    if (!job.scheduledDate) return false
-    
-    const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
-    const jobDate = toBuenosAires(actualDate)
-    return jobDate.format('YYYY-MM-DD') === date && jobDate.hour() === hour
-  })
+  return jobsStore.getHourJobs(date, hour)
 }
 
+// Use store method for formatting job time
 const formatJobTime = (scheduledDate, duration) => {
-  const actualDate = scheduledDate.toDate ? scheduledDate.toDate() : scheduledDate
-  const start = toBuenosAires(actualDate)
-  const end = start.add(duration, 'minute')
-  return `${start.format('HH:mm')} - ${end.format('HH:mm')}`
+  return jobsStore.formatJobTime(scheduledDate, duration)
 }
 
 const formatHour = (hour) => {
   return `${hour.toString().padStart(2, '0')}:00`
 }
 
+// Use store method for job status colors
 const getJobStatusColor = (status) => {
-  const colors = {
-    pending: 'bg-yellow-50 border-yellow-300 hover:bg-yellow-100',
-    confirmed: 'bg-blue-50 border-blue-300 hover:bg-blue-100',
-    in_progress: 'bg-orange-50 border-orange-300 hover:bg-orange-100',
-    completed: 'bg-green-50 border-green-300 hover:bg-green-100',
-    cancelled: 'bg-red-50 border-red-300 hover:bg-red-100'
-  }
-  return colors[status] || colors.pending
+  return jobsStore.getJobStatusColor(status)
 }
 
 
+// Use store method for day view positioning
 const getDayViewJobPosition = (job) => {
-  const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
-  const jobStart = toBuenosAires(actualDate)
-  const durationMinutes = job.estimatedDuration || 120
-  
-  const startHour = jobStart.hour()
-  const startMinute = jobStart.minute()
-  
-  // Calculate position relative to working hours (8 AM = hour 0, 6 PM = hour 10)
-  const hourFromStart = startHour - 8 // 8 AM is our starting hour
-  const hourHeight = 64 // Each hour row is h-16 (64px)
-  
-  // Position calculations
-  const topPosition = (hourFromStart * hourHeight) + (startMinute / 60 * hourHeight)
-  const jobHeight = (durationMinutes / 60) * hourHeight
-  
-  return {
-    top: `${topPosition}px`,
-    height: `${jobHeight}px`
-  }
+  return jobsStore.getDayViewJobPosition(job)
 }
 
+// Use store method for weekly timeline positioning
 const getWeeklyTimelineJobPosition = (job) => {
-  const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
-  const jobStart = toBuenosAires(actualDate)
-  const durationMinutes = job.estimatedDuration || 120
-  
-  const startHour = jobStart.hour()
-  const startMinute = jobStart.minute()
-  
-  // Calculate position relative to working hours (8 AM = hour 0, 6 PM = hour 10)
-  const hourFromStart = startHour - 8 // 8 AM is our starting hour
-  const hourHeight = 64 // Each hour row is h-16 (64px)
-  
-  // Position calculations
-  const topPosition = (hourFromStart * hourHeight) + (startMinute / 60 * hourHeight)
-  const jobHeight = Math.max((durationMinutes / 60) * hourHeight, 32) // Minimum height of 32px
-  
-  return {
-    top: `${topPosition}px`,
-    height: `${jobHeight}px`
-  }
+  return jobsStore.getWeeklyTimelineJobPosition(job)
 }
 
 // Modal actions
@@ -1161,7 +1086,7 @@ const editJob = (job) => {
   editingJob.value = job
   
   // Find matching client for auto-complete
-  const matchingClient = clients.value.find(client => 
+  const matchingClient = clientsStore.activeClients.find(client => 
     client.name.toLowerCase() === job.clientName.toLowerCase() ||
     client.phone === job.clientPhone
   )
@@ -1278,11 +1203,6 @@ const createNewClient = () => {
   })
 }
 
-const closeClientDropdown = () => {
-  showClientDropdown.value = false
-  highlightedClientIndex.value = -1
-}
-
 const handleClientNameBlur = () => {
   // Use setTimeout to allow click events on dropdown items to fire first
   setTimeout(() => {
@@ -1352,7 +1272,7 @@ const handleClientCreated = (newClient) => {
   jobForm.value.address = newClient.address
   
   // Reload clients to ensure the new client is in the list
-  loadClients()
+  clientsStore.loadClients()
 }
 
 const onServiceTypeChange = () => {
@@ -1364,36 +1284,9 @@ const onServiceTypeChange = () => {
   }
 }
 
+// Use store method for time overlap checking
 const checkTimeOverlap = (newJobStart, newJobDuration, excludeJobId = null) => {
-  const newStart = toBuenosAires(newJobStart)
-  const newEnd = newStart.add(newJobDuration, 'minute')
-  const newDate = newStart.format('YYYY-MM-DD')
-  
-  const dayJobs = jobs.value.filter(job => {
-    if (excludeJobId && job.id === excludeJobId) return false
-    if (!job.scheduledDate) return false
-    
-    const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
-    const jobDate = toBuenosAires(actualDate).format('YYYY-MM-DD')
-    return jobDate === newDate
-  })
-  
-  for (const job of dayJobs) {
-    const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
-    const jobStart = toBuenosAires(actualDate)
-    const jobEnd = jobStart.add(job.estimatedDuration || 120, 'minute')
-    
-    // Check if times overlap
-    if (newStart.isBefore(jobEnd) && newEnd.isAfter(jobStart)) {
-      return {
-        hasOverlap: true,
-        conflictJob: job,
-        conflictTime: `${jobStart.format('HH:mm')} - ${jobEnd.format('HH:mm')}`
-      }
-    }
-  }
-  
-  return { hasOverlap: false }
+  return jobsStore.checkTimeOverlap(newJobStart, newJobDuration, excludeJobId)
 }
 
 const saveJob = async () => {
@@ -1436,14 +1329,12 @@ const saveJob = async () => {
       price: jobForm.value.price ? parseFloat(jobForm.value.price) : 0,
       notes: jobForm.value.notes.trim(),
       status: jobForm.value.status,
-      description: `${jobForm.value.serviceType} - ${jobForm.value.clientName}`,
-      clientId: selectedClient.value?.id || '',
-      paid: false
+      clientId: selectedClient.value?.id || ''
     }
 
     if (editingJob.value) {
       const oldJob = editingJob.value
-      await update(editingJob.value.id, jobData)
+      await jobsStore.updateJob(editingJob.value.id, jobData)
       
       // Update client stats if job status changed
       if (selectedClient.value) {
@@ -1452,7 +1343,7 @@ const saveJob = async () => {
       
       useToast().success('Trabajo actualizado exitosamente')
     } else {
-      const newJobId = await add(jobData)
+      await jobsStore.createJob(jobData)
       
       // Update client stats only if job is completed at creation
       if (selectedClient.value && jobData.status === 'completed') {
@@ -1479,7 +1370,7 @@ const deleteJob = async () => {
   }
 
   try {
-    await remove(editingJob.value.id)
+    await jobsStore.deleteJob(editingJob.value.id)
     useToast().success('Trabajo eliminado exitosamente')
     jobModal.value?.closeModal()
   } catch (err) {
@@ -1488,21 +1379,10 @@ const deleteJob = async () => {
   }
 }
 
-const loadJobs = async () => {
-  try {
-    await list()
-  } catch (err) {
-    console.error('Error loading jobs:', err)
-    useToast().error('Error al cargar trabajos')
-  }
-}
-
 // Client stats update helpers
 const updateClientStats = async (clientId, updates) => {
   try {
-    await updateClient(clientId, updates)
-    // Reload clients to get updated stats
-    await loadClients()
+    await clientsStore.updateClient(clientId, updates)
   } catch (err) {
     console.error('Error updating client stats:', err)
   }
@@ -1510,11 +1390,11 @@ const updateClientStats = async (clientId, updates) => {
 
 const updateClientStatsFromJob = async (clientId, newJob, oldJob = null) => {
   try {
-    const client = clients.value.find(c => c.id === clientId)
+    const client = clientsStore.getClientById(clientId)
     if (!client) return
 
     // Recalculate totals from all jobs for this client
-    const allClientJobs = jobs.value.filter(job => job.clientId === clientId)
+    const allClientJobs = jobsStore.getJobsByClient(clientId)
     
     let totalCompletedJobs = 0
     let totalSpent = 0
@@ -1548,19 +1428,22 @@ const updateClientStatsFromJob = async (clientId, newJob, oldJob = null) => {
   }
 }
 
-// Load jobs and set up real-time subscription
-onMounted(() => {
-  // Subscribe to real-time updates
-  subscribe()
-  // Load clients for auto-complete
-  loadClients()
-  // Initialize service types store
-  serviceTypesStore.initialize()
-  
-  // Setup mobile scroll indicators
-  nextTick(() => {
-    updateScrollIndicators()
-  })
+// Initialize stores and set up real-time subscription
+onMounted(async () => {
+  try {
+    // Initialize stores
+    await jobsStore.initialize()
+    await clientsStore.initialize()
+    await serviceTypesStore.initialize()
+    
+    // Setup mobile scroll indicators
+    nextTick(() => {
+      updateScrollIndicators()
+    })
+  } catch (err) {
+    console.error('Error initializing schedule page:', err)
+    useToast().error('Error al cargar datos del calendario')
+  }
 })
 
 // Watch for view changes to update scroll indicators
@@ -1570,5 +1453,10 @@ watch(currentView, (newView) => {
       updateScrollIndicators()
     })
   }
+})
+
+// Cleanup on unmount
+onBeforeUnmount(() => {
+  jobsStore.cleanup()
 })
 </script>
