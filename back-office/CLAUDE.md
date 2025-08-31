@@ -43,7 +43,10 @@ InstalarPro is an MVP back-office application for **self-employed** Air Conditio
   },
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.12.3",
+    "@pinia/nuxt": "^0.11.2",
+    "pinia": "^3.0.3",
     "@vueuse/nuxt": "13.2.0",
+    "firebase": "^12.1.0",
     "nuxt": "^4.0.1",
     "tailwindcss": "^3.4.16",
     "unplugin-icons": "^0.21.0",
@@ -59,13 +62,13 @@ InstalarPro is an MVP back-office application for **self-employed** Air Conditio
 }
 ```
 
-**Note**: Pinia will be added back when Nuxt 4 compatible versions are available.
-
 #### Architecture Patterns
-- **Stores**: Pinia stores for state management (schedule, clients, quotes, cashFlow)
-- **Data Flow**: Standard CRUD with localStorage, cached in local state
+- **Stores**: Pinia handle all Schema/Firestore operations and caching (schedule, jobs, clients, quotes, etc)
+- **Caching**: Cache is only a (new Map) variable that on reload it refreshes
+- **Data Flow**: Standard CRUD with Firestore, cached in local state
 - **Components**: Modal-based entity management, naming convention `/entity/EntityDetails.vue`
 - **Tooltips**: Interactive tooltip system using `TooltipStructure.vue` for space-efficient UI controls
+- **Modals**: Interactive tooltip system using `ModalStructure.vue` for space-efficient UI controls
 - **Layout**: Sidebar navigation (`default.vue`) with module-based menu
 - **Design**: Tailwind CSS, icons via `~icons/pack-name/icon-name`, toast notifications
 - **Utils**: Common functions in `@/utils/index.ts`, dates with $dayjs
@@ -79,7 +82,6 @@ InstalarPro is an MVP back-office application for **self-employed** Air Conditio
 - Schema classes handle validation and basic CRUD operations
 - Real-time listeners for live data updates across devices
 - User-scoped data isolation through `userUid` field
-- Offline support with Firestore caching
 
 **Data Architecture**:
 ```typescript
@@ -123,7 +125,7 @@ Before creating ANY new component, you MUST:
 - Exception: If component name already starts with folder name, use full name without duplication
 
 **PROVEN SUCCESSFUL PATTERNS (Use These):**
-- **Base Components**: `ModalStructure.vue`, `TooltipStructure.vue`, `Icon.vue` 
+- **Base Components**: `ModalStructure.vue`, `TooltipStructure.vue`
 - **Reusable Components**: `ClientModal.vue` (used in multiple pages)
 - **Specialized Components**: Settings folder components (all actively used)
 - **Modal Pattern**: Use `ModalStructure.vue` with slot content, NOT dedicated modal components
@@ -134,13 +136,11 @@ Before creating ANY new component, you MUST:
 - Creating "regular" and "simplified" versions of the same component
 - Components that are never imported or used anywhere
 
-**CURRENT CLEAN COMPONENT STRUCTURE (7 components, all used):**
+**CURRENT CLEAN COMPONENT STRUCTURE (2 components, all used):**
 ```
 /components/
-├── Icon.vue                          # ✅ Base component (used ~21 times)
-├── ModalStructure.vue                # ✅ Base modal (used 6 times)  
-├── TooltipStructure.vue              # ✅ Base tooltip (used 1 time)
-├── ClientModal.vue                   # ✅ Reusable modal (used 2 times)
+├── ModalStructure.vue                # ✅ Base modal
+├── TooltipStructure.vue              # ✅ Base tooltip
 ```
 
 #### UI Components Structure
@@ -148,30 +148,11 @@ Before creating ANY new component, you MUST:
 **ModalStructure.vue** - Base modal component for all modal dialogs:
 - **MANDATORY**: All modal dialogs MUST use ModalStructure.vue as the base component
 - Consistent modal behavior, styling, and functionality across the application
-- Props: `title`, `modalClass`, `closeOnBackdropClick`, `clickPropagationFilter`, `modalNamespace`
-- Slots: `header`, default slot (content), `footer`
-- Features:
-  - Teleport to body for proper z-index handling
-  - ESC key to close functionality
-  - Click outside to close (configurable)
-  - Focus trapping and scroll prevention
-  - Fade-in animation
-  - Proper cleanup on unmount
 - Usage: `<ModalStructure ref="modal" title="Modal Title" @on-close="closeModal">`
 - Methods: `showModal()`, `closeModal()`
 
 **TooltipStructure.vue** - Base tooltip component for interactive controls:
 - Reusable dropdown-style tooltip positioned relative to trigger button
-- Consistent styling and behavior across the application
-- Used for space-efficient form controls (time selection, service types, pricing)
-- Props: `title`, `tooltipClass`, `position` (bottom-left, bottom-right, top-left, top-right)
-- Slots: `trigger`, `content`, `footer`
-- Features: 
-  - Smart positioning with viewport edge detection
-  - Focus trapping, keyboard navigation (ESC to close)
-  - Click-outside-to-close with backdrop
-  - Modal namespace class `tooltip-namespace` for click propagation filtering
-  - Automatic position adjustment when tooltip exceeds viewport boundaries
 
 ## Core System Modules
 
@@ -230,10 +211,10 @@ All pages use modal-based entity management:
 - Common fields: `id`, `userUid`, `createdAt`, `updatedAt` (Firestore timestamps)
 - User isolation: All entities automatically include `userUid` field
 
-### Technician Store Interfaces
+### Technicians Store Interfaces
 ```typescript
-// Core Technician entity for account setup
-interface Technician {
+// Core Technicians entity for account setup
+interface Technicians {
   id: string
   name: string
   phone: string
@@ -241,7 +222,7 @@ interface Technician {
   email: string
   businessName?: string
   serviceArea: string[] // Cities/zones served
-  services: TechnicianService[]
+  services: TechniciansService[]
   availability: WeeklyAvailability
   bookingUrl: string // agenda.instalapro.com/{technician}
   profileSetupComplete: boolean
@@ -249,7 +230,7 @@ interface Technician {
   updatedAt: Date
 }
 
-interface TechnicianService {
+interface TechniciansService {
   id: string
   name: string
   description: string
@@ -278,7 +259,7 @@ interface DaySchedule {
 }
 
 // Input types for store operations
-interface TechnicianCreateInput {
+interface TechniciansCreateInput {
   name: string
   phone: string
   email: string
@@ -286,213 +267,15 @@ interface TechnicianCreateInput {
   serviceArea: string[]
 }
 
-interface TechnicianUpdateInput {
+interface TechniciansUpdateInput {
   name?: string
   phone?: string
   whatsappNumber?: string
   email?: string
   businessName?: string
   serviceArea?: string[]
-  services?: TechnicianService[]
+  services?: TechniciansService[]
   availability?: WeeklyAvailability
-}
-```
-
-### Jobs Store Interfaces
-```typescript
-// Core Job entity
-interface Job {
-  id: string
-  clientId: string
-  clientName: string
-  clientPhone: string
-  serviceType: string
-  description: string
-  address: string
-  scheduledDate: Date
-  estimatedDuration: number // minutes
-  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled'
-  price: number
-  paid: boolean
-  notes: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-// Input types for store operations
-interface JobCreateInput {
-  clientId: string
-  clientName: string
-  clientPhone: string
-  serviceType: string
-  description: string
-  address: string
-  scheduledDate: Date
-  estimatedDuration: number
-  price: number
-  notes?: string
-}
-
-interface JobUpdateInput {
-  clientName?: string
-  clientPhone?: string
-  serviceType?: string
-  description?: string
-  address?: string
-  scheduledDate?: Date
-  estimatedDuration?: number
-  status?: Job['status']
-  price?: number
-  paid?: boolean
-  notes?: string
-}
-```
-
-### Clients Store Interfaces
-```typescript
-// Core Client entity
-interface Client {
-  id: string
-  userUid: string // Firebase Auth user ID - automatically added
-  name: string
-  phone: string
-  address: string
-  email?: string
-  serviceHistory: JobHistory[]
-  totalJobs: number
-  totalSpent: number
-  preferredServiceTypes: string[]
-  notes: string
-  isActive: boolean
-  createdAt: Date
-  updatedAt: Date
-  createdBy?: string
-  archivedAt?: Date
-}
-
-interface JobHistory {
-  jobId: string
-  date: Date
-  serviceType: string
-  description: string
-  price: number
-  status: string
-}
-
-// Input types for store operations
-interface ClientCreateInput {
-  name: string
-  phone: string
-  address: string
-  email?: string
-  notes?: string
-}
-
-interface ClientUpdateInput {
-  name?: string
-  phone?: string
-  address?: string
-  email?: string
-  notes?: string
-  preferredServiceTypes?: string[]
-}
-```
-
-### Quotes Store Interfaces
-```typescript
-// Core Quote entity
-interface Quote {
-  id: string
-  clientId?: string
-  clientName: string
-  serviceType: string
-  description: string
-  items: QuoteItem[]
-  subtotal: number
-  tax: number
-  total: number
-  validUntil: Date
-  status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'
-  createdAt: Date
-  updatedAt: Date
-}
-
-interface QuoteItem {
-  id: string
-  description: string
-  quantity: number
-  unitPrice: number
-  total: number
-}
-
-// Input types for store operations
-interface QuoteCreateInput {
-  clientId?: string
-  clientName: string
-  serviceType: string
-  description: string
-  items: Omit<QuoteItem, 'id'>[]
-  validUntil: Date
-}
-
-interface QuoteUpdateInput {
-  clientName?: string
-  serviceType?: string
-  description?: string
-  items?: QuoteItem[]
-  validUntil?: Date
-  status?: Quote['status']
-}
-```
-
-### Cash Flow Store Interfaces
-```typescript
-// Core Payment entity
-interface Payment {
-  id: string
-  jobId: string
-  clientId: string
-  amount: number
-  paymentMethod: 'cash' | 'transfer' | 'card'
-  paymentDate: Date
-  notes: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-interface MonthlyReport {
-  id: string
-  month: string // YYYY-MM
-  totalRevenue: number
-  totalJobs: number
-  paidJobs: number
-  pendingPayments: number
-  topServices: ServiceSummary[]
-  createdAt: Date
-  updatedAt: Date
-}
-
-interface ServiceSummary {
-  serviceType: string
-  count: number
-  revenue: number
-}
-
-// Input types for store operations
-interface PaymentCreateInput {
-  jobId: string
-  clientId: string
-  amount: number
-  paymentMethod: 'cash' | 'transfer' | 'card'
-  paymentDate: Date
-  notes?: string
-}
-
-interface PaymentUpdateInput {
-  amount?: number
-  paymentMethod?: Payment['paymentMethod']
-  paymentDate?: Date
-  notes?: string
 }
 ```
 
@@ -505,14 +288,6 @@ interface PaymentUpdateInput {
 - **Function Names**: English, verb-based, descriptive
 
 ### Data Persistence Strategy
-
-**Firestore Architecture**:
-- **Collection Structure**: Flat collections (`/clients`, `/jobs`, `/quotes`, `/payments`)
-- **User Isolation**: Every document contains `userUid` field for automatic filtering
-- **Security**: Firestore security rules ensure users only access their own data
-- **Real-time Updates**: Live listeners for cross-device synchronization
-- **Offline Support**: Firestore offline persistence for mobile usage
-- **Indexing**: Automatic indexing on `userUid` for fast user-scoped queries
 
 **Schema & Validation Layer**:
 - **ODM Schemas**: TypeScript schema classes handle validation and basic CRUD
@@ -585,21 +360,6 @@ interface PaymentUpdateInput {
 - **Layout**: Use Tailwind's flexbox and grid utilities for layouts
 - **State Variants**: Use Tailwind's state variants (`hover:`, `focus:`, `active:`, etc.)
 - **Dark Mode**: Prepare for dark mode using Tailwind's `dark:` variant
-
-**Examples of Correct Styling**:
-```vue
-<!-- ✅ Correct: Tailwind classes -->
-<div class="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-  <h2 class="text-xl font-semibold text-gray-800 mb-3">Title</h2>
-  <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors">
-    Action
-  </button>
-</div>
-
-<!-- ❌ Incorrect: Inline styles or custom CSS -->
-<div style="background: white; padding: 16px;">
-<div class="custom-container">
-```
 
 ## Firestore Security Rules
 
