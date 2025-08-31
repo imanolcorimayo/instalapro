@@ -12,5 +12,18 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     if (!authStore.isAuthenticated) {
       return navigateTo('/sign-in')
     }
+
+    // User is authenticated, now check if they have a technician profile
+    const techniciansStore = useTechniciansStore()
+    
+    // Wait for technician store to be initialized
+    if (!techniciansStore.initialized) {
+      await techniciansStore.initialize()
+    }
+
+    // If user doesn't have a technician profile and is not on settings page, redirect to settings
+    if (!techniciansStore.technician && to.path !== '/settings') {
+      return navigateTo('/settings')
+    }
   }
 })

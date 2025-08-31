@@ -162,7 +162,7 @@ import IconLogoutVariant from '~icons/mdi/logout-variant'
 // ==========================================
 
 const route = useRoute()
-const technicianStore = useTechnicianStore()
+const techniciansStore = useTechniciansStore()
 const authStore = useAuthStore()
 const { $toast } = useNuxtApp()
 
@@ -177,7 +177,7 @@ const isMobileMenuOpen = ref(false)
 // ==========================================
 
 const technicianName = computed(() => {
-  return technicianStore.technician?.name || ''
+  return techniciansStore.technician?.name || ''
 })
 
 const pageTitle = computed(() => {
@@ -253,7 +253,7 @@ const handleSignOut = async () => {
 
 onMounted(() => {
   // Initialize stores
-  technicianStore.initialize()
+  techniciansStore.initialize()
   
   // Close mobile menu on route change
   watch(

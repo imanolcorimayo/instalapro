@@ -179,25 +179,14 @@ useSeoMeta({
 // COMPOSABLES
 // ==========================================
 
-const technicianStore = useTechnicianStore()
+const techniciansStore = useTechniciansStore()
 
 // ==========================================
 // LIFECYCLE
 // ==========================================
 
 onMounted(async () => {
-  // Initialize technician store and create test data if needed
-  await technicianStore.initialize()
-  
-  // If no technician exists, create a test technician
-  if (!technicianStore.technician) {
-    await technicianStore.createTechnician({
-      name: 'Juan Carlos Pérez',
-      phone: '+54 11 1234-5678',
-      email: 'juan.perez@email.com',
-      businessName: 'Pérez Refrigeración',
-      serviceArea: ['CABA', 'Zona Norte']
-    })
-  }
+  // Initialize technician store - no test data needed
+  await techniciansStore.initialize()
 })
 </script>

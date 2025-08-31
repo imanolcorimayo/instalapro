@@ -2,71 +2,35 @@
 // All interfaces designed for both LocalStorage and Firestore compatibility
 
 // ==========================================
-// TECHNICIAN & AVAILABILITY INTERFACES
+// TECHNICIAN INTERFACES (BASIC PROFILE ONLY)
 // ==========================================
-
-export interface DaySchedule {
-  enabled: boolean
-  startTime: string // HH:mm format (e.g., "09:00")
-  endTime: string // HH:mm format (e.g., "18:00")
-  breakStart?: string // HH:mm format (e.g., "12:00")
-  breakEnd?: string // HH:mm format (e.g., "13:00")
-}
-
-export interface WeeklyAvailability {
-  monday: DaySchedule
-  tuesday: DaySchedule
-  wednesday: DaySchedule
-  thursday: DaySchedule
-  friday: DaySchedule
-  saturday: DaySchedule
-  sunday: DaySchedule
-}
-
-export interface TechnicianService {
-  id: string
-  name: string
-  description: string
-  basePrice: number
-  estimatedDuration: number // minutes
-  category: 'installation' | 'maintenance' | 'repair' | 'consultation'
-  isActive: boolean
-}
 
 export interface Technician {
   id: string
+  userUid: string // Firebase Auth user ID for data isolation
   name: string
+  email: string // Primary email (from Firebase Auth)
+  secondaryEmail?: string // Optional additional email
   phone: string
-  whatsappNumber: string
-  email: string
-  businessName?: string
-  serviceArea: string[] // Cities/zones served
-  services: TechnicianService[]
-  availability: WeeklyAvailability
-  bookingUrl: string // agenda.instalapro.com/{technician}
-  profileSetupComplete: boolean
   createdAt: Date
   updatedAt: Date
+  createdBy?: string // Firebase Auth user ID
+  isActive?: boolean // For soft deletion
+  archivedAt?: Date // When account was closed
+  deactivatedAt?: Date // When account was deactivated
 }
 
 // Input types for store operations
 export interface TechnicianCreateInput {
   name: string
   phone: string
-  email: string
-  businessName?: string
-  serviceArea: string[]
+  secondaryEmail?: string
 }
 
 export interface TechnicianUpdateInput {
   name?: string
   phone?: string
-  whatsappNumber?: string
-  email?: string
-  businessName?: string
-  serviceArea?: string[]
-  services?: TechnicianService[]
-  availability?: WeeklyAvailability
+  secondaryEmail?: string
 }
 
 // ==========================================
