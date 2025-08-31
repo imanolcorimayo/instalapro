@@ -706,13 +706,20 @@
             v-model="jobForm.serviceType"
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @change="onServiceTypeChange"
           >
             <option value="">Seleccionar servicio</option>
-            <option value="Instalación">Instalación</option>
-            <option value="Mantenimiento">Mantenimiento</option>
-            <option value="Reparación">Reparación</option>
-            <option value="Consulta">Consulta</option>
+            <option 
+              v-for="service in serviceTypesStore.activeServiceTypes" 
+              :key="service.id" 
+              :value="service.name"
+            >
+              {{ service.name }} - ${{ service.basePrice.toLocaleString() }}
+            </option>
           </select>
+          <p v-if="selectedServiceType" class="text-xs text-gray-500 mt-1">
+            Duración estimada: {{ Math.round(selectedServiceType.estimatedDuration / 60) }}h {{ selectedServiceType.estimatedDuration % 60 }}min
+          </p>
         </div>
 
         <!-- Date and Time -->
@@ -888,6 +895,9 @@ useSeoMeta({
 const { data: jobs, loading, error, add, update, remove, list, subscribe } = useFirestore('jobs')
 const { data: clients, loading: clientsLoading, list: loadClients, add: addClient, update: updateClient } = useFirestore('clients')
 
+// Stores
+const serviceTypesStore = useServiceTypesStore()
+
 // Get dayjs instance
 const { $dayjs } = useNuxtApp()
 
@@ -1021,6 +1031,11 @@ const hasExactClientMatch = computed(() => {
   return clients.value.some(client =>
     client.name.toLowerCase() === query
   )
+})
+
+const selectedServiceType = computed(() => {
+  if (!jobForm.value.serviceType) return null
+  return serviceTypesStore.getServiceByName(jobForm.value.serviceType)
 })
 
 // Helper to check if a status is valid for future jobs
@@ -1445,6 +1460,15 @@ const handleClientCreated = (newClient) => {
   loadClients()
 }
 
+const onServiceTypeChange = () => {
+  const service = selectedServiceType.value
+  if (service) {
+    // Auto-fill price and duration based on selected service
+    jobForm.value.price = service.basePrice.toString()
+    jobForm.value.duration = Math.round(service.estimatedDuration / 60).toString()
+  }
+}
+
 const checkTimeOverlap = (newJobStart, newJobDuration, excludeJobId = null) => {
   const newStart = toBuenosAires(newJobStart)
   const newEnd = newStart.add(newJobDuration, 'minute')
@@ -1635,6 +1659,8 @@ onMounted(() => {
   subscribe()
   // Load clients for auto-complete
   loadClients()
+  // Initialize service types store
+  serviceTypesStore.initialize()
   
   // Setup mobile scroll indicators
   nextTick(() => {

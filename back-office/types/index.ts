@@ -34,6 +34,42 @@ export interface TechnicianUpdateInput {
 }
 
 // ==========================================
+// SERVICE TYPE INTERFACES
+// ==========================================
+
+export interface ServiceType {
+  id: string
+  userUid: string // Firebase Auth user ID for data isolation
+  name: string
+  description?: string
+  basePrice: number
+  estimatedDuration: number // minutes
+  category: string
+  isActive?: boolean
+  createdAt: Date
+  updatedAt: Date
+  createdBy?: string
+}
+
+// Input types for service type operations
+export interface ServiceTypeCreateInput {
+  name: string
+  description?: string
+  basePrice: number
+  estimatedDuration: number // minutes
+  category: string
+}
+
+export interface ServiceTypeUpdateInput {
+  name?: string
+  description?: string
+  basePrice?: number
+  estimatedDuration?: number // minutes
+  category?: string
+  isActive?: boolean
+}
+
+// ==========================================
 // JOB & SCHEDULE INTERFACES
 // ==========================================
 
