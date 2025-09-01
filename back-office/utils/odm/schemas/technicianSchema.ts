@@ -57,37 +57,6 @@ export class TechniciansSchema extends Schema {
       required: false
     }
   };
-
-  // Technician-specific methods for basic profile management
-  async findByEmail(email: string) {
-    return this.find({
-      where: [{ field: 'email', operator: '==', value: email }],
-      limit: 1
-    });
-  }
-
-  async findBySecondaryEmail(email: string) {
-    return this.find({
-      where: [{ field: 'secondaryEmail', operator: '==', value: email }],
-      limit: 1
-    });
-  }
-
-  async findByPhone(phone: string) {
-    return this.find({
-      where: [{ field: 'phone', operator: '==', value: phone }],
-      limit: 1
-    });
-  }
-
-  async findByUserUid(userUid: string) {
-    return this.find({
-      where: [{ field: 'userUid', operator: '==', value: userUid }],
-      limit: 1
-    });
-  }
-
-
   async closeAccount(technicianId: string) {
     return this.update(technicianId, { 
       isActive: false,

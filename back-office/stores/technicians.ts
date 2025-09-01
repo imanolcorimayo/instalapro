@@ -129,8 +129,8 @@ export const useTechniciansStore = defineStore('technicians', () => {
     error.value = null
 
     try {
-      const result = await techniciansSchema.findByUserUid(userUid)
-      
+      const result = await techniciansSchema.find({ where: [{ field: 'userUid', operator: '==', value: userUid }]})
+
       if (!result.success) {
         // No technician found - this is not an error, just means user needs to create profile
         technician.value = null
