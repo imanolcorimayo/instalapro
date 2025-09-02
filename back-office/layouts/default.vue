@@ -116,16 +116,6 @@
           </h2>
         </div>
 
-        <!-- Right side actions -->
-        <div class="flex items-center space-x-3">
-          <!-- Notifications -->
-          <button
-            type="button"
-            class="p-2 text-gray-400 hover:text-gray-600 rounded-md"
-          >
-            <IconBellOutline class="w-5 h-5" />
-          </button>
-        </div>
       </div>
 
       <!-- Page content -->
@@ -149,7 +139,6 @@ import IconAirConditioner from '~icons/mdi/air-conditioner'
 import IconClose from '~icons/mdi/close'
 import IconAccount from '~icons/mdi/account'
 import IconMenu from '~icons/mdi/menu'
-import IconBellOutline from '~icons/mdi/bell-outline'
 import IconCogOutline from '~icons/mdi/cog-outline'
 import IconViewDashboardOutline from '~icons/mdi/view-dashboard-outline'
 import IconCalendarOutline from '~icons/mdi/calendar-outline'
