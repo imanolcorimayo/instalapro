@@ -1,54 +1,55 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div>
     <!-- Header -->
-    <div class="bg-white border-b border-gray-200">
-      <div class="max-w-md mx-auto px-4 py-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div>
         <h1 class="text-2xl font-bold text-gray-900">Configuración</h1>
-        <p class="text-sm text-gray-600 mt-1">Gestiona tu perfil, horarios de atención y servicios</p>
+        <p class="text-sm text-gray-600 mt-1">
+          Gestiona tu perfil, horarios de atención y servicios
+        </p>
       </div>
     </div>
 
-    <div class="max-w-md mx-auto px-4 py-6 space-y-6">
-      <!-- Loading State -->
-      <div
-        v-if="techniciansStore.loading"
-        class="flex items-center justify-center py-12"
-      >
-        <div class="text-center">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
-          <p class="text-gray-500">Cargando configuración...</p>
+    <!-- Loading State -->
+    <div
+      v-if="techniciansStore.loading"
+      class="flex items-center justify-center py-12"
+    >
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
+        <p class="text-gray-500">Cargando configuración...</p>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div
+      v-else-if="techniciansStore.error"
+      class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+    >
+      <div class="flex">
+        <IconAlertCircleOutline class="w-5 h-5 text-red-400 mt-0.5" />
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-red-800">
+            Error
+          </h3>
+          <p class="text-sm text-red-700 mt-1">
+            {{ techniciansStore.error }}
+          </p>
+          <button
+            @click="techniciansStore.clearError"
+            class="text-sm text-red-600 underline mt-2"
+          >
+            Cerrar
+          </button>
         </div>
       </div>
+    </div>
 
-      <!-- Error State -->
-      <div
-        v-else-if="techniciansStore.error"
-        class="bg-red-50 border border-red-200 rounded-lg p-4"
-      >
-        <div class="flex">
-          <IconAlertCircleOutline class="w-5 h-5 text-red-400 mt-0.5" />
-          <div class="ml-3">
-            <h3 class="text-sm font-medium text-red-800">
-              Error
-            </h3>
-            <p class="text-sm text-red-700 mt-1">
-              {{ techniciansStore.error }}
-            </p>
-            <button
-              @click="techniciansStore.clearError"
-              class="text-sm text-red-600 underline mt-2"
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Profile Setup Banner -->
-      <div
-        v-else-if="!techniciansStore.technician"
-        class="bg-blue-50 border border-blue-200 rounded-lg p-6"
-      >
+    <!-- Profile Setup Banner -->
+    <div
+      v-else-if="!techniciansStore.technician"
+      class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6"
+    >
         <div class="flex items-start">
           <IconInformationOutline class="w-6 h-6 text-blue-600 mt-1" />
           <div class="ml-4 flex-1">
@@ -69,63 +70,65 @@
         </div>
       </div>
 
-      <!-- Account Deactivated Banner -->
-      <div
-        v-else-if="techniciansStore.technician && techniciansStore.isAccountDeactivated"
-        class="bg-red-50 border border-red-200 rounded-lg p-6"
-      >
-        <div class="flex items-start">
-          <IconAccountCancel class="w-6 h-6 text-red-600 mt-1" />
-          <div class="ml-4 flex-1">
-            <h3 class="text-lg font-semibold text-red-900 mb-2">
-              Cuenta Desactivada
-            </h3>
-            <p class="text-red-800 mb-2">
-              Tu cuenta fue desactivada el {{ formatDeactivationDate }}.
-            </p>
-            <p class="text-red-700 text-sm mb-4">
-              Mientras tu cuenta esté desactivada, tu perfil estará oculto y no recibirás nuevas reservas.
-            </p>
-            <button
-              @click="handleReactivateAccount"
-              :disabled="isReactivating"
-              class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              {{ isReactivating ? 'Reactivando...' : 'Reactivar Cuenta' }}
-            </button>
-          </div>
+    <!-- Account Deactivated Banner -->
+    <div
+      v-else-if="techniciansStore.technician && techniciansStore.isAccountDeactivated"
+      class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6"
+    >
+      <div class="flex items-start">
+        <IconAccountCancel class="w-6 h-6 text-red-600 mt-1" />
+        <div class="ml-4 flex-1">
+          <h3 class="text-lg font-semibold text-red-900 mb-2">
+            Cuenta Desactivada
+          </h3>
+          <p class="text-red-800 mb-2">
+            Tu cuenta fue desactivada el {{ formatDeactivationDate }}.
+          </p>
+          <p class="text-red-700 text-sm mb-4">
+            Mientras tu cuenta esté desactivada, tu perfil estará oculto y no recibirás nuevas reservas.
+          </p>
+          <button
+            @click="handleReactivateAccount"
+            :disabled="isReactivating"
+            class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+          >
+            {{ isReactivating ? 'Reactivando...' : 'Reactivar Cuenta' }}
+          </button>
         </div>
       </div>
+    </div>
 
-      <!-- Incomplete Profile Banner -->
-      <div
-        v-else-if="techniciansStore.technician && !techniciansStore.hasRequiredInfo"
-        class="bg-yellow-50 border border-yellow-200 rounded-lg p-6"
-      >
-        <div class="flex items-start">
-          <IconAlertOutline class="w-6 h-6 text-yellow-600 mt-1" />
-          <div class="ml-4 flex-1">
-            <h3 class="text-lg font-semibold text-yellow-900 mb-2">
-              Información Requerida Faltante
-            </h3>
-            <p class="text-yellow-800 mb-4">
-              Tu perfil necesita información básica (nombre y teléfono) para funcionar correctamente.
-            </p>
-            <button
-              @click="openEditProfileModal"
-              class="bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition-colors"
-            >
-              Completar Ahora
-            </button>
-          </div>
+    <!-- Incomplete Profile Banner -->
+    <div
+      v-else-if="techniciansStore.technician && !techniciansStore.hasRequiredInfo"
+      class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6"
+    >
+      <div class="flex items-start">
+        <IconAlertOutline class="w-6 h-6 text-yellow-600 mt-1" />
+        <div class="ml-4 flex-1">
+          <h3 class="text-lg font-semibold text-yellow-900 mb-2">
+            Información Requerida Faltante
+          </h3>
+          <p class="text-yellow-800 mb-4">
+            Tu perfil necesita información básica (nombre y teléfono) para funcionar correctamente.
+          </p>
+          <button
+            @click="openEditProfileModal"
+            class="bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition-colors"
+          >
+            Completar Ahora
+          </button>
         </div>
       </div>
+    </div>
 
+    <!-- Settings Cards Grid -->
+    <div
+      v-else
+      class="grid grid-cols-1 lg:grid-cols-2 gap-6"
+    >
       <!-- Personal Information Card -->
-      <div
-        v-else
-        class="bg-white rounded-lg shadow-sm border border-gray-200"
-      >
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <IconAccount class="w-5 h-5 text-blue-600" />
@@ -191,7 +194,7 @@
               class="text-red-600 border border-red-200 hover:bg-red-50 bg-transparent rounded-lg px-3 h-10 text-sm font-medium transition-colors flex items-center justify-center gap-2"
             >
               <IconAccountCancel class="w-4 h-4" />
-              Desactivar
+              Desactivar cuenta
             </button>
           </div>
         </div>
@@ -233,49 +236,51 @@
           </div>
 
           <!-- Services List -->
-          <div v-else>
-            <div
-              v-for="service in serviceTypesStore.activeServiceTypes"
-              :key="service.id"
-              class="border border-gray-200 rounded-lg p-4 bg-white hover:bg-gray-50 transition-colors"
-            >
-              <div class="flex items-start justify-between mb-3">
-                <div class="flex items-center gap-2">
-                  <IconSnowflake v-if="service.category === 'Instalación'" class="w-4 h-4 text-blue-600" />
-                  <IconWrench v-else class="w-4 h-4 text-blue-600" />
-                  <h3 class="font-medium text-gray-900">{{ service.name }}</h3>
-                  <span class="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full">
-                    {{ service.category }}
-                  </span>
+          <div v-else class="space-y-4">
+            <div class="space-y-3">
+              <div
+                v-for="service in serviceTypesStore.activeServiceTypes"
+                :key="service.id"
+                class="border border-gray-200 rounded-lg p-4 bg-white hover:bg-gray-50 transition-colors"
+              >
+                <div class="flex items-start justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <IconSnowflake v-if="service.category === 'Instalación'" class="w-4 h-4 text-blue-600" />
+                    <IconWrench v-else class="w-4 h-4 text-blue-600" />
+                    <h3 class="font-medium text-gray-900">{{ service.name }}</h3>
+                    <span class="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full">
+                      {{ service.category }}
+                    </span>
+                  </div>
+                  <div class="flex gap-1">
+                    <button
+                      @click="editService(service)"
+                      class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                      title="Editar servicio"
+                    >
+                      <IconPencil class="w-4 h-4" />
+                    </button>
+                    <button
+                      @click="deleteService(service)"
+                      class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      title="Eliminar servicio"
+                    >
+                      <IconDelete class="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-                <div class="flex gap-1">
-                  <button
-                    @click="editService(service)"
-                    class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                    title="Editar servicio"
-                  >
-                    <IconPencil class="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    @click="deleteService(service)"
-                    class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                    title="Eliminar servicio"
-                  >
-                    <IconDelete class="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
 
-              <p v-if="service.description" class="text-sm text-gray-600 mb-3">{{ service.description }}</p>
+                <p v-if="service.description" class="text-sm text-gray-600 mb-3">{{ service.description }}</p>
 
-              <div class="flex items-center gap-4">
-                <div class="flex items-center gap-1.5">
-                  <IconCurrencyUsd class="w-4 h-4 text-blue-600" />
-                  <span class="font-semibold text-gray-900">${{ service.basePrice.toLocaleString() }}</span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                  <IconClock class="w-4 h-4 text-gray-600" />
-                  <span class="text-sm text-gray-600">{{ Math.round(service.estimatedDuration / 60) }}h {{ service.estimatedDuration % 60 }}min</span>
+                <div class="flex items-center gap-4">
+                  <div class="flex items-center gap-1.5">
+                    <IconCurrencyUsd class="w-4 h-4 text-blue-600" />
+                    <span class="font-semibold text-gray-900">${{ service.basePrice.toLocaleString() }}</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <IconClock class="w-4 h-4 text-gray-600" />
+                    <span class="text-sm text-gray-600">{{ Math.round(service.estimatedDuration / 60) }}h {{ service.estimatedDuration % 60 }}min</span>
+                  </div>
                 </div>
               </div>
             </div>
