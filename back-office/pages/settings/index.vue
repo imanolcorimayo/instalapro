@@ -248,7 +248,7 @@
                     <IconSnowflakeVariant v-if="service.category === 'Instalación'" class="w-5 h-5 text-blue-600" />
                     <IconWrenchOutline v-else class="w-5 h-5 text-blue-600" />
                     <h3 class="font-medium text-gray-900">{{ service.name }}</h3>
-                    <span class="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full">
+                    <span class="px-2 py-0.5 text-xs bg-blue-50 text-blue-700 rounded-full">
                       {{ service.category }}
                     </span>
                   </div>
