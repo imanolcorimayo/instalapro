@@ -31,7 +31,7 @@
               : 'text-gray-600 hover:text-gray-800'
           ]"
         >
-          Semanal
+          Semana
         </button>
         <button
           @click="switchToDayView()"
