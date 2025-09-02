@@ -27,7 +27,7 @@
       class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
     >
       <div class="flex">
-        <IconAlertCircleOutline class="w-5 h-5 text-red-400 mt-0.5" />
+        <IconAlertCircleOutline class="w-6 h-6 text-red-400 mt-0.5" />
         <div class="ml-3">
           <h3 class="text-sm font-medium text-red-800">
             Error
@@ -51,7 +51,7 @@
       class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6"
     >
         <div class="flex items-start">
-          <IconInformationOutline class="w-6 h-6 text-blue-600 mt-1" />
+          <IconInformationOutline class="w-7 h-7 text-blue-600 mt-1" />
           <div class="ml-4 flex-1">
             <h3 class="text-lg font-semibold text-blue-900 mb-2">
               ¡Bienvenido a InstalarPro!
@@ -76,7 +76,7 @@
       class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6"
     >
       <div class="flex items-start">
-        <IconAccountCancel class="w-6 h-6 text-red-600 mt-1" />
+        <IconAccountCancel class="w-7 h-7 text-red-600 mt-1" />
         <div class="ml-4 flex-1">
           <h3 class="text-lg font-semibold text-red-900 mb-2">
             Cuenta Desactivada
@@ -104,7 +104,7 @@
       class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6"
     >
       <div class="flex items-start">
-        <IconAlertOutline class="w-6 h-6 text-yellow-600 mt-1" />
+        <IconAlertOutline class="w-7 h-7 text-yellow-600 mt-1" />
         <div class="ml-4 flex-1">
           <h3 class="text-lg font-semibold text-yellow-900 mb-2">
             Información Requerida Faltante
@@ -131,7 +131,7 @@
       <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <IconAccount class="w-5 h-5 text-blue-600" />
+            <IconAccountOutline class="w-6 h-6 text-blue-600" />
             Información Personal
           </h2>
           <p class="text-sm text-gray-600 mt-1">
@@ -150,7 +150,7 @@
           <!-- Contact Info Grid -->
           <div class="grid grid-cols-1 gap-4">
             <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <IconPhone class="w-4 h-4 text-gray-600 flex-shrink-0" />
+              <IconPhoneOutline class="w-5 h-5 text-gray-600 flex-shrink-0" />
               <div class="flex-1 min-w-0">
                 <p class="text-xs font-medium text-gray-600">Teléfono</p>
                 <p class="text-sm font-medium text-gray-900">{{ techniciansStore.technician?.phone }}</p>
@@ -158,7 +158,7 @@
             </div>
 
             <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <IconEmail class="w-4 h-4 text-gray-600 flex-shrink-0" />
+              <IconEmailOutline class="w-5 h-5 text-gray-600 flex-shrink-0" />
               <div class="flex-1 min-w-0">
                 <p class="text-xs font-medium text-gray-600">Email Principal</p>
                 <p class="text-sm font-medium text-gray-900 truncate">{{ techniciansStore.technician?.email }}</p>
@@ -170,7 +170,7 @@
               v-if="techniciansStore.technician?.secondaryEmail"
               class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
             >
-              <IconEmailOutline class="w-4 h-4 text-gray-600 flex-shrink-0" />
+              <IconEmailOutline class="w-5 h-5 text-gray-600 flex-shrink-0" />
               <div class="flex-1 min-w-0">
                 <p class="text-xs font-medium text-gray-600">Email Secundario</p>
                 <p class="text-sm font-medium text-gray-900 truncate">{{ techniciansStore.technician.secondaryEmail }}</p>
@@ -185,7 +185,7 @@
               @click="openEditProfileModal"
               class="flex-1 h-10 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
             >
-              <IconPencil class="w-4 h-4" />
+              <IconPencilOutline class="w-5 h-5" />
               Editar Perfil
             </button>
             <button
@@ -193,7 +193,7 @@
               @click="openCloseAccountModal"
               class="text-red-600 border border-red-200 hover:bg-red-50 bg-transparent rounded-lg px-3 h-10 text-sm font-medium transition-colors flex items-center justify-center gap-2"
             >
-              <IconAccountCancel class="w-4 h-4" />
+              <IconAccountCancel class="w-5 h-5" />
               Desactivar cuenta
             </button>
           </div>
@@ -204,7 +204,7 @@
       <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <IconToolbox class="w-5 h-5 text-blue-600" />
+            <IconToolboxOutline class="w-6 h-6 text-blue-600" />
             Tipos de Servicio
           </h2>
           <p class="text-sm text-gray-600 mt-1">
@@ -220,7 +220,7 @@
           
           <!-- Empty State -->
           <div v-else-if="serviceTypesStore.activeServiceTypes.length === 0" class="text-center py-8">
-            <IconToolbox class="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <IconToolboxOutline class="w-14 h-14 text-gray-300 mx-auto mb-4" />
             <h3 class="text-lg font-medium text-gray-900 mb-2">
               No tienes servicios configurados
             </h3>
@@ -245,8 +245,8 @@
               >
                 <div class="flex items-start justify-between mb-3">
                   <div class="flex items-center gap-2">
-                    <IconSnowflake v-if="service.category === 'Instalación'" class="w-4 h-4 text-blue-600" />
-                    <IconWrench v-else class="w-4 h-4 text-blue-600" />
+                    <IconSnowflakeVariant v-if="service.category === 'Instalación'" class="w-5 h-5 text-blue-600" />
+                    <IconWrenchOutline v-else class="w-5 h-5 text-blue-600" />
                     <h3 class="font-medium text-gray-900">{{ service.name }}</h3>
                     <span class="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full">
                       {{ service.category }}
@@ -258,14 +258,14 @@
                       class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
                       title="Editar servicio"
                     >
-                      <IconPencil class="w-4 h-4" />
+                      <IconPencilOutline class="w-5 h-5" />
                     </button>
                     <button
                       @click="deleteService(service)"
                       class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                       title="Eliminar servicio"
                     >
-                      <IconDelete class="w-4 h-4" />
+                      <IconDeleteOutline class="w-5 h-5" />
                     </button>
                   </div>
                 </div>
@@ -274,11 +274,11 @@
 
                 <div class="flex items-center gap-4">
                   <div class="flex items-center gap-1.5">
-                    <IconCurrencyUsd class="w-4 h-4 text-blue-600" />
+                    <IconCurrencyUsd class="w-5 h-5 text-blue-600" />
                     <span class="font-semibold text-gray-900">${{ service.basePrice.toLocaleString() }}</span>
                   </div>
                   <div class="flex items-center gap-1.5">
-                    <IconClock class="w-4 h-4 text-gray-600" />
+                    <IconClock class="w-5 h-5 text-gray-600" />
                     <span class="text-sm text-gray-600">{{ Math.round(service.estimatedDuration / 60) }}h {{ service.estimatedDuration % 60 }}min</span>
                   </div>
                 </div>
@@ -290,7 +290,7 @@
               @click="openNewServiceModal"
               class="w-full h-12 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 bg-transparent transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600"
             >
-              <IconPlus class="w-4 h-4" />
+              <IconPlus class="w-5 h-5" />
               Agregar Servicio
             </button>
           </div>
@@ -392,7 +392,7 @@
     >
       <div class="space-y-4">
         <div class="flex items-start space-x-3">
-          <IconAccountCancel class="w-6 h-6 text-red-500 mt-1" />
+          <IconAccountCancel class="w-7 h-7 text-red-500 mt-1" />
           <div>
             <h3 class="text-lg font-medium text-gray-900 mb-2">
               ¿Estás seguro que deseas desactivar tu cuenta?
@@ -538,19 +538,18 @@
 import IconAlertCircleOutline from '~icons/mdi/alert-circle-outline'
 import IconInformationOutline from '~icons/mdi/information-outline'
 import IconAlertOutline from '~icons/mdi/alert-outline'
-import IconPencil from '~icons/mdi/pencil'
+import IconPencilOutline from '~icons/mdi/pencil-outline'
 import IconAccountCancel from '~icons/mdi/account-cancel'
-import IconToolbox from '~icons/mdi/toolbox'
+import IconToolboxOutline from '~icons/mdi/toolbox-outline'
 import IconCurrencyUsd from '~icons/mdi/currency-usd'
 import IconClock from '~icons/mdi/clock-outline'
-import IconDelete from '~icons/mdi/delete'
+import IconDeleteOutline from '~icons/mdi/delete-outline'
 import IconPlus from '~icons/mdi/plus'
-import IconAccount from '~icons/mdi/account'
-import IconPhone from '~icons/mdi/phone'
-import IconEmail from '~icons/mdi/email'
+import IconAccountOutline from '~icons/mdi/account-outline'
+import IconPhoneOutline from '~icons/mdi/phone-outline'
 import IconEmailOutline from '~icons/mdi/email-outline'
-import IconSnowflake from '~icons/mdi/snowflake'
-import IconWrench from '~icons/mdi/wrench'
+import IconSnowflakeVariant from '~icons/mdi/snowflake-variant'
+import IconWrenchOutline from '~icons/mdi/wrench-outline'
 
 // ==========================================
 // PAGE METADATA
