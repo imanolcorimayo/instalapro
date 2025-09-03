@@ -246,6 +246,8 @@
                 <div class="flex items-start justify-between mb-3">
                   <div class="flex items-center gap-2">
                     <IconSnowflakeVariant v-if="service.category === 'Instalación'" class="w-5 h-5 text-blue-600" />
+                    <IconPaintBrush v-else-if="service.category === 'Pintura'" class="w-5 h-5 text-blue-600" />
+                    <IconBroom v-else-if="service.category === 'Limpieza'" class="w-5 h-5 text-blue-600" />
                     <IconWrenchOutline v-else class="w-5 h-5 text-blue-600" />
                     <h3 class="font-medium text-gray-900">{{ service.name }}</h3>
                     <span class="px-2 py-0.5 text-xs bg-blue-50 text-blue-700 rounded-full">
@@ -453,13 +455,38 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">
               Categoría *
             </label>
-            <input
+            <select
+              v-if="!showCustomCategoryInput"
               v-model="serviceForm.category"
-              type="text"
               required
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="ej. Instalación, Mantenimiento, Reparación"
-            />
+              @change="handleCategoryChange"
+            >
+              <option value="">Seleccionar categoría...</option>
+              <option value="Instalación">Instalación</option>
+              <option value="Mantenimiento">Mantenimiento</option>
+              <option value="Reparación">Reparación</option>
+              <option value="Consultoría">Consultoría</option>
+              <option value="Limpieza">Limpieza</option>
+              <option value="Pintura">Pintura</option>
+              <option value="custom">Otra (personalizada)</option>
+            </select>
+            <div v-if="showCustomCategoryInput" class="space-y-2">
+              <input
+                v-model="serviceForm.category"
+                type="text"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Ingrese categoría personalizada"
+              />
+              <button
+                type="button"
+                @click="cancelCustomCategory"
+                class="text-sm text-gray-600 hover:text-gray-800 underline"
+              >
+                Volver a opciones predefinidas
+              </button>
+            </div>
           </div>
 
           <div>
@@ -550,6 +577,8 @@ import IconPhoneOutline from '~icons/mdi/phone-outline'
 import IconEmailOutline from '~icons/mdi/email-outline'
 import IconSnowflakeVariant from '~icons/mdi/snowflake-variant'
 import IconWrenchOutline from '~icons/mdi/wrench-outline'
+import IconPaintBrush from '~icons/mdi/format-paint'
+import IconBroom from '~icons/mdi/broom'
 
 // ==========================================
 // PAGE METADATA
@@ -580,6 +609,7 @@ const isClosingAccount = ref(false)
 const isReactivating = ref(false)
 const isSavingService = ref(false)
 const editingService = ref(null)
+const showCustomCategoryInput = ref(false)
 
 // Form for editing/creating profile
 const editForm = reactive({
@@ -759,6 +789,7 @@ const openNewServiceModal = () => {
   serviceForm.basePrice = ''
   serviceForm.estimatedDuration = 120
   serviceForm.category = ''
+  showCustomCategoryInput.value = false
   
   if (serviceModalRef.value) {
     serviceModalRef.value.showModal()
@@ -773,13 +804,32 @@ const editService = (service) => {
   serviceForm.estimatedDuration = service.estimatedDuration
   serviceForm.category = service.category
   
+  // Check if category is one of the predefined ones
+  const predefinedCategories = ['Instalación', 'Mantenimiento', 'Reparación', 'Consultoría', 'Limpieza', 'Pintura']
+  showCustomCategoryInput.value = !predefinedCategories.includes(service.category)
+  
   if (serviceModalRef.value) {
     serviceModalRef.value.showModal()
   }
 }
 
+const handleCategoryChange = () => {
+  if (serviceForm.category === 'custom') {
+    showCustomCategoryInput.value = true
+    serviceForm.category = ''
+  } else {
+    showCustomCategoryInput.value = false
+  }
+}
+
+const cancelCustomCategory = () => {
+  showCustomCategoryInput.value = false
+  serviceForm.category = ''
+}
+
 const closeServiceModal = () => {
   editingService.value = null
+  showCustomCategoryInput.value = false
   if (serviceModalRef.value) {
     serviceModalRef.value.closeModal()
   }
