@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { JobSchema } from '~/utils/odm/schemas/jobSchema'
-import type { FetchResult, CreateResult, UpdateResult, DeleteResult } from '~/utils/odm/types'
+import type { FetchResult, CreateResult, UpdateResult, DeleteResult, DocumentWithId } from '~/utils/odm/types'
 import { nowInBuenosAires, toBuenosAires } from '~/utils/timezone'
 import type { Unsubscribe } from 'firebase/firestore'
 
@@ -441,8 +441,8 @@ export const useJobsStore = defineStore('jobs', () => {
     }
 
     unsubscribe = jobSchema.subscribeToCollection(
-      (documents: Job[]) => {
-        jobs.value = documents
+      (documents: DocumentWithId[]) => {
+        jobs.value = documents as Job[]
         refreshCache()
         console.log('Jobs updated via real-time subscription:', documents.length)
       }
