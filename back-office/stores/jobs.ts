@@ -77,6 +77,9 @@ export const useJobsStore = defineStore('jobs', () => {
   const error = ref<string | null>(null)
   const initialized = ref<boolean>(false)
   
+  // Reactive today date - update this when needed
+  const todayDate = ref<string>('')
+  
   // Cache to avoid multiple calls to storage/Firestore
   const jobsCache = new Map<string, Job>()
   
@@ -115,11 +118,27 @@ export const useJobsStore = defineStore('jobs', () => {
   })
 
   const todaysJobs = computed(() => {
-    const today = nowInBuenosAires().format('YYYY-MM-DD')
+    // Use reactive today date, fallback to now if not set
+    const today = todayDate.value || nowInBuenosAires().format('YYYY-MM-DD')
     return activeJobs.value.filter(job => {
-      const jobDate = toBuenosAires(job.scheduledDate).format('YYYY-MM-DD')
+      if (!job.scheduledDate) return false
+      
+      // Handle both Date objects and Firestore Timestamps consistently
+      let jobDate: string
+      if (job.scheduledDate.toDate) {
+        // Firestore Timestamp
+        jobDate = toBuenosAires(job.scheduledDate.toDate()).format('YYYY-MM-DD')
+      } else {
+        // Regular Date object
+        jobDate = toBuenosAires(job.scheduledDate).format('YYYY-MM-DD')
+      }
+      
       return jobDate === today
-    }).sort((a, b) => toBuenosAires(a.scheduledDate).diff(toBuenosAires(b.scheduledDate)))
+    }).sort((a, b) => {
+      const dateA = a.scheduledDate.toDate ? a.scheduledDate.toDate() : a.scheduledDate
+      const dateB = b.scheduledDate.toDate ? b.scheduledDate.toDate() : b.scheduledDate
+      return toBuenosAires(dateA).diff(toBuenosAires(dateB))
+    })
   })
 
   // ==========================================
@@ -484,6 +503,9 @@ export const useJobsStore = defineStore('jobs', () => {
     if (initialized.value) return
     
     try {
+      // Set today's date for reactive computations
+      todayDate.value = nowInBuenosAires().format('YYYY-MM-DD')
+      
       await loadJobs()
       subscribeToJobs()
       initialized.value = true
@@ -493,10 +515,15 @@ export const useJobsStore = defineStore('jobs', () => {
     }
   }
 
+  const updateTodayDate = (): void => {
+    todayDate.value = nowInBuenosAires().format('YYYY-MM-DD')
+  }
+
   const cleanup = (): void => {
     unsubscribeFromJobs()
     jobsCache.clear()
     initialized.value = false
+    todayDate.value = ''
   }
 
   // ==========================================
@@ -550,6 +577,7 @@ export const useJobsStore = defineStore('jobs', () => {
 
     // Lifecycle
     initialize,
-    cleanup
+    cleanup,
+    updateTodayDate
   }
 })

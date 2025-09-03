@@ -220,5 +220,8 @@ onMounted(async () => {
     jobsStore.initialize(),
     clientsStore.initialize()
   ])
+  
+  // Ensure today's date is updated after initialization
+  jobsStore.updateTodayDate()
 })
 </script>
