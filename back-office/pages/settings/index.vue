@@ -125,7 +125,7 @@
     <!-- Settings Cards Grid -->
     <div
       v-else
-      class="grid grid-cols-1 lg:grid-cols-2 gap-6"
+      class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start"
     >
       <!-- Personal Information Card -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200">
