@@ -31,7 +31,7 @@
               : 'text-gray-600 hover:text-gray-800'
           ]"
         >
-          Semanal
+          Semana
         </button>
         <button
           @click="switchToDayView()"
@@ -775,18 +775,11 @@
     </ModalStructure>
 
     <!-- Client Creation Modal -->
-    <ModalStructure
+    <ClientModal
       ref="clientModalRef"
-      title="Nuevo Cliente"
-      @on-close="showClientModal = false"
-    >
-      <ClientModal
-        v-if="showClientModal"
-        :initial-name="clientSearchQuery"
-        @client-created="handleClientCreated"
-        @close="closeClientModal"
-      />
-    </ModalStructure>
+      :initial-name="clientSearchQuery"
+      @client-created="handleClientCreated"
+    />
   </div>
 </template>
 
@@ -847,7 +840,6 @@ const currentDayView = ref(nowInBuenosAires().format('YYYY-MM-DD'))
 const showClientDropdown = ref(false)
 const clientSearchQuery = ref('')
 const selectedClient = ref(null)
-const showClientModal = ref(false)
 const highlightedClientIndex = ref(-1)
 
 // Modal refs
@@ -1139,7 +1131,6 @@ const resetJobForm = () => {
   selectedClient.value = null
   clientSearchQuery.value = ''
   showClientDropdown.value = false
-  showClientModal.value = false
   highlightedClientIndex.value = -1
   jobForm.value = {
     clientName: '',
@@ -1195,7 +1186,6 @@ const selectClient = (client) => {
 
 const createNewClient = () => {
   showClientDropdown.value = false
-  showClientModal.value = true
   highlightedClientIndex.value = -1
   // Use nextTick to ensure modal is in DOM before showing
   nextTick(() => {
@@ -1254,15 +1244,11 @@ const handleClientInputKeydown = (event) => {
 }
 
 const closeClientModal = () => {
-  showClientModal.value = false
   clientModalRef.value?.closeModal()
 }
 
 const handleClientCreated = (newClient) => {
-  // Close client modal
-  closeClientModal()
-  
-  // Auto-select the newly created client
+  // Auto-select the newly created client (modal closes automatically)
   selectedClient.value = newClient
   clientSearchQuery.value = newClient.name
   
@@ -1271,8 +1257,7 @@ const handleClientCreated = (newClient) => {
   jobForm.value.clientPhone = newClient.phone
   jobForm.value.address = newClient.address
   
-  // Reload clients to ensure the new client is in the list
-  clientsStore.loadClients()
+  // Note: No need to reload clients as the store is automatically updated
 }
 
 const onServiceTypeChange = () => {

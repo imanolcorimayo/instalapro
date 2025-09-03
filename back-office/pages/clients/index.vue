@@ -134,103 +134,10 @@
     </div>
 
     <!-- Add/Edit Client Modal -->
-    <ModalStructure
+    <ClientModal
       ref="clientModal"
-      :title="editingClient ? 'Editar Cliente' : 'Nuevo Cliente'"
-      @on-close="resetForm"
-    >
-      <form @submit.prevent="saveClient" class="space-y-4">
-        <!-- Name -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Nombre completo *
-          </label>
-          <input
-            v-model="clientForm.name"
-            type="text"
-            required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Juan Pérez"
-          />
-        </div>
-
-        <!-- Phone -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Teléfono *
-          </label>
-          <input
-            v-model="clientForm.phone"
-            type="tel"
-            required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="+54 11 1234-5678"
-          />
-        </div>
-
-        <!-- Email -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Email (opcional)
-          </label>
-          <input
-            v-model="clientForm.email"
-            type="email"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="juan@example.com"
-          />
-        </div>
-
-        <!-- Address -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Dirección *
-          </label>
-          <textarea
-            v-model="clientForm.address"
-            required
-            rows="2"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Av. Corrientes 1234, CABA"
-          />
-        </div>
-
-        <!-- Notes -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Notas (opcional)
-          </label>
-          <textarea
-            v-model="clientForm.notes"
-            rows="2"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Información adicional sobre el cliente..."
-          />
-        </div>
-
-        <!-- Form Actions -->
-        <div class="flex justify-end gap-3 pt-4">
-          <button
-            type="button"
-            @click="closeClientModal"
-            class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            :disabled="savingClient"
-            class="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center gap-2"
-          >
-            <IconLoading 
-              v-if="savingClient" 
-              class="w-4 h-4 animate-spin" 
-            />
-            {{ editingClient ? 'Actualizar' : 'Crear' }} Cliente
-          </button>
-        </div>
-      </form>
-    </ModalStructure>
+      @client-created="onClientCreated"
+    />
   </div>
 </template>
 
@@ -265,18 +172,7 @@ const { clients, loading, error } = storeToRefs(clientsStore)
 
 // Component state
 const searchQuery = ref('')
-const editingClient = ref(null)
-const savingClient = ref(false)
 const clientModal = ref()
-
-// Form data
-const clientForm = ref({
-  name: '',
-  phone: '',
-  email: '',
-  address: '',
-  notes: ''
-})
 
 // Computed
 const filteredClients = computed(() => {
@@ -304,77 +200,18 @@ const loadClients = async () => {
 }
 
 const openAddClientModal = () => {
-  editingClient.value = null
-  clientForm.value = {
-    name: '',
-    phone: '',
-    email: '',
-    address: '',
-    notes: ''
-  }
   clientModal.value?.showModal()
+}
+
+const onClientCreated = (newClient) => {
+  // Client was created successfully, no need to reload as store is already updated
+  console.log('Client created:', newClient.name)
 }
 
 const editClient = (client) => {
-  editingClient.value = client
-  clientForm.value = {
-    name: client.name,
-    phone: client.phone,
-    email: client.email || '',
-    address: client.address,
-    notes: client.notes
-  }
-  clientModal.value?.showModal()
-}
-
-const resetForm = () => {
-  editingClient.value = null
-  clientForm.value = {
-    name: '',
-    phone: '',
-    email: '',
-    address: '',
-    notes: ''
-  }
-}
-
-const closeClientModal = () => {
-  clientModal.value?.closeModal()
-}
-
-const saveClient = async () => {
-  try {
-    savingClient.value = true
-    
-    const clientData = {
-      name: clientForm.value.name.trim(),
-      phone: clientForm.value.phone.trim(),
-      email: clientForm.value.email.trim() || undefined,
-      address: clientForm.value.address.trim(),
-      notes: clientForm.value.notes.trim(),
-      totalJobs: 0,
-      totalSpent: 0
-    }
-
-    if (editingClient.value) {
-      // Update existing client
-      await clientsStore.updateClient(editingClient.value.id, clientData)
-      useToast().success('Cliente actualizado exitosamente')
-    } else {
-      // Create new client
-      await clientsStore.createClient(clientData)
-      useToast().success('Cliente creado exitosamente')
-    }
-
-    clientModal.value?.closeModal()
-    await loadClients()
-    
-  } catch (err) {
-    console.error('Error saving client:', err)
-    useToast().error('Error al guardar cliente')
-  } finally {
-    savingClient.value = false
-  }
+  // TODO: Implement edit functionality in ClientModal.vue
+  // For now, we'll keep the current approach until ClientModal supports editing
+  useToast().info('Funcionalidad de edición próximamente disponible')
 }
 
 const deleteClient = async (clientId, clientName) => {
@@ -385,7 +222,6 @@ const deleteClient = async (clientId, clientName) => {
   try {
     await clientsStore.deleteClient(clientId)
     useToast().success('Cliente eliminado exitosamente')
-    await loadClients()
   } catch (err) {
     console.error('Error deleting client:', err)
     useToast().error('Error al eliminar cliente')

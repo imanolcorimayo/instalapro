@@ -1,6 +1,5 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
 import { getFirestore, type Firestore } from 'firebase/firestore'
-import { getAnalytics, type Analytics } from 'firebase/analytics'
 import { getAuth, type Auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User, setPersistence, browserLocalPersistence } from 'firebase/auth'
 
 // Firebase configuration interface
@@ -30,7 +29,6 @@ export const getFirebaseConfig = (): FirebaseConfig => {
 // Initialize Firebase app
 let firebaseApp: FirebaseApp | null = null
 let firestore: Firestore | null = null
-let analytics: Analytics | null = null
 let auth: Auth | null = null
 
 export const initializeFirebase = (): FirebaseApp => {
@@ -56,24 +54,10 @@ export const getFirestoreInstance = (): Firestore => {
   return firestore
 }
 
-// Get Analytics instance (client-side only)
-export const getAnalyticsInstance = (): Analytics | null => {
-  if (typeof window === 'undefined') {
-    return null // Server-side, analytics not available
-  }
-
-  if (analytics) {
-    return analytics
-  }
-
-  try {
-    const app = initializeFirebase()
-    analytics = getAnalytics(app)
-    return analytics
-  } catch (error) {
-    console.warn('Analytics initialization failed:', error)
-    return null
-  }
+// Get Analytics instance (client-side only) - Disabled to prevent regex errors
+export const getAnalyticsInstance = (): null => {
+  console.log('Firebase Analytics is disabled to prevent regex issues in development')
+  return null
 }
 
 // Get Auth instance

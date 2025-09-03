@@ -23,7 +23,7 @@ InstalarPro is an MVP back-office application for **self-employed** Air Conditio
 - Package manager: yarn (not npm)
 - **Database**: Firebase/Firestore with user-scoped collections
 - **Authentication**: Firebase Auth with Google OAuth
-- TypeScript interfaces for all data structures
+- TypeScript interfaces for all data structures (except in Vue pages and components).
 
 ## Code Architecture
 
