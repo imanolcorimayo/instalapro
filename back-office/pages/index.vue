@@ -16,7 +16,7 @@
             </div>
             <div class="ml-4">
               <p class="text-sm font-medium text-gray-600 cursor-default">Trabajos Hoy</p>
-              <p class="text-2xl font-bold text-gray-900 cursor-default">3</p>
+              <p class="text-2xl font-bold text-gray-900 cursor-default">{{ todaysJobsCount }}</p>
             </div>
           </div>
         </div>
@@ -29,7 +29,7 @@
             </div>
             <div class="ml-4">
               <p class="text-sm font-medium text-gray-600 cursor-default">Clientes</p>
-              <p class="text-2xl font-bold text-gray-900 cursor-default">127</p>
+              <p class="text-2xl font-bold text-gray-900 cursor-default">{{ totalClientsCount }}</p>
             </div>
           </div>
         </div>
@@ -63,7 +63,10 @@
 
       <!-- Quick Actions -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <button class="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-lg text-center transition-colors">
+        <button 
+          @click="navigateTo('/schedule')"
+          class="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-lg text-center transition-colors"
+        >
           <div class="w-12 h-12 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center">
             <IconPlusCircle class="w-6 h-6" />
           </div>
@@ -71,7 +74,10 @@
           <p class="text-sm opacity-90">Agendar una nueva cita</p>
         </button>
 
-        <button class="bg-green-600 hover:bg-green-700 text-white p-6 rounded-lg text-center transition-colors">
+        <button 
+          @click="navigateTo('/clients')"
+          class="bg-green-600 hover:bg-green-700 text-white p-6 rounded-lg text-center transition-colors"
+        >
           <div class="w-12 h-12 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center">
             <IconAccountPlus class="w-6 h-6" />
           </div>
@@ -79,7 +85,10 @@
           <p class="text-sm opacity-90">Agregar cliente nuevo</p>
         </button>
 
-        <button class="bg-yellow-600 hover:bg-yellow-700 text-white p-6 rounded-lg text-center transition-colors">
+        <button 
+          @click="navigateTo('/quotes')"
+          class="bg-yellow-600 hover:bg-yellow-700 text-white p-6 rounded-lg text-center transition-colors"
+        >
           <div class="w-12 h-12 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center">
             <IconFileDocumentPlus class="w-6 h-6" />
           </div>
@@ -87,7 +96,10 @@
           <p class="text-sm opacity-90">Crear presupuesto</p>
         </button>
 
-        <button class="bg-purple-600 hover:bg-purple-700 text-white p-6 rounded-lg text-center transition-colors">
+        <button 
+          @click="openWhatsApp"
+          class="bg-purple-600 hover:bg-purple-700 text-white p-6 rounded-lg text-center transition-colors"
+        >
           <div class="w-12 h-12 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center">
             <IconWhatsapp class="w-6 h-6" />
           </div>
@@ -176,17 +188,37 @@ useSeoMeta({
 })
 
 // ==========================================
-// COMPOSABLES
+// STORES
 // ==========================================
 
-const techniciansStore = useTechniciansStore()
+const jobsStore = useJobsStore()
+const clientsStore = useClientsStore()
+
+// ==========================================
+// COMPUTED
+// ==========================================
+
+const todaysJobsCount = computed(() => jobsStore.todaysJobs.length)
+const totalClientsCount = computed(() => clientsStore.totalClients)
+
+// ==========================================
+// METHODS
+// ==========================================
+
+const openWhatsApp = () => {
+  const message = encodeURIComponent('¡Hola! Soy tu técnico de aire acondicionado. ¿En qué puedo ayudarte?')
+  window.open(`https://wa.me/?text=${message}`, '_blank')
+}
 
 // ==========================================
 // LIFECYCLE
 // ==========================================
 
 onMounted(async () => {
-  // Initialize technician store - no test data needed
-  await techniciansStore.initialize()
+  // Initialize all stores to get real data
+  await Promise.all([
+    jobsStore.initialize(),
+    clientsStore.initialize()
+  ])
 })
 </script>
