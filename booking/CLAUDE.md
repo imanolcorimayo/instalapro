@@ -47,6 +47,44 @@
 - **Form Validation**: Inline validation with clear error messages
 - **Network Issues**: Offline detection with retry mechanisms
 
+## Component Guidelines
+
+### Base Components (Use Existing Patterns)
+- **ModalStructure.vue** - Base modal component for confirmations
+- **Form Components** - Large, touch-friendly input fields
+- **Button Components** - Minimum 44px height for touch targets
+
+### Component Creation Rules
+**⚠️ CRITICAL: UNUSED COMPONENT PREVENTION**
+Before creating ANY new component:
+1. **Verify immediate usage**: Component must be imported and used
+2. **Follow proven patterns**: Use existing base components
+3. **Check for existing solutions**: Extend existing components before creating new ones
+
+## CSS & Styling Guidelines
+- **MANDATORY**: Use Tailwind CSS classes exclusively for all styling
+- **NO custom CSS**: Avoid inline styles, custom CSS files, or `<style>` blocks
+- **Mobile-First**: Use Tailwind's responsive prefixes (`sm:`, `md:`, `lg:`, `xl:`)
+- **Touch Targets**: Minimum `h-11` (44px) for all interactive elements
+- **Spacing**: Use Tailwind's spacing scale for consistent layouts
+
+## Library Guidelines
+
+**ALLOWED LIBRARIES ONLY**:
+- **Iconify** (`@iconify/json`, `@iconify/utils`, `unplugin-icons`)
+  - **MANDATORY** for all icons: Use `~icons/pack-name/icon-name` syntax
+  - Never use emojis as icons, always use Iconify
+- **Tailwind CSS** - For all styling
+- **VueUse** - For Vue composition utilities
+- **vue3-toastify** - For notifications
+- **dayjs** - For all date operations
+
+**FORBIDDEN**:
+- **NO additional UI libraries**
+- **NO additional icon libraries** 
+- **NO CSS frameworks** beyond Tailwind
+- **NO date libraries** beyond dayjs
+
 ## Performance Optimization
 
 ### Loading Strategy

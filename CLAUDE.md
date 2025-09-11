@@ -28,13 +28,19 @@ InstalarPro is a comprehensive platform for Air Conditioner Technicians in Argen
 - **Dates**: dayjs-nuxt
 - **Notifications**: vue3-toastify
 - **TypeScript**: Strict typing for all data structures
+- **Authentication**: Firebase Auth with Google OAuth
+- **Database**: Firebase/Firestore with user-scoped collections
+- **Date Handling**: NEVER use Date objects, always use dayjs for all date operations
 
 ### Shared Dependencies (All Domains)
 ```json
 {
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.12.3",
+    "@pinia/nuxt": "^0.11.2",
+    "pinia": "^3.0.3",
     "@vueuse/nuxt": "13.2.0",
+    "firebase": "^12.1.0",
     "nuxt": "^4.0.1",
     "tailwindcss": "^3.4.16",
     "unplugin-icons": "^0.21.0",
@@ -50,8 +56,6 @@ InstalarPro is a comprehensive platform for Air Conditioner Technicians in Argen
 }
 ```
 
-**Note**: Pinia will be added back when Nuxt 4 compatible versions are available.
-
 ## Cross-Domain Data Structures
 
 ### Core Business Entities
@@ -59,27 +63,50 @@ These TypeScript interfaces are shared across all domains:
 
 #### Technician Profile
 ```typescript
-interface Technician {
+interface Technicians {
   id: string
   name: string
   phone: string
   whatsappNumber: string
   email: string
+  businessName?: string
   serviceArea: string[] // Cities/zones served
-  services: TechnicianService[]
+  services: TechniciansService[]
   availability: WeeklyAvailability
   bookingUrl: string // agenda.instalapro.com/{technician}
+  profileSetupComplete: boolean
   createdAt: Date
   updatedAt: Date
 }
 
-interface TechnicianService {
+interface TechniciansService {
   id: string
   name: string
   description: string
   basePrice: number
   estimatedDuration: number // minutes
   category: 'installation' | 'maintenance' | 'repair' | 'consultation'
+  isActive: boolean
+}
+
+// Input types for store operations
+interface TechniciansCreateInput {
+  name: string
+  phone: string
+  email: string
+  businessName?: string
+  serviceArea: string[]
+}
+
+interface TechniciansUpdateInput {
+  name?: string
+  phone?: string
+  whatsappNumber?: string
+  email?: string
+  businessName?: string
+  serviceArea?: string[]
+  services?: TechniciansService[]
+  availability?: WeeklyAvailability
 }
 
 interface WeeklyAvailability {
@@ -196,7 +223,27 @@ interface JobHistory {
 ### Production Phase (Firestore)
 - **Collections**: `technicians`, `jobs`, `clients`, `bookings`, `leads`
 - **Real-time Sync**: All domains subscribe to shared collections
-- **Security Rules**: Domain-based access control
+- **Security Rules**: User-scoped access control with `userUid` field
+- **User Isolation**: All documents include `userUid` field for multi-tenant data separation
+
+#### Firestore Architecture
+```typescript
+// Firestore Collections (Flat Structure with userUid field)
+/clients/{docId} -> { userUid, name, phone, address, ... }
+/jobs/{docId} -> { userUid, clientId, serviceType, scheduledDate, ... }
+/quotes/{docId} -> { userUid, clientId, items, total, ... }
+/payments/{docId} -> { userUid, jobId, amount, paymentDate, ... }
+```
+
+#### Store Method Pattern
+```typescript
+// Standard store methods for Firestore operations
+loadData()           // Fetch user's documents from Firestore
+createItem(data)     // Create new document with userUid
+updateItem(id, data) // Update existing document (user verification)
+deleteItem(id)       // Delete document (user verification)
+subscribeToChanges() // Real-time Firestore listeners
+```
 
 ## Shared Component Guidelines
 
@@ -280,5 +327,132 @@ For detailed implementation instructions, refer to each domain's CLAUDE.md:
 - `/home/CLAUDE.md` - Marketing site implementation
 - `/back-office/CLAUDE.md` - Technician dashboard (already comprehensive)
 - `/booking/CLAUDE.md` - Client booking interface
+
+## UI/UX Philosophy
+
+**TARGET USERS**: Air conditioning technicians NOT familiar with complex business systems  
+**PRIMARY USE**: Client administration and job management  
+**PRIORITY**: Maximum simplicity and minimal learning curve
+
+### Core UX Philosophy
+- **SIMPLICITY FIRST**: Every interface element must be immediately understandable
+- **MINIMAL LEARNING CURVE**: Users should understand the app within 5 minutes
+- **ONE-CLICK ACTIONS**: Reduce multi-step processes to single interactions when possible
+- **VISUAL CLARITY**: Use clear visual hierarchy and obvious interactive elements
+- **FORGIVENESS**: Provide easy undo/edit options for user mistakes
+
+### Design Requirements
+- **Mobile-first responsive design** - Most users will access on phones
+- **Large, clear buttons** - Easy to tap with fingers (minimum 44px height)
+- **Clear Spanish labels** with simple, everyday language (no technical jargon)
+- **Intuitive iconography** - Use universally recognized icons only
+- **Immediate feedback** - Show loading states, success/error messages instantly
+- **Consistent patterns** - Same actions work the same way throughout the app
+- **WhatsApp integration** - Leverage familiar communication methods
+
+### Simplification Guidelines
+- **Minimize form fields** - Only ask for essential information
+- **Use dropdowns/selectors** instead of free text input when possible
+- **Provide templates and presets** for common tasks
+- **Progressive disclosure** - Show basic options first, advanced options on request
+- **Clear navigation** - Always show where users are and how to go back
+- **Single-purpose screens** - Each screen should have one clear objective
+
+## Component Creation Guidelines
+
+**⚠️ CRITICAL: UNUSED COMPONENT PREVENTION**
+Before creating ANY new component, you MUST:
+1. **Verify immediate usage**: Component must be imported and used in at least one file
+2. **Document usage location**: Add comment in component showing where it's used
+3. **Follow proven patterns**: Use `ModalStructure.vue` + inline content instead of dedicated modal components
+4. **Check for existing solutions**: Extend existing components before creating new ones
+
+**Subfolder Component Naming Rule:**
+- Components in subfolders must be prefixed with the folder name when used
+- Format: `[FolderName][ComponentName].vue`
+- Usage: Follow existing working patterns
+- Exception: If component name already starts with folder name, use full name without duplication
+
+**PROVEN SUCCESSFUL PATTERNS (Use These):**
+- **Base Components**: `ModalStructure.vue`, `TooltipStructure.vue`
+- **Reusable Components**: Modal-based entity management
+- **Modal Pattern**: Use `ModalStructure.vue` with slot content, NOT dedicated modal components
+
+**ANTI-PATTERNS (Avoid These):**
+- Creating dedicated modal components for single-use cases
+- Building complex nested component hierarchies
+- Creating "regular" and "simplified" versions of the same component
+- Components that are never imported or used anywhere
+
+## CSS & Styling Guidelines
+- **MANDATORY**: Use Tailwind CSS classes exclusively for all styling
+- **NO custom CSS**: Avoid inline styles, custom CSS files, or `<style>` blocks
+- **Component Styling**: All styling through Tailwind utility classes
+- **Responsive Design**: Use Tailwind's responsive prefixes (`sm:`, `md:`, `lg:`, `xl:`)
+- **Consistent Spacing**: Use Tailwind's spacing scale (`p-4`, `m-2`, `gap-3`, etc.)
+- **Color System**: Use Tailwind's color palette and semantic color classes
+- **Typography**: Use Tailwind's typography utilities (`text-lg`, `font-semibold`, etc.)
+- **Layout**: Use Tailwind's flexbox and grid utilities for layouts
+- **State Variants**: Use Tailwind's state variants (`hover:`, `focus:`, `active:`, etc.)
+- **Dark Mode**: Prepare for dark mode using Tailwind's `dark:` variant
+
+## Library & Dependencies Guidelines
+
+**ALLOWED LIBRARIES ONLY** - Do not add any libraries beyond this approved list:
+
+- **Iconify** (`@iconify/json`, `@iconify/utils`, `unplugin-icons`)
+  - **MANDATORY** for all icons: Use `~icons/pack-name/icon-name` syntax
+  - Never use other icon libraries (Font Awesome, Heroicons, etc.)
+  - Never use emojis as icons, always use Iconify
+- **Chart.js** - For data visualization and charts only
+- **Tailwind CSS** (`tailwindcss`, `@tailwindcss/vite`) - For all styling
+- **Pinia** (`pinia`, `@pinia/nuxt`) - For state management
+- **VueUse** (`@vueuse/nuxt`) - For Vue composition utilities
+- **vue3-toastify** - For toast notifications only
+
+**FORBIDDEN**:
+- **NO additional UI libraries** (Vuetify, Quasar, Element Plus, etc.)
+- **NO additional icon libraries** (Font Awesome, Heroicons, Lucide, etc.)
+- **NO CSS frameworks** beyond Tailwind (Bootstrap, Bulma, etc.)
+- **NO additional chart libraries** (D3.js, ApexCharts, etc.)
+- **NO utility libraries** (Lodash, Ramda, etc.) - use native JS or VueUse
+- **NO date libraries** beyond dayjs (Moment.js, date-fns, etc.)
+
+**Before Adding Any Library**:
+1. Check if functionality exists in approved libraries
+2. Check if it can be implemented with native JavaScript/Vue
+3. Only request new libraries if absolutely critical for core functionality
+
+## Firestore Security Rules
+
+**User Data Isolation**:
+```javascript
+// Firestore Security Rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only access documents with their userUid
+    match /clients/{document} {
+      allow read, write: if request.auth != null && resource.data.userUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userUid == request.auth.uid;
+    }
+    
+    match /jobs/{document} {
+      allow read, write: if request.auth != null && resource.data.userUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userUid == request.auth.uid;
+    }
+    
+    match /quotes/{document} {
+      allow read, write: if request.auth != null && resource.data.userUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userUid == request.auth.uid;
+    }
+    
+    match /payments/{document} {
+      allow read, write: if request.auth != null && resource.data.userUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userUid == request.auth.uid;
+    }
+  }
+}
+```
 
 This global file ensures consistency while allowing domain-specific customization and optimization.
