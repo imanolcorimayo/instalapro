@@ -21,7 +21,6 @@ export class SlotAvailabilitySchema extends Schema {
       required: true,
       min: 6,  // 6 AM
       max: 22, // 10 PM
-      integer: true
     },
     isAvailable: {
       type: 'boolean',

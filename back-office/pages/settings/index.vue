@@ -299,55 +299,47 @@
         </div>
       </div>
 
-      <!-- Slot Availability Card -->
+      <!-- Quick Access Card -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <IconClock class="w-6 h-6 text-blue-600" />
-            Disponibilidad de Horarios
+            Accesos Rápidos
           </h2>
           <p class="text-sm text-gray-600 mt-1">
-            Configura qué horarios están disponibles para reservas
+            Gestiona tu agenda y disponibilidad
           </p>
         </div>
         <div class="px-6 py-4 space-y-4">
-          <!-- Loading State -->
-          <div v-if="slotAvailabilityStore.loading" class="text-center py-4">
-            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2" />
-            <p class="text-sm text-gray-500">Cargando horarios...</p>
-          </div>
-          
-          <!-- Available Configuration -->
-          <div v-else class="space-y-4">
-            <!-- Current Week Stats -->
-            <div class="bg-gray-50 rounded-lg p-4">
-              <h3 class="text-sm font-medium text-gray-900 mb-3">Esta Semana</h3>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="text-center">
-                  <div class="text-lg font-bold text-green-600">{{ slotAvailabilityStore.availableSlots.length }}</div>
-                  <div class="text-xs text-gray-600">Horarios Disponibles</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-lg font-bold text-gray-600">{{ slotAvailabilityStore.totalSlots - slotAvailabilityStore.availableSlots.length }}</div>
-                  <div class="text-xs text-gray-600">Horarios Ocupados</div>
-                </div>
+          <!-- Current Week Stats -->
+          <div v-if="slotAvailabilityStore.initialized" class="bg-gray-50 rounded-lg p-4">
+            <h3 class="text-sm font-medium text-gray-900 mb-3">Esta Semana</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="text-center">
+                <div class="text-lg font-bold text-green-600">{{ slotAvailabilityStore.availableSlots.length }}</div>
+                <div class="text-xs text-gray-600">Horarios Disponibles</div>
+              </div>
+              <div class="text-center">
+                <div class="text-lg font-bold text-gray-600">{{ slotAvailabilityStore.totalSlots - slotAvailabilityStore.availableSlots.length }}</div>
+                <div class="text-xs text-gray-600">Horarios Ocupados</div>
               </div>
             </div>
+          </div>
 
-            <!-- Configuration Button -->
-            <button
-              @click="openSlotAvailabilityModal"
-              class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          <!-- Quick Access Buttons -->
+          <div class="space-y-3">
+            <NuxtLink
+              to="/schedule"
+              class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 no-underline"
             >
-              <IconClock class="w-5 h-5" />
-              Configurar Horarios
-            </button>
+              <IconCalendar class="w-5 h-5" />
+              Ir a la Agenda
+            </NuxtLink>
             
-            <!-- Instructions -->
             <div class="text-xs text-gray-500 space-y-1">
-              <p>• Click en un horario para marcarlo como disponible/no disponible</p>
+              <p>• Configura tu disponibilidad desde la página Agenda</p>
               <p>• Los horarios con trabajos programados se cierran automáticamente</p>
-              <p>• Configura hasta 4 semanas por adelantado</p>
+              <p>• Puedes ver y editar hasta 4 semanas por adelantado</p>
             </div>
           </div>
         </div>
@@ -612,163 +604,6 @@
       </form>
     </ModalStructure>
 
-    <!-- Slot Availability Modal -->
-    <ModalStructure
-      ref="slotAvailabilityModalRef"
-      title="Configurar Disponibilidad de Horarios"
-      modal-class="max-w-5xl"
-      @on-close="closeSlotAvailabilityModal"
-    >
-      <div class="space-y-6">
-        <!-- Week Navigation -->
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
-          <div class="flex items-center justify-between">
-            <button
-              @click="previousWeek"
-              class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <IconChevronLeft class="w-5 h-5" />
-            </button>
-            
-            <div class="text-center">
-              <h3 class="text-lg font-semibold text-gray-900">
-                {{ currentWeekLabel }}
-              </h3>
-              <p class="text-sm text-gray-600">
-                {{ currentWeekDateRange }}
-              </p>
-            </div>
-            
-            <button
-              @click="nextWeek"
-              class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <IconChevronRight class="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        <!-- Calendar Grid -->
-        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <!-- Header with day names -->
-          <div class="flex border-b border-gray-200">
-            <!-- Hour header -->
-            <div class="w-16 bg-gray-50 p-3 border-r border-gray-200 flex-shrink-0">
-              <div class="text-sm font-medium text-gray-700 text-center">Hora</div>
-            </div>
-            <!-- Day headers -->
-            <div class="flex flex-1">
-              <div 
-                v-for="day in weekDays"
-                :key="day.date"
-                :class="[
-                  'flex-1 p-3 border-r border-gray-100 last:border-r-0 text-center',
-                  isToday(day.date) ? 'bg-blue-50' : 'bg-gray-50'
-                ]"
-              >
-                <div :class="[
-                  'text-sm font-medium mb-1',
-                  isToday(day.date) ? 'text-blue-700' : 'text-gray-600'
-                ]">
-                  {{ day.dayName }}
-                </div>
-                <div :class="[
-                  'text-lg font-bold mb-2',
-                  isToday(day.date) ? 'text-blue-600' : 'text-gray-900'
-                ]">
-                  {{ day.dayNumber }}
-                </div>
-                <!-- Open All Day Button -->
-                <button
-                  @click="openAllDay(day.date)"
-                  :disabled="slotAvailabilityStore.loading"
-                  class="px-2 py-1 text-xs bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white rounded transition-colors"
-                  :title="`Abrir todo el día ${day.dayName}`"
-                >
-                  Abrir Todo
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Time slots grid -->
-          <div class="relative">
-            <!-- Hour rows -->
-            <div 
-              v-for="hour in availableHours"
-              :key="hour"
-              class="flex border-b border-gray-100 last:border-b-0 h-12"
-            >
-              <!-- Hour column -->
-              <div class="w-16 bg-gray-50 flex items-center justify-center border-r border-gray-200 flex-shrink-0">
-                <span class="text-sm font-medium text-gray-600">
-                  {{ formatHour(hour) }}
-                </span>
-              </div>
-              
-              <!-- Day columns -->
-              <div class="flex flex-1">
-                <button 
-                  v-for="day in weekDays"
-                  :key="`${day.date}-${hour}`"
-                  :class="[
-                    'flex-1 border-r border-gray-100 last:border-r-0 relative transition-colors',
-                    getSlotButtonClass(day.date, hour)
-                  ]"
-                  @click="toggleSlot(day.date, hour)"
-                  :disabled="slotAvailabilityStore.loading"
-                >
-                  <div class="absolute inset-0 flex items-center justify-center">
-                    <div v-if="getSlotStatus(day.date, hour) === 'available'" class="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <div v-else-if="getSlotStatus(day.date, hour) === 'auto_closed'" class="text-red-500 text-xs">
-                      <IconClock class="w-3 h-3" />
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Legend -->
-        <div class="bg-gray-50 rounded-lg p-4">
-          <h4 class="text-sm font-medium text-gray-900 mb-3">Leyenda</h4>
-          <div class="grid grid-cols-2 gap-4 text-xs">
-            <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-green-100 border border-green-300 rounded flex items-center justify-center">
-                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-              </div>
-              <span class="text-gray-600">Disponible</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-gray-100 border border-gray-300 rounded"></div>
-              <span class="text-gray-600">No disponible</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-red-50 border border-red-300 rounded flex items-center justify-center">
-                <IconClock class="w-2 h-2 text-red-500" />
-              </div>
-              <span class="text-gray-600">Ocupado (trabajo)</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-blue-50 border border-blue-300 rounded"></div>
-              <span class="text-gray-600">Hoy</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
-          <button
-            type="button"
-            @click="closeSlotAvailabilityModal"
-            class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Cerrar
-          </button>
-        </div>
-      </div>
-    </ModalStructure>
   </div>
 </template>
 
@@ -793,6 +628,7 @@ import IconPaintBrush from '~icons/mdi/format-paint'
 import IconBroom from '~icons/mdi/broom'
 import IconChevronLeft from '~icons/mdi/chevron-left'
 import IconChevronRight from '~icons/mdi/chevron-right'
+import IconCalendar from '~icons/mdi/calendar'
 
 // Timezone utilities
 import { 
@@ -828,7 +664,6 @@ const authStore = useAuthStore()
 const editProfileModalRef = ref()
 const closeAccountModalRef = ref()
 const serviceModalRef = ref()
-const slotAvailabilityModalRef = ref()
 const isLoading = ref(false)
 const isClosingAccount = ref(false)
 const isReactivating = ref(false)
@@ -836,8 +671,6 @@ const isSavingService = ref(false)
 const editingService = ref(null)
 const showCustomCategoryInput = ref(false)
 
-// Slot availability week navigation
-const currentWeekStart = ref(startOfWeekInBuenosAires())
 
 // Form for editing/creating profile
 const editForm = reactive({
@@ -883,55 +716,6 @@ const formatDeactivationDate = computed(() => {
   })
 })
 
-// Slot availability computed properties
-const currentWeekEnd = computed(() => {
-  return endOfWeekInBuenosAires(currentWeekStart.value)
-})
-
-const currentWeekDateRange = computed(() => {
-  const start = currentWeekStart.value
-  const end = currentWeekEnd.value
-  return `${start.format('D MMM')} - ${end.format('D MMM YYYY')}`
-})
-
-const currentWeekLabel = computed(() => {
-  const start = currentWeekStart.value
-  const now = nowInBuenosAires()
-  
-  if (start.isSame(now, 'week')) {
-    return 'Esta Semana'
-  } else if (start.isSame(now.add(1, 'week'), 'week')) {
-    return 'Próxima Semana'
-  } else if (start.isSame(now.subtract(1, 'week'), 'week')) {
-    return 'Semana Pasada'
-  }
-  
-  return `Semana del ${start.format('D MMM')}`
-})
-
-const weekDays = computed(() => {
-  const days = []
-  const startOfWeek = currentWeekStart.value
-  
-  for (let i = 0; i < 7; i++) {
-    const date = startOfWeek.add(i, 'day')
-    days.push({
-      date: date.format('YYYY-MM-DD'),
-      dayName: date.format('ddd').charAt(0).toUpperCase() + date.format('ddd').slice(1),
-      dayNumber: date.format('D')
-    })
-  }
-  
-  return days
-})
-
-const availableHours = computed(() => {
-  const hours = []
-  for (let i = 6; i <= 22; i++) {
-    hours.push(i)
-  }
-  return hours
-})
 
 // ==========================================
 // METHODS - MODAL MANAGEMENT
@@ -1163,125 +947,6 @@ const deleteService = async (service) => {
   }
 }
 
-// ==========================================
-// METHODS - SLOT AVAILABILITY
-// ==========================================
-
-const openSlotAvailabilityModal = async () => {
-  // Load current week slots when opening modal
-  try {
-    await slotAvailabilityStore.loadWeekSlots(currentWeekStart.value)
-  } catch (error) {
-    console.error('Error loading week slots:', error)
-    useToast().error('Error al cargar disponibilidad de horarios')
-  }
-  
-  if (slotAvailabilityModalRef.value) {
-    slotAvailabilityModalRef.value.showModal()
-  }
-}
-
-const closeSlotAvailabilityModal = () => {
-  if (slotAvailabilityModalRef.value) {
-    slotAvailabilityModalRef.value.closeModal()
-  }
-}
-
-const previousWeek = async () => {
-  currentWeekStart.value = currentWeekStart.value.subtract(1, 'week')
-  try {
-    await slotAvailabilityStore.loadWeekSlots(currentWeekStart.value)
-  } catch (error) {
-    console.error('Error loading previous week slots:', error)
-    useToast().error('Error al cargar semana anterior')
-  }
-}
-
-const nextWeek = async () => {
-  currentWeekStart.value = currentWeekStart.value.add(1, 'week')
-  try {
-    await slotAvailabilityStore.loadWeekSlots(currentWeekStart.value)
-  } catch (error) {
-    console.error('Error loading next week slots:', error)
-    useToast().error('Error al cargar semana siguiente')
-  }
-}
-
-const isToday = (date) => {
-  return isTodayInBuenosAires(date)
-}
-
-const formatHour = (hour) => {
-  return `${hour.toString().padStart(2, '0')}:00`
-}
-
-const getSlotStatus = (date, hour) => {
-  return slotAvailabilityStore.getSlotStatus(date, hour)
-}
-
-const getSlotButtonClass = (date, hour) => {
-  const status = getSlotStatus(date, hour)
-  
-  let classes = 'hover:bg-gray-100 '
-  
-  switch (status) {
-    case 'available':
-      classes += 'bg-green-100 border-green-300 text-green-700'
-      break
-    case 'manual_closed':
-      classes += 'bg-gray-100 border-gray-300 text-gray-500'
-      break
-    case 'auto_closed':
-      classes += 'bg-red-50 border-red-300 text-red-600'
-      break
-    case 'not_set':
-    default:
-      classes += 'bg-gray-50 border-gray-200 text-gray-400'
-      break
-  }
-  
-  return classes
-}
-
-const toggleSlot = async (date, hour) => {
-  const status = getSlotStatus(date, hour)
-  
-  // Prevent toggling auto-closed slots
-  if (status === 'auto_closed') {
-    useToast().error('No se puede modificar un horario ocupado por un trabajo')
-    return
-  }
-  
-  try {
-    await slotAvailabilityStore.toggleSlotAvailability(date, hour)
-    
-    // Show success feedback
-    const newStatus = slotAvailabilityStore.getSlotStatus(date, hour)
-    const message = newStatus === 'available' 
-      ? 'Horario marcado como disponible' 
-      : 'Horario marcado como no disponible'
-    
-    useToast().success(message)
-  } catch (error) {
-    console.error('Error toggling slot availability:', error)
-    useToast().error('Error al cambiar disponibilidad del horario')
-  }
-}
-
-const openAllDay = async (date) => {
-  try {
-    await slotAvailabilityStore.openAllSlotsForDay(date)
-    
-    // Get day name for the message
-    const dayObj = weekDays.value.find(d => d.date === date)
-    const dayName = dayObj ? dayObj.dayName : 'el día'
-    
-    useToast().success(`Todos los horarios de ${dayName} han sido abiertos`)
-  } catch (error) {
-    console.error('Error opening all day slots:', error)
-    useToast().error('Error al abrir todos los horarios del día')
-  }
-}
 
 // ==========================================
 // LIFECYCLE

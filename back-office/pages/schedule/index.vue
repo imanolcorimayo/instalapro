@@ -19,31 +19,90 @@
       </button>
     </div>
 
-    <!-- View Toggle Pills -->
-    <div class="flex items-center justify-center mb-6">
-      <div class="inline-flex bg-gray-100 rounded-xl p-1 overflow-x-auto">
+    <!-- Mode Toggle: Trabajos vs Disponibilidad -->
+    <div class="flex flex-col gap-4 mb-6">
+      <!-- Desktop Mode Toggle -->
+      <div class="hidden sm:flex items-center justify-center">
+        <div class="inline-flex bg-gray-100 rounded-xl p-1">
+          <button
+            @click="viewMode = 'agenda'"
+            :class="[
+              'px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out whitespace-nowrap',
+              viewMode === 'agenda'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-800'
+            ]"
+          >
+            Trabajos
+          </button>
+          <button
+            @click="viewMode = 'availability'"
+            :class="[
+              'px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out whitespace-nowrap flex items-center gap-2',
+              viewMode === 'availability'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-800'
+            ]"
+          >
+            <IconClock class="w-4 h-4" />
+            Disponibilidad
+          </button>
+        </div>
+      </div>
+      
+      <!-- Mobile Mode Toggle -->
+      <div class="flex gap-2 sm:hidden">
         <button
-          @click="switchToWeeklyTimelineView"
+          @click="viewMode = 'agenda'"
           :class="[
-            'px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out whitespace-nowrap',
-            currentView === 'weekly-timeline'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-800'
+            'flex-1 py-3 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out',
+            viewMode === 'agenda'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           ]"
         >
-          Semana
+          Trabajos
         </button>
         <button
-          @click="switchToDayView()"
+          @click="viewMode = 'availability'"
           :class="[
-            'px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out whitespace-nowrap',
-            currentView === 'daily'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-800'
+            'flex-1 py-3 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out flex items-center justify-center gap-2',
+            viewMode === 'availability'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           ]"
         >
-          Día
+          <IconClock class="w-4 h-4" />
+          Disponibilidad
         </button>
+      </div>
+
+      <!-- View Toggle Pills (Week/Day) for Agenda mode only -->
+      <div v-if="viewMode === 'agenda'" class="flex items-center justify-center">
+        <div class="inline-flex bg-gray-100 rounded-xl p-1 overflow-x-auto">
+          <button
+            @click="switchToWeeklyTimelineView"
+            :class="[
+              'px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out whitespace-nowrap',
+              currentView === 'weekly-timeline'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-800'
+            ]"
+          >
+            Semana
+          </button>
+          <button
+            @click="switchToDayView()"
+            :class="[
+              'px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out whitespace-nowrap',
+              currentView === 'daily'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-800'
+            ]"
+          >
+            Día
+          </button>
+        </div>
       </div>
     </div>
 
@@ -103,8 +162,8 @@
       </div>
     </div>
 
-    <!-- Weekly Timeline View -->
-    <div v-if="currentView === 'weekly-timeline'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <!-- Weekly Timeline View (Agenda Mode) -->
+    <div v-if="viewMode === 'agenda' && currentView === 'weekly-timeline'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <!-- Mobile: Enhanced horizontal scroll view -->
       <div class="block sm:hidden relative">
         <!-- Scroll indicator text -->
@@ -204,12 +263,23 @@
                   :key="`${day.date}-${hour}`"
                   class="flex-1 border-r border-gray-100 last:border-r-0 relative min-w-[80px]"
                 >
-                  <!-- Empty slot click area -->
+                  <!-- Empty slot click area (only if slot is available) -->
                   <div
                     v-if="getHourJobs(day.date, hour).length === 0"
-                    class="absolute inset-0 hover:bg-gray-50 cursor-pointer transition-colors"
-                    @click="createJobAtTime(day.date, hour)"
+                    :class="[
+                      'absolute inset-0 transition-colors',
+                      slotAvailabilityStore.getSlotStatus(day.date, hour) === 'available'
+                        ? 'hover:bg-blue-50 cursor-pointer'
+                        : 'bg-gray-100 cursor-not-allowed opacity-60'
+                    ]"
+                    @click="handleSlotClick(day.date, hour)"
                   >
+                    <div v-if="slotAvailabilityStore.getSlotStatus(day.date, hour) === 'available'" class="flex items-center justify-center h-full">
+                      <div class="w-2 h-2 bg-green-400 rounded-full opacity-60"></div>
+                    </div>
+                    <div v-else class="flex items-center justify-center h-full">
+                      <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -311,15 +381,26 @@
                 :key="`${day.date}-${hour}`"
                 class="flex-1 border-r border-gray-100 last:border-r-0 relative"
               >
-                <!-- Empty slot click area -->
+                <!-- Empty slot click area (only if slot is available) -->
                 <div
                   v-if="getHourJobs(day.date, hour).length === 0"
-                  class="absolute inset-0 hover:bg-gray-50 cursor-pointer transition-colors flex items-center justify-center"
-                  @click="createJobAtTime(day.date, hour)"
+                  :class="[
+                    'absolute inset-0 transition-colors flex items-center justify-center',
+                    slotAvailabilityStore.getSlotStatus(day.date, hour) === 'available'
+                      ? 'hover:bg-blue-50 cursor-pointer'
+                      : 'bg-gray-100 cursor-not-allowed opacity-60'
+                  ]"
+                  @click="handleSlotClick(day.date, hour)"
                 >
-                  <span class="text-xs text-gray-400 opacity-0 hover:opacity-100 transition-opacity">
-                    +
-                  </span>
+                  <div v-if="slotAvailabilityStore.getSlotStatus(day.date, hour) === 'available'" class="flex items-center justify-center">
+                    <div class="w-2 h-2 bg-green-400 rounded-full opacity-60"></div>
+                    <span class="text-xs text-gray-400 opacity-0 hover:opacity-100 transition-opacity ml-2">
+                      +
+                    </span>
+                  </div>
+                  <div v-else class="flex items-center justify-center">
+                    <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -366,8 +447,8 @@
       </div>
     </div>
 
-    <!-- Day View -->
-    <div v-if="currentView === 'daily'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <!-- Day View (Agenda Mode) -->
+    <div v-if="viewMode === 'agenda' && currentView === 'daily'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <!-- Timeline view for all screen sizes -->
       <div>
         <!-- Day Timeline with Hours -->
@@ -388,13 +469,25 @@
               
               <!-- Job Slot -->
               <div class="flex-1 relative">
-                <!-- Empty slot click area -->
+                <!-- Empty slot click area (only if slot is available) -->
                 <div
                   v-if="getHourJobs(currentDayView, hour).length === 0"
-                  class="absolute inset-0 hover:bg-gray-50 cursor-pointer transition-colors flex items-center pl-2 sm:pl-3"
-                  @click="createJobAtTime(currentDayView, hour)"
+                  :class="[
+                    'absolute inset-0 transition-colors flex items-center pl-2 sm:pl-3',
+                    slotAvailabilityStore.getSlotStatus(currentDayView, hour) === 'available'
+                      ? 'hover:bg-blue-50 cursor-pointer'
+                      : 'bg-gray-100 cursor-not-allowed opacity-60'
+                  ]"
+                  @click="handleSlotClick(currentDayView, hour)"
                 >
-                  <span class="text-xs text-gray-400">Click para agendar</span>
+                  <div v-if="slotAvailabilityStore.getSlotStatus(currentDayView, hour) === 'available'" class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <span class="text-xs text-gray-500">Click para agendar</span>
+                  </div>
+                  <div v-else class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    <span class="text-xs text-gray-400">No disponible</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -427,6 +520,175 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Availability Configuration View -->
+    <div v-if="viewMode === 'availability'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <!-- Week Navigation -->
+      <div class="bg-white rounded-lg border-b border-gray-200 p-4">
+        <div class="flex items-center justify-between">
+          <button
+            @click="previousWeek"
+            class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <IconChevronLeft class="w-5 h-5" />
+          </button>
+          
+          <div class="text-center">
+            <h2 class="text-lg font-semibold text-gray-900">
+              {{ currentWeekLabel }}
+            </h2>
+            <p class="text-sm text-gray-600">
+              {{ currentWeekDateRange }}
+            </p>
+          </div>
+          
+          <button
+            @click="nextWeek"
+            class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <IconChevronRight class="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Calendar Grid -->
+      <div class="overflow-auto">
+        <div class="min-w-[800px]">
+          <!-- Days Header -->
+          <div class="flex border-b border-gray-200">
+            <!-- Hour header -->
+            <div class="w-16 bg-gray-50 p-3 border-r border-gray-200 flex-shrink-0">
+              <div class="text-sm font-medium text-gray-700 text-center">Hora</div>
+            </div>
+            <!-- Day headers -->
+            <div class="flex flex-1">
+              <div 
+                v-for="day in weekDays"
+                :key="day.date"
+                :class="[
+                  'flex-1 p-3 border-r border-gray-100 last:border-r-0 text-center',
+                  isToday(day.date) ? 'bg-blue-50' : 'bg-gray-50'
+                ]"
+              >
+                <div :class="[
+                  'text-sm font-medium mb-1',
+                  isToday(day.date) ? 'text-blue-700' : 'text-gray-600'
+                ]">
+                  {{ day.dayName }}
+                </div>
+                <div :class="[
+                  'text-lg font-bold mb-2',
+                  isToday(day.date) ? 'text-blue-600' : 'text-gray-900'
+                ]">
+                  {{ day.dayNumber }}
+                </div>
+                <!-- Open All Day Button -->
+                <button
+                  @click="openAllDay(day.date)"
+                  :disabled="slotAvailabilityStore.loading"
+                  :class="[
+                    'px-3 py-1 text-xs font-medium rounded transition-colors',
+                    isDayFullyOpen(day.date)
+                      ? 'bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white'
+                      : 'bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white'
+                  ]"
+                  :title="`${isDayFullyOpen(day.date) ? 'Cerrar' : 'Abrir'} todo el día ${day.dayName}`"
+                >
+                  {{ isDayFullyOpen(day.date) ? 'Cerrar' : 'Abrir' }} Todo
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Time slots grid -->
+          <div class="divide-y">
+            <div 
+              v-for="hour in availableHours"
+              :key="hour"
+              class="flex min-h-[60px]"
+            >
+              <!-- Hour column -->
+              <div class="w-16 bg-gray-50 flex items-center justify-center border-r border-gray-200 flex-shrink-0">
+                <span class="text-sm font-medium text-gray-600">
+                  {{ formatHour(hour) }}
+                </span>
+              </div>
+              
+              <!-- Day columns -->
+              <div class="flex flex-1">
+                <div 
+                  v-for="day in weekDays"
+                  :key="`${day.date}-${hour}`"
+                  class="flex-1 border-r border-gray-100 last:border-r-0 p-2 relative hover:bg-gray-50"
+                >
+                  <div class="flex items-center justify-center h-full">
+                    <!-- Toggle Switch for Slot Availability -->
+                    <label class="inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        :checked="slotAvailabilityStore.getSlotStatus(day.date, hour) === 'available'"
+                        :disabled="slotAvailabilityStore.getSlotStatus(day.date, hour) === 'auto_closed' || slotAvailabilityStore.loading"
+                        @change="toggleSlot(day.date, hour)"
+                        class="sr-only"
+                      />
+                      <div 
+                        :class="[
+                          'relative w-9 h-5 rounded-full transition-colors duration-300 ease-in-out',
+                          slotAvailabilityStore.getSlotStatus(day.date, hour) === 'available'
+                            ? 'bg-green-500'
+                            : slotAvailabilityStore.getSlotStatus(day.date, hour) === 'auto_closed'
+                            ? 'bg-red-400 cursor-not-allowed'
+                            : 'bg-gray-300',
+                          slotAvailabilityStore.loading ? 'opacity-50 cursor-not-allowed' : ''
+                        ]"
+                      >
+                        <div 
+                          :class="[
+                            'absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full shadow transition-transform duration-300 ease-in-out',
+                            slotAvailabilityStore.getSlotStatus(day.date, hour) === 'available'
+                              ? 'translate-x-4'
+                              : 'translate-x-0'
+                          ]"
+                        />
+                      </div>
+                    </label>
+                    <!-- Status indicator for auto-closed slots -->
+                    <div v-if="slotAvailabilityStore.getSlotStatus(day.date, hour) === 'auto_closed'" class="ml-2">
+                      <IconClock class="w-3 h-3 text-red-500" title="Ocupado (trabajo programado)" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="bg-gray-50 border-t border-gray-200 p-4">
+        <h4 class="text-sm font-medium text-gray-900 mb-3">Leyenda</h4>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 bg-green-500 rounded-full"></div>
+            <span class="text-gray-600">Disponible</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 bg-gray-300 rounded-full"></div>
+            <span class="text-gray-600">No disponible</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 bg-red-400 rounded-full flex items-center justify-center">
+              <IconClock class="w-2 h-2 text-white" />
+            </div>
+            <span class="text-gray-600">Ocupado (trabajo)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 bg-blue-100 border-2 border-blue-300 rounded"></div>
+            <span class="text-gray-600">Hoy</span>
           </div>
         </div>
       </div>
@@ -818,6 +1080,7 @@ useSeoMeta({
 // Store integration
 const jobsStore = useJobsStore()
 const clientsStore = useClientsStore()
+const slotAvailabilityStore = useSlotAvailabilityStore()
 
 // Service types store
 const serviceTypesStore = useServiceTypesStore()
@@ -835,6 +1098,7 @@ const canScrollRight = ref(false)
 // View state
 const currentView = ref('weekly-timeline') // 'weekly-timeline' or 'daily'
 const currentDayView = ref(nowInBuenosAires().format('YYYY-MM-DD'))
+const viewMode = ref('agenda') // 'agenda' or 'availability'
 
 // Client auto-complete state
 const showClientDropdown = ref(false)
@@ -905,6 +1169,14 @@ const weekDays = computed(() => {
 const workingHours = computed(() => {
   const hours = []
   for (let i = 8; i <= 18; i++) {
+    hours.push(i)
+  }
+  return hours
+})
+
+const availableHours = computed(() => {
+  const hours = []
+  for (let i = 6; i <= 22; i++) {
     hours.push(i)
   }
   return hours
@@ -987,12 +1259,30 @@ const isToday = (date) => {
   return isTodayInBuenosAires(date)
 }
 
-const previousWeek = () => {
+const previousWeek = async () => {
   currentWeekStart.value = currentWeekStart.value.subtract(1, 'week')
+  // Load slots for the new week
+  if (viewMode.value === 'availability') {
+    try {
+      await slotAvailabilityStore.loadWeekSlots(currentWeekStart.value)
+    } catch (error) {
+      console.error('Error loading previous week slots:', error)
+      useToast().error('Error al cargar semana anterior')
+    }
+  }
 }
 
-const nextWeek = () => {
+const nextWeek = async () => {
   currentWeekStart.value = currentWeekStart.value.add(1, 'week')
+  // Load slots for the new week
+  if (viewMode.value === 'availability') {
+    try {
+      await slotAvailabilityStore.loadWeekSlots(currentWeekStart.value)
+    } catch (error) {
+      console.error('Error loading next week slots:', error)
+      useToast().error('Error al cargar semana siguiente')
+    }
+  }
 }
 
 // Day view navigation
@@ -1124,6 +1414,65 @@ const createJobAtTime = (date, hour) => {
     status: 'pending'
   }
   jobModal.value?.showModal()
+}
+
+// Handle slot click in agenda mode (only allow if slot is available)
+const handleSlotClick = (date, hour) => {
+  if (slotAvailabilityStore.getSlotStatus(date, hour) === 'available') {
+    createJobAtTime(date, hour)
+  } else {
+    useToast().error('Este horario no está disponible para reservar')
+  }
+}
+
+// Toggle slot availability (for availability mode)
+const toggleSlot = async (date, hour) => {
+  const status = slotAvailabilityStore.getSlotStatus(date, hour)
+  
+  // Prevent toggling auto-closed slots
+  if (status === 'auto_closed') {
+    useToast().error('No se puede modificar un horario ocupado por un trabajo')
+    return
+  }
+  
+  try {
+    await slotAvailabilityStore.toggleSlotAvailability(date, hour)
+    
+    // Show success feedback
+    const newStatus = slotAvailabilityStore.getSlotStatus(date, hour)
+    const message = newStatus === 'available' 
+      ? 'Horario marcado como disponible' 
+      : 'Horario marcado como no disponible'
+    
+    useToast().success(message)
+  } catch (error) {
+    console.error('Error toggling slot availability:', error)
+    useToast().error('Error al cambiar disponibilidad del horario')
+  }
+}
+
+// Open all day slots
+const openAllDay = async (date) => {
+  try {
+    await slotAvailabilityStore.openAllSlotsForDay(date)
+    
+    // Get day name for the message
+    const dayObj = weekDays.value.find(d => d.date === date)
+    const dayName = dayObj ? dayObj.dayName : 'el día'
+    
+    useToast().success(`Todos los horarios de ${dayName} han sido abiertos`)
+  } catch (error) {
+    console.error('Error opening all day slots:', error)
+    useToast().error('Error al abrir todos los horarios del día')
+  }
+}
+
+// Check if all slots of a day are available
+const isDayFullyOpen = (date) => {
+  const daySlots = availableHours.value
+  return daySlots.every(hour => 
+    slotAvailabilityStore.getSlotStatus(date, hour) === 'available'
+  )
 }
 
 const resetJobForm = () => {
@@ -1420,6 +1769,10 @@ onMounted(async () => {
     await jobsStore.initialize()
     await clientsStore.initialize()
     await serviceTypesStore.initialize()
+    await slotAvailabilityStore.initialize()
+    
+    // Load current week slots for availability view
+    await slotAvailabilityStore.loadWeekSlots(currentWeekStart.value)
     
     // Setup mobile scroll indicators
     nextTick(() => {
