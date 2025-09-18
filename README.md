@@ -26,10 +26,11 @@ InstalarPro is a comprehensive platform connecting air conditioner technicians w
 - **Target**: Individual technicians building their online presence
 - **Features**: Service showcase, contact information, professional presentation
 
-### `/back-office` - Technician Dashboard  
+### `/back-office` - Technician Dashboard
 - **Purpose**: Complete business management for technicians
 - **Target**: Self-employed AC technicians
 - **Features**: Schedule, clients, quotes, cash flow, job management
+- **🚀 Live Demo**: https://instalapro-back-office.web.app/
 
 ### `/booking` - Client Interface
 - **Purpose**: Simple appointment booking
