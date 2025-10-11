@@ -232,6 +232,7 @@ export const useTechniciansStore = defineStore('technicians', () => {
     name?: string;
     phone?: string;
     secondaryEmail?: string;
+    urlSlug?: string;
   }): Promise<boolean> => {
     if (!technician.value) {
       error.value = 'No hay técnico para actualizar'
@@ -239,6 +240,18 @@ export const useTechniciansStore = defineStore('technicians', () => {
     }
 
     return await updateTechnician(profileData)
+  }
+
+  const checkSlugAvailability = async (slug: string): Promise<{ available: boolean; error: string | null | undefined }> => {
+    try {
+      const result = await techniciansSchema.checkSlugAvailability(
+        slug,
+        technician.value?.id
+      )
+      return result
+    } catch (err: any) {
+      return { available: false, error: err.message || 'Error verificando disponibilidad' }
+    }
   }
 
   // ==========================================
@@ -324,6 +337,7 @@ export const useTechniciansStore = defineStore('technicians', () => {
     closeAccount,
     reactivateAccount,
     updateProfile,
+    checkSlugAvailability,
 
     // Subscriptions
     subscribeToTechnician,

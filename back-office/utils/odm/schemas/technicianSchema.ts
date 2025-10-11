@@ -31,6 +31,12 @@ export class TechniciansSchema extends Schema {
       required: false,
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     },
+    urlSlug: {
+      type: 'string',
+      required: false,
+      maxLength: 50,
+      pattern: /^[a-z0-9-]+$/
+    },
     isActive: {
       type: 'boolean',
       required: false,
@@ -65,9 +71,27 @@ export class TechniciansSchema extends Schema {
   }
 
   async reopenAccount(technicianId: string) {
-    return this.update(technicianId, { 
+    return this.update(technicianId, {
       isActive: true,
       deactivatedAt: null
     });
+  }
+
+  async checkSlugAvailability(slug: string, excludeTechnicianId?: string) {
+    const result = await this.find({
+      where: [{ field: 'urlSlug', operator: '==', value: slug }]
+    });
+
+    if (!result.success) {
+      return { available: false, error: result.error };
+    }
+
+    // If excluding current technician, check if the found document is different
+    if (excludeTechnicianId && result.data && result.data.length > 0) {
+      const isOwnSlug = result.data.every(doc => doc.id === excludeTechnicianId);
+      return { available: isOwnSlug, error: null };
+    }
+
+    return { available: result.data?.length === 0, error: null };
   }
 }

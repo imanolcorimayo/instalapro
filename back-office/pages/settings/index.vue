@@ -200,6 +200,87 @@
         </div>
       </div>
 
+      <!-- URL Slug Card -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <IconLink class="w-6 h-6 text-blue-600" />
+            URL de Reservas
+          </h2>
+          <p class="text-sm text-gray-600 mt-1">
+            Personaliza tu link de reservas para compartir con clientes
+          </p>
+        </div>
+        <div class="px-6 py-4 space-y-4">
+          <!-- Current URL Display -->
+          <div v-if="techniciansStore.technician?.urlSlug" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p class="text-xs font-medium text-blue-700 mb-2">Tu URL actual:</p>
+            <div class="flex items-center gap-2">
+              <code class="flex-1 text-sm font-mono text-blue-900 bg-white px-3 py-2 rounded border border-blue-200">
+                agenda.instalapro.com/{{ techniciansStore.technician.urlSlug }}
+              </code>
+              <button
+                @click="copyUrlToClipboard"
+                class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                title="Copiar URL"
+              >
+                <IconContentCopy class="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Slug Input -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Personalizar URL
+            </label>
+            <input
+              v-model="slugInput"
+              @input="handleSlugInput"
+              type="text"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="ej: juan-perez-instalaciones"
+            />
+            <p class="text-xs text-gray-500 mt-1">
+              Solo letras minúsculas, números y guiones
+            </p>
+          </div>
+
+          <!-- Slug Preview -->
+          <div v-if="slugPreview" class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <p class="text-xs font-medium text-gray-600 mb-1">Vista previa:</p>
+            <code class="text-sm font-mono text-gray-900">
+              agenda.instalapro.com/{{ slugPreview }}
+            </code>
+          </div>
+
+          <!-- Validation Status -->
+          <div v-if="slugValidationMessage" class="flex items-start gap-2" :class="slugValidationSuccess ? 'text-green-700' : 'text-red-700'">
+            <IconCheckCircle v-if="slugValidationSuccess" class="w-5 h-5 mt-0.5" />
+            <IconAlertCircleOutline v-else class="w-5 h-5 mt-0.5" />
+            <p class="text-sm">{{ slugValidationMessage }}</p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-3">
+            <button
+              @click="verifySlug"
+              :disabled="!slugPreview || isVerifyingSlug"
+              class="flex-1 px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {{ isVerifyingSlug ? 'Verificando...' : 'Verificar URL' }}
+            </button>
+            <button
+              @click="saveSlug"
+              :disabled="!slugPreview || !slugValidationSuccess || isSavingSlug"
+              class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {{ isSavingSlug ? 'Guardando...' : 'Guardar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Services Card -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-200">
@@ -626,18 +707,10 @@ import IconSnowflakeVariant from '~icons/mdi/snowflake-variant'
 import IconWrenchOutline from '~icons/mdi/wrench-outline'
 import IconPaintBrush from '~icons/mdi/format-paint'
 import IconBroom from '~icons/mdi/broom'
-import IconChevronLeft from '~icons/mdi/chevron-left'
-import IconChevronRight from '~icons/mdi/chevron-right'
 import IconCalendar from '~icons/mdi/calendar'
-
-// Timezone utilities
-import { 
-  nowInBuenosAires, 
-  toBuenosAires, 
-  isTodayInBuenosAires,
-  startOfWeekInBuenosAires,
-  endOfWeekInBuenosAires
-} from '~/utils/timezone'
+import IconLink from '~icons/mdi/link-variant'
+import IconContentCopy from '~icons/mdi/content-copy'
+import IconCheckCircle from '~icons/mdi/check-circle'
 
 // ==========================================
 // PAGE METADATA
@@ -670,6 +743,14 @@ const isReactivating = ref(false)
 const isSavingService = ref(false)
 const editingService = ref(null)
 const showCustomCategoryInput = ref(false)
+
+// URL Slug management
+const slugInput = ref('')
+const slugPreview = ref('')
+const slugValidationMessage = ref('')
+const slugValidationSuccess = ref(false)
+const isVerifyingSlug = ref(false)
+const isSavingSlug = ref(false)
 
 
 // Form for editing/creating profile
@@ -949,6 +1030,95 @@ const deleteService = async (service) => {
 
 
 // ==========================================
+// METHODS - URL SLUG MANAGEMENT
+// ==========================================
+
+const slugify = (text) => {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove accents
+    .replace(/[^a-z0-9-]/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+}
+
+const handleSlugInput = () => {
+  slugPreview.value = slugify(slugInput.value)
+  slugValidationMessage.value = ''
+  slugValidationSuccess.value = false
+}
+
+const verifySlug = async () => {
+  if (!slugPreview.value) return
+
+  isVerifyingSlug.value = true
+  slugValidationMessage.value = ''
+  slugValidationSuccess.value = false
+
+  try {
+    const result = await techniciansStore.checkSlugAvailability(slugPreview.value)
+
+    if (result.error) {
+      slugValidationMessage.value = result.error
+      slugValidationSuccess.value = false
+    } else if (result.available) {
+      slugValidationMessage.value = '¡URL disponible!'
+      slugValidationSuccess.value = true
+    } else {
+      slugValidationMessage.value = 'Esta URL ya está en uso. Por favor, elige otra.'
+      slugValidationSuccess.value = false
+    }
+  } catch (error) {
+    slugValidationMessage.value = 'Error verificando la URL'
+    slugValidationSuccess.value = false
+  } finally {
+    isVerifyingSlug.value = false
+  }
+}
+
+const saveSlug = async () => {
+  if (!slugPreview.value || !slugValidationSuccess.value) return
+
+  isSavingSlug.value = true
+
+  try {
+    const success = await techniciansStore.updateProfile({
+      urlSlug: slugPreview.value
+    })
+
+    if (success) {
+      useToast().success('URL guardada correctamente')
+      slugInput.value = ''
+      slugPreview.value = ''
+      slugValidationMessage.value = ''
+      slugValidationSuccess.value = false
+    } else {
+      useToast().error('Error guardando la URL')
+    }
+  } catch (error) {
+    console.error('Error saving slug:', error)
+    useToast().error('Error guardando la URL')
+  } finally {
+    isSavingSlug.value = false
+  }
+}
+
+const copyUrlToClipboard = async () => {
+  if (!techniciansStore.technician?.urlSlug) return
+
+  const url = `https://instalapro-agenda.web.app/${techniciansStore.technician.urlSlug}`
+
+  try {
+    await navigator.clipboard.writeText(url)
+    useToast().success('URL copiada al portapapeles')
+  } catch (error) {
+    console.error('Error copying to clipboard:', error)
+    useToast().error('Error copiando la URL')
+  }
+}
+
+// ==========================================
 // LIFECYCLE
 // ==========================================
 
@@ -959,5 +1129,11 @@ onMounted(async () => {
   await serviceTypesStore.initialize()
   // Initialize slot availability store
   await slotAvailabilityStore.initialize()
+
+  // Pre-fill slug input if exists
+  if (techniciansStore.technician?.urlSlug) {
+    slugInput.value = techniciansStore.technician.urlSlug
+    slugPreview.value = techniciansStore.technician.urlSlug
+  }
 })
 </script>
