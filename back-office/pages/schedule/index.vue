@@ -670,25 +670,14 @@
 
       <!-- Legend -->
       <div class="bg-gray-50 border-t border-gray-200 p-4">
-        <h4 class="text-sm font-medium text-gray-900 mb-3">Leyenda</h4>
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+        <div class="flex items-center justify-center gap-6">
           <div class="flex items-center gap-2">
             <div class="w-4 h-4 bg-green-500 rounded-full"></div>
-            <span class="text-gray-600">Disponible</span>
+            <span class="text-sm text-gray-600">Disponible</span>
           </div>
           <div class="flex items-center gap-2">
             <div class="w-4 h-4 bg-gray-300 rounded-full"></div>
-            <span class="text-gray-600">No disponible</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-4 h-4 bg-red-400 rounded-full flex items-center justify-center">
-              <IconClock class="w-2 h-2 text-white" />
-            </div>
-            <span class="text-gray-600">Ocupado (trabajo)</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-4 h-4 bg-blue-100 border-2 border-blue-300 rounded"></div>
-            <span class="text-gray-600">Hoy</span>
+            <span class="text-sm text-gray-600">No disponible</span>
           </div>
         </div>
       </div>
