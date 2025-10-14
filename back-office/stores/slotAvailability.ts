@@ -303,7 +303,7 @@ export const useSlotAvailabilityStore = defineStore('slotAvailability', () => {
 
     try {
       const promises = []
-      
+
       // Create all slots from 6 to 22 as available
       for (let hour = 6; hour <= 22; hour++) {
         const cacheKey = `${date}-${hour}`
@@ -333,7 +333,7 @@ export const useSlotAvailabilityStore = defineStore('slotAvailability', () => {
 
       // Execute all operations
       const results = await Promise.all(promises)
-      
+
       // Update local state
       let successCount = 0
       results.forEach((result, index) => {
@@ -341,7 +341,7 @@ export const useSlotAvailabilityStore = defineStore('slotAvailability', () => {
           successCount++
           const hour = 6 + index
           const cacheKey = `${date}-${hour}`
-          
+
           if (result.data) {
             // New slot created
             const newSlot = result.data as SlotAvailability
@@ -354,7 +354,7 @@ export const useSlotAvailabilityStore = defineStore('slotAvailability', () => {
               existingSlot.isAvailable = true
               existingSlot.updatedAt = new Date()
               updateCache(existingSlot)
-              
+
               // Update reactive array
               const slotIndex = slots.value.findIndex(s => s.id === existingSlot.id)
               if (slotIndex !== -1) {
@@ -364,12 +364,92 @@ export const useSlotAvailabilityStore = defineStore('slotAvailability', () => {
           }
         }
       })
-      
+
       console.log(`Opened ${successCount} slots for day ${date}`)
-      
+
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Error al abrir horarios del día'
       console.error('Error opening all slots for day:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Close all manually controlled slots for a specific day (6AM to 10PM)
+   */
+  const closeAllSlotsForDay = async (date: string): Promise<void> => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const promises = []
+
+      // Close all slots from 6 to 22 that are manually controlled
+      for (let hour = 6; hour <= 22; hour++) {
+        const cacheKey = `${date}-${hour}`
+        const existingSlot = slotsCache.get(cacheKey)
+
+        if (existingSlot && existingSlot.isManual) {
+          // Update existing manual slot to closed
+          promises.push(
+            slotSchema.update(existingSlot.id, {
+              isAvailable: false,
+              isManual: true
+            })
+          )
+        } else if (!existingSlot) {
+          // Create new closed slot
+          const slotData: SlotAvailabilityCreateInput = {
+            date,
+            hour,
+            isAvailable: false,
+            isManual: true
+          }
+          promises.push(slotSchema.create(slotData))
+        }
+      }
+
+      // Execute all operations
+      const results = await Promise.all(promises)
+
+      // Update local state
+      let successCount = 0
+      results.forEach((result, index) => {
+        if (result.success) {
+          successCount++
+          const hour = 6 + index
+          const cacheKey = `${date}-${hour}`
+
+          if (result.data) {
+            // New slot created
+            const newSlot = result.data as SlotAvailability
+            slots.value.push(newSlot)
+            updateCache(newSlot)
+          } else {
+            // Existing slot updated
+            const existingSlot = slotsCache.get(cacheKey)
+            if (existingSlot && existingSlot.isManual) {
+              existingSlot.isAvailable = false
+              existingSlot.updatedAt = new Date()
+              updateCache(existingSlot)
+
+              // Update reactive array
+              const slotIndex = slots.value.findIndex(s => s.id === existingSlot.id)
+              if (slotIndex !== -1) {
+                slots.value[slotIndex] = { ...existingSlot }
+              }
+            }
+          }
+        }
+      })
+
+      console.log(`Closed ${successCount} slots for day ${date}`)
+
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Error al cerrar horarios del día'
+      console.error('Error closing all slots for day:', err)
       throw err
     } finally {
       loading.value = false
@@ -519,6 +599,7 @@ export const useSlotAvailabilityStore = defineStore('slotAvailability', () => {
     loadSlotsByDateRange,
     toggleSlotAvailability,
     openAllSlotsForDay,
+    closeAllSlotsForDay,
     autoCloseSlot,
     removeAutoClosedSlot,
 

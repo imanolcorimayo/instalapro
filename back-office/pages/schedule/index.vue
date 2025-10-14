@@ -1440,19 +1440,33 @@ const toggleSlot = async (date, hour) => {
   }
 }
 
-// Open all day slots
+// Toggle all day slots (open or close)
 const openAllDay = async (date) => {
   try {
-    await slotAvailabilityStore.openAllSlotsForDay(date)
-    
-    // Get day name for the message
-    const dayObj = weekDays.value.find(d => d.date === date)
-    const dayName = dayObj ? dayObj.dayName : 'el día'
-    
-    useToast().success(`Todos los horarios de ${dayName} han sido abiertos`)
+    const isFullyOpen = isDayFullyOpen(date)
+
+    if (isFullyOpen) {
+      // Close all slots for the day
+      await slotAvailabilityStore.closeAllSlotsForDay(date)
+
+      // Get day name for the message
+      const dayObj = weekDays.value.find(d => d.date === date)
+      const dayName = dayObj ? dayObj.dayName : 'el día'
+
+      useToast().success(`Todos los horarios de ${dayName} han sido cerrados`)
+    } else {
+      // Open all slots for the day
+      await slotAvailabilityStore.openAllSlotsForDay(date)
+
+      // Get day name for the message
+      const dayObj = weekDays.value.find(d => d.date === date)
+      const dayName = dayObj ? dayObj.dayName : 'el día'
+
+      useToast().success(`Todos los horarios de ${dayName} han sido abiertos`)
+    }
   } catch (error) {
-    console.error('Error opening all day slots:', error)
-    useToast().error('Error al abrir todos los horarios del día')
+    console.error('Error toggling all day slots:', error)
+    useToast().error('Error al cambiar disponibilidad del día')
   }
 }
 
