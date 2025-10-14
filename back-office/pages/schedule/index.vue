@@ -19,6 +19,16 @@
       </button>
     </div>
 
+    <!-- Loading State -->
+    <div v-if="pageLoading" class="flex items-center justify-center py-12">
+      <div class="text-center">
+        <IconLoading class="w-8 h-8 animate-spin text-blue-500 mx-auto mb-3" />
+        <p class="text-sm text-gray-600">Cargando agenda...</p>
+      </div>
+    </div>
+
+    <!-- Main Content (hidden while loading) -->
+    <div v-else>
     <!-- Mode Toggle: Trabajos vs Disponibilidad -->
     <div class="flex flex-col gap-4 mb-6">
       <!-- Desktop Mode Toggle -->
@@ -682,7 +692,8 @@
         </div>
       </div>
     </div>
-
+    </div>
+    <!-- End Main Content -->
 
     <!-- Job Form Modal -->
     <ModalStructure
@@ -1078,6 +1089,7 @@ const serviceTypesStore = useServiceTypesStore()
 const currentWeekStart = ref(startOfWeekInBuenosAires())
 const editingJob = ref(null)
 const savingJob = ref(false)
+const pageLoading = ref(true)
 
 // Mobile scroll state for weekly timeline
 const mobileScrollContainer = ref()
@@ -1157,7 +1169,7 @@ const weekDays = computed(() => {
 
 const workingHours = computed(() => {
   const hours = []
-  for (let i = 8; i <= 18; i++) {
+  for (let i = 6; i <= 22; i++) {
     hours.push(i)
   }
   return hours
@@ -1636,10 +1648,22 @@ const saveJob = async () => {
       savingJob.value = false
       return
     }
-    
+
     // Combine date and time
     const scheduledDateTime = toBuenosAires(`${jobForm.value.date} ${jobForm.value.time}`)
     const durationMinutes = parseInt(jobForm.value.duration)
+
+    // Check slot availability (only for NEW jobs, not editing)
+    if (!editingJob.value) {
+      const hour = scheduledDateTime.hour()
+      const slotStatus = slotAvailabilityStore.getSlotStatus(jobForm.value.date, hour)
+
+      if (slotStatus !== 'available') {
+        useToast().error('Este horario no está disponible. Configure la disponibilidad en la pestaña "Disponibilidad" primero.')
+        savingJob.value = false
+        return
+      }
+    }
     
     // Check for time overlap
     const overlapCheck = checkTimeOverlap(
@@ -1768,15 +1792,20 @@ const updateClientStatsFromJob = async (clientId, newJob, oldJob = null) => {
 // Initialize stores and set up real-time subscription
 onMounted(async () => {
   try {
+    pageLoading.value = true
+
     // Initialize stores
     await jobsStore.initialize()
     await clientsStore.initialize()
     await serviceTypesStore.initialize()
     await slotAvailabilityStore.initialize()
-    
+
     // Load current week slots for availability view
     await slotAvailabilityStore.loadWeekSlots(currentWeekStart.value)
-    
+
+    // Wait a brief moment for real-time subscriptions to populate data
+    await new Promise(resolve => setTimeout(resolve, 300))
+
     // Setup mobile scroll indicators
     nextTick(() => {
       updateScrollIndicators()
@@ -1784,6 +1813,8 @@ onMounted(async () => {
   } catch (err) {
     console.error('Error initializing schedule page:', err)
     useToast().error('Error al cargar datos del calendario')
+  } finally {
+    pageLoading.value = false
   }
 })
 

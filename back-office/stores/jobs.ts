@@ -354,15 +354,15 @@ export const useJobsStore = defineStore('jobs', () => {
     
     const startHour = jobStart.hour()
     const startMinute = jobStart.minute()
-    
-    // Calculate position relative to working hours (8 AM = hour 0, 6 PM = hour 10)
-    const hourFromStart = startHour - 8 // 8 AM is our starting hour
+
+    // Calculate position relative to working hours (6 AM = hour 0, 10 PM = hour 16)
+    const hourFromStart = startHour - 6 // 6 AM is our starting hour
     const hourHeight = 64 // Each hour row is h-16 (64px)
-    
+
     // Position calculations
     const topPosition = (hourFromStart * hourHeight) + (startMinute / 60 * hourHeight)
     const jobHeight = Math.max((durationMinutes / 60) * hourHeight, 32) // Minimum height of 32px
-    
+
     return {
       top: `${topPosition}px`,
       height: `${jobHeight}px`
@@ -373,18 +373,18 @@ export const useJobsStore = defineStore('jobs', () => {
     const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
     const jobStart = toBuenosAires(actualDate)
     const durationMinutes = job.estimatedDuration || 120
-    
+
     const startHour = jobStart.hour()
     const startMinute = jobStart.minute()
-    
-    // Calculate position relative to working hours (8 AM = hour 0, 6 PM = hour 10)
-    const hourFromStart = startHour - 8 // 8 AM is our starting hour
+
+    // Calculate position relative to working hours (6 AM = hour 0, 10 PM = hour 16)
+    const hourFromStart = startHour - 6 // 6 AM is our starting hour
     const hourHeight = 64 // Each hour row is h-16 (64px)
-    
+
     // Position calculations
     const topPosition = (hourFromStart * hourHeight) + (startMinute / 60 * hourHeight)
     const jobHeight = (durationMinutes / 60) * hourHeight
-    
+
     return {
       top: `${topPosition}px`,
       height: `${jobHeight}px`
