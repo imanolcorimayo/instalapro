@@ -106,8 +106,8 @@
       </div>
     </div>
 
-    <!-- Week Navigation (only show in weekly timeline view) -->
-    <div v-if="currentView === 'weekly-timeline'" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+    <!-- Week Navigation (only show in weekly timeline view AND agenda mode) -->
+    <div v-if="viewMode === 'agenda' && currentView === 'weekly-timeline'" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
       <div class="flex items-center justify-between">
         <button
           @click="previousWeek"
@@ -134,8 +134,8 @@
       </div>
     </div>
 
-    <!-- Day Navigation (only show in day view) -->
-    <div v-if="currentView === 'daily'" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+    <!-- Day Navigation (only show in day view AND agenda mode) -->
+    <div v-if="viewMode === 'agenda' && currentView === 'daily'" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
       <div class="flex items-center justify-between">
         <button
           @click="previousDay"
