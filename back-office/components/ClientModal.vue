@@ -151,9 +151,11 @@ const resetForm = () => {
 }
 
 const saveClient = async () => {
+  saving.value = true
+  let clientCreated = false
+  let newClient = null
+
   try {
-    saving.value = true
-    
     // Prepare client data according to ClientCreateInput interface
     const clientData = {
       name: clientForm.value.name.trim(),
@@ -163,23 +165,46 @@ const saveClient = async () => {
       notes: clientForm.value.notes?.trim() || undefined
     }
 
-    // Use the clients store to create the client
-    const clientId = await clientsStore.createClient(clientData)
-    
-    // Get the created client from the store
-    const newClient = clientsStore.getClientById(clientId)
+    // Use the clients store to create the client (now returns the full client object)
+    newClient = await clientsStore.createClient(clientData)
+    clientCreated = true
 
-    if (newClient) {
-      useToast().success('Cliente creado exitosamente')
-      emit('clientCreated', newClient)
-      closeModal()
-    }
-    
   } catch (err) {
-    console.error('Error saving client:', err)
-    useToast().error('Error al guardar cliente')
-  } finally {
+    // Check if error is the known Nuxt regex bug (client may still be created)
+    const isNuxtRegexBug = err instanceof Error &&
+                           err.message.includes('Invalid regular expression') &&
+                           err.message.includes('Stack overflow')
+
+    if (isNuxtRegexBug) {
+      // This is a known Nuxt bug - client was likely created successfully
+      console.warn('Nuxt regex bug encountered, but client may have been created:', err)
+      // We'll check if client exists by reloading
+      await clientsStore.loadClients()
+      // Try to find the newly created client by name and phone
+      const possibleClient = clientsStore.activeClients.find(
+        c => c.name === clientForm.value.name.trim() &&
+             c.phone === clientForm.value.phone.trim()
+      )
+      if (possibleClient) {
+        newClient = possibleClient
+        clientCreated = true
+      }
+    }
+
+    if (!clientCreated) {
+      console.error('Error saving client:', err)
+      useToast().error('Error al guardar cliente')
+      saving.value = false
+      return
+    }
+  }
+
+  // If we got here, client was created successfully
+  if (clientCreated && newClient) {
+    useToast().success('Cliente creado exitosamente')
     saving.value = false
+    emit('clientCreated', newClient)
+    closeModal()
   }
 }
 

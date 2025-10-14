@@ -133,7 +133,7 @@ export const useClientsStore = defineStore('clients', () => {
     }
   }
 
-  const createClient = async (clientData: ClientCreateInput): Promise<string> => {
+  const createClient = async (clientData: ClientCreateInput): Promise<Client> => {
     loading.value = true
     error.value = null
 
@@ -150,12 +150,12 @@ export const useClientsStore = defineStore('clients', () => {
       }
 
       const result: CreateResult = await clientSchema.create(dataWithDefaults)
-      
+
       if (result.success && result.data) {
         const newClient = result.data as Client
         clients.value.push(newClient)
         updateCache(newClient)
-        return newClient.id
+        return newClient
       } else {
         throw new Error(result.error || 'Failed to create client')
       }
