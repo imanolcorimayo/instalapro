@@ -1,14 +1,7 @@
 <template>
   <div>
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">Clientes</h1>
-        <p class="text-sm text-gray-600 mt-1">
-          Administre su base de datos de clientes e historial de servicios
-        </p>
-      </div>
-      
+    <!-- Header Actions -->
+    <div class="flex justify-end mb-6">
       <button
         @click="openAddClientModal"
         class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"

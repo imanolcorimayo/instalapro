@@ -1,14 +1,5 @@
 <template>
   <div>
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">Configuración</h1>
-        <p class="text-sm text-gray-600 mt-1">
-          Gestiona tu perfil, horarios de atención y servicios
-        </p>
-      </div>
-    </div>
 
     <!-- Loading State -->
     <div
