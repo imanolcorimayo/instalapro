@@ -294,7 +294,7 @@
         <button
           v-if="showContinueButton"
           @click="handleContinue"
-          class="fixed bottom-6 left-1/2 -translate-x-1/2 h-14 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-blue-600 hover:bg-blue-700 hover:scale-105 text-white font-light flex items-center gap-2 z-50"
+          class="fixed bottom-6 left-1/2 -translate-x-1/2 h-14 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-blue-600 hover:bg-blue-700 hover:scale-105 text-white font-light flex items-center gap-2 z-50 whitespace-nowrap"
         >
           <span>{{ continueButtonText }}</span>
           <IconChevronRight class="w-5 h-5" />
