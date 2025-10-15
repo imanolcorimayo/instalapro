@@ -31,8 +31,14 @@ export const useBookingStore = defineStore('booking', () => {
   }
 
   const selectDateTime = (date: string, hour: number) => {
-    selectedDate.value = date
-    selectedHour.value = hour
+    // Handle deselection (when empty string and -1 are passed)
+    if (date === '' || hour === -1) {
+      selectedDate.value = null
+      selectedHour.value = null
+    } else {
+      selectedDate.value = date
+      selectedHour.value = hour
+    }
   }
 
   const updateClientInfo = (info: Partial<typeof clientInfo.value>) => {

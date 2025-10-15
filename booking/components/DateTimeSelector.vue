@@ -50,7 +50,7 @@
         >
           <span class="text-xs font-medium">{{ day.dayName }}</span>
           <span class="text-lg font-semibold mt-1">{{ day.dayNumber }}</span>
-          <span v-if="day.hasAvailableSlots && selectedDate !== day.date" class="text-xs mt-1 text-blue-600">
+          <span v-if="!day.isPast && day.hasAvailableSlots && selectedDate !== day.date" class="text-xs mt-1 text-blue-600">
             {{ day.availableCount }} slots
           </span>
         </div>
@@ -256,10 +256,16 @@ const selectDate = (date: string) => {
 }
 
 const selectTime = (hour: number) => {
-  selectedHour.value = hour
-
-  if (selectedDate.value && selectedHour.value !== null) {
-    bookingStore.selectDateTime(selectedDate.value, selectedHour.value)
+  // Toggle selection - if same hour clicked, deselect it
+  if (selectedHour.value === hour) {
+    selectedHour.value = null
+    // Clear date/time selection in booking store
+    bookingStore.selectDateTime('', -1)
+  } else {
+    selectedHour.value = hour
+    if (selectedDate.value && selectedHour.value !== null) {
+      bookingStore.selectDateTime(selectedDate.value, selectedHour.value)
+    }
   }
 }
 
@@ -283,5 +289,12 @@ const loadSlotsForWeek = async () => {
 onMounted(async () => {
   console.log('[DateTimeSelector] Component mounted')
   await loadSlotsForWeek()
+
+  // Auto-select today's date if no date is already selected
+  if (!selectedDate.value) {
+    const today = dayjs().format('YYYY-MM-DD')
+    selectedDate.value = today
+    console.log('[DateTimeSelector] Auto-selected today:', today)
+  }
 })
 </script>

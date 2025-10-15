@@ -181,7 +181,13 @@
       </div>
 
       <!-- Step 2: Date and Time Selection -->
-      <div v-else-if="bookingStore.currentStep === 2" class="max-w-lg mx-auto p-4">
+      <div
+        v-else-if="bookingStore.currentStep === 2"
+        :class="[
+          'max-w-lg mx-auto p-4',
+          showContinueButton ? 'pb-24' : ''
+        ]"
+      >
         <!-- Back button -->
         <button
           @click="goBackToStep1"
