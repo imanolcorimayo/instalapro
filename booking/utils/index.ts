@@ -1,9 +1,6 @@
 /**
- * Utility functions for InstalarPro Back Office
+ * Utility functions for InstalarPro Booking
  */
-
-// Timezone utilities
-export * from './timezone'
 
 /**
  * Format price in Argentine peso format

@@ -120,7 +120,7 @@
         <!-- Stats -->
         <div class="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
           <span>{{ client.totalJobs || 0 }} trabajos</span>
-          <span>${{ (client.totalSpent || 0).toLocaleString() }}</span>
+          <span>${{ formatPrice(client.totalSpent) }}</span>
           <span>{{ $dayjs(client.createdAt).format('MMM YYYY') }}</span>
         </div>
       </div>
@@ -146,6 +146,7 @@ import IconEdit from '~icons/mdi/pencil'
 import IconDelete from '~icons/mdi/delete'
 import IconPhone from '~icons/mdi/phone'
 import IconEmail from '~icons/mdi/email'
+import { formatPrice } from '@/utils'
 
 // Page meta
 definePageMeta({

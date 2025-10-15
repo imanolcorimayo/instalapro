@@ -198,7 +198,7 @@
                 <p v-if="service.description" class="text-sm text-gray-600 mb-3 leading-relaxed">{{ service.description }}</p>
 
                 <div class="flex items-center justify-between gap-4">
-                  <span class="text-lg font-semibold text-blue-600">${{ service.basePrice.toLocaleString() }}</span>
+                  <span class="text-lg font-semibold text-blue-600">${{ formatPrice(service.basePrice) }}</span>
                   <div class="flex items-center gap-1.5 text-sm text-gray-500">
                     <IconClock class="w-4 h-4" />
                     <span>{{ formatDuration(service.estimatedDuration) }}</span>
@@ -232,7 +232,7 @@
               <p class="text-gray-800 font-semibold">{{ bookingStore.selectedService?.name }}</p>
             </div>
             <div class="text-right">
-              <p class="text-blue-600 font-semibold">${{ bookingStore.selectedService?.basePrice.toLocaleString() }}</p>
+              <p class="text-blue-600 font-semibold">${{ formatPrice(bookingStore.selectedService?.basePrice) }}</p>
               <p class="text-xs text-gray-600">{{ formatDuration(bookingStore.selectedService?.estimatedDuration || 0) }}</p>
             </div>
           </div>
@@ -267,7 +267,7 @@
             <p class="text-xs text-gray-500">Servicio</p>
             <p class="font-semibold text-gray-800">{{ bookingStore.selectedService?.name }}</p>
             <div class="flex items-center justify-between mt-1">
-              <span class="text-blue-600 font-semibold">${{ bookingStore.selectedService?.basePrice.toLocaleString() }}</span>
+              <span class="text-blue-600 font-semibold">${{ formatPrice(bookingStore.selectedService?.basePrice) }}</span>
               <span class="text-sm text-gray-500">{{ formatDuration(bookingStore.selectedService?.estimatedDuration || 0) }}</span>
             </div>
           </div>
@@ -329,6 +329,9 @@ import IconWhatsapp from '~icons/mdi/whatsapp'
 import IconCheck from '~icons/mdi/check'
 import IconChevronLeft from '~icons/mdi/chevron-left'
 import IconChevronRight from '~icons/mdi/chevron-right'
+
+// Utils
+import { formatPrice } from '@/utils'
 
 // Stores
 const techniciansStore = useTechniciansStore()

@@ -349,7 +349,7 @@
                 <div class="flex items-center gap-4">
                   <div class="flex items-center gap-1.5">
                     <IconCurrencyUsd class="w-5 h-5 text-blue-600" />
-                    <span class="font-semibold text-gray-900">${{ service.basePrice.toLocaleString() }}</span>
+                    <span class="font-semibold text-gray-900">${{ formatPrice(service.basePrice) }}</span>
                   </div>
                   <div class="flex items-center gap-1.5">
                     <IconClock class="w-5 h-5 text-gray-600" />
@@ -680,6 +680,9 @@
 </template>
 
 <script setup>
+// Utils
+import { formatPrice } from '@/utils'
+
 // Icons
 import IconAlertCircleOutline from '~icons/mdi/alert-circle-outline'
 import IconInformationOutline from '~icons/mdi/information-outline'

@@ -439,7 +439,7 @@
                       {{ job.serviceType }}
                     </div>
                     <div class="text-xs text-gray-500">
-                      ${{ job.price?.toLocaleString() || 0 }}
+                      ${{ formatPrice(job.price) }}
                     </div>
                   </div>
                 </div>
@@ -518,7 +518,7 @@
                     {{ job.serviceType }}
                   </div>
                   <div class="text-xs text-gray-500 hidden sm:block">
-                    ${{ job.price?.toLocaleString() || 0 }}
+                    ${{ formatPrice(job.price) }}
                   </div>
                 </div>
               </div>
@@ -900,7 +900,7 @@
               :key="service.id" 
               :value="service.name"
             >
-              {{ service.name }} - ${{ service.basePrice.toLocaleString() }}
+              {{ service.name }} - ${{ formatPrice(service.basePrice) }}
             </option>
           </select>
           <p v-if="selectedServiceType" class="text-xs text-gray-500 mt-1">
@@ -1049,13 +1049,14 @@ import IconProgressClock from '~icons/mdi/progress-clock'
 import IconCheckCircle from '~icons/mdi/check-circle'
 import IconCancel from '~icons/mdi/cancel'
 import IconAlertCircle from '~icons/mdi/alert-circle'
-import { 
-  nowInBuenosAires, 
-  toBuenosAires, 
+import {
+  nowInBuenosAires,
+  toBuenosAires,
   isTodayInBuenosAires,
   startOfWeekInBuenosAires,
   endOfWeekInBuenosAires
 } from '~/utils/timezone'
+import { formatPrice } from '@/utils'
 
 import { watch, nextTick, onBeforeUnmount } from 'vue'
 
