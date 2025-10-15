@@ -51,26 +51,77 @@
         <div class="max-w-lg mx-auto p-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
-              <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+              <div
+                :class="[
+                  'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold',
+                  bookingStore.currentStep >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+                ]"
+              >
                 1
               </div>
-              <span class="ml-2 text-sm font-medium text-blue-600">Servicio</span>
+              <span
+                :class="[
+                  'ml-2 text-sm font-medium',
+                  bookingStore.currentStep >= 1 ? 'text-blue-600' : 'text-gray-500'
+                ]"
+              >
+                Servicio
+              </span>
             </div>
             <div class="flex-1 mx-4 h-1 bg-gray-200 rounded">
-              <div class="h-1 bg-blue-600 rounded" :style="{ width: progressWidth }"></div>
+              <div class="h-1 bg-blue-600 rounded transition-all duration-300" :style="{ width: bookingStore.currentStep >= 2 ? '100%' : '33%' }"></div>
             </div>
             <div class="flex items-center">
-              <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-sm">
+              <div
+                :class="[
+                  'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold',
+                  bookingStore.currentStep >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+                ]"
+              >
                 2
               </div>
-              <span class="ml-2 text-sm text-gray-500">Confirmar</span>
+              <span
+                :class="[
+                  'ml-2 text-sm font-medium',
+                  bookingStore.currentStep >= 2 ? 'text-blue-600' : 'text-gray-500'
+                ]"
+              >
+                Fecha/Hora
+              </span>
+            </div>
+            <div class="flex-1 mx-4 h-1 bg-gray-200 rounded">
+              <div class="h-1 bg-blue-600 rounded transition-all duration-300" :style="{ width: bookingStore.canProceedToStep3() ? '100%' : '0%' }"></div>
+            </div>
+            <div class="flex items-center">
+              <div
+                :class="[
+                  'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold',
+                  bookingStore.currentStep >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+                ]"
+              >
+                3
+              </div>
+              <span
+                :class="[
+                  'ml-2 text-sm font-medium',
+                  bookingStore.currentStep >= 3 ? 'text-blue-600' : 'text-gray-500'
+                ]"
+              >
+                Confirmar
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Service Selection -->
-      <div class="max-w-lg mx-auto p-4">
+      <!-- Step 1: Service Selection -->
+      <div
+        v-if="bookingStore.currentStep === 1"
+        :class="[
+          'max-w-lg mx-auto p-4',
+          showContinueButton ? 'pb-24' : ''
+        ]"
+      >
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Selecciona el servicio</h2>
 
         <!-- Loading Services -->
@@ -91,7 +142,13 @@
           <div
             v-for="service in serviceTypesStore.activeServiceTypes"
             :key="service.id"
-            class="bg-white border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition-colors"
+            @click="selectService(service)"
+            :class="[
+              'bg-white border-2 rounded-lg p-4 cursor-pointer transition-all',
+              bookingStore.selectedService?.id === service.id
+                ? 'border-blue-600 shadow-md'
+                : 'border-gray-200 hover:border-blue-500'
+            ]"
           >
             <div class="flex items-start space-x-3">
               <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
@@ -102,7 +159,13 @@
                 <IconToolbox v-else class="w-6 h-6 text-white" />
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="font-semibold text-gray-800">{{ service.name }}</h3>
+                <div class="flex items-start justify-between">
+                  <h3 class="font-semibold text-gray-800">{{ service.name }}</h3>
+                  <IconCheckCircle
+                    v-if="bookingStore.selectedService?.id === service.id"
+                    class="w-6 h-6 text-blue-600 flex-shrink-0 ml-2"
+                  />
+                </div>
                 <p v-if="service.description" class="text-sm text-gray-600 mt-1">{{ service.description }}</p>
                 <div class="flex items-center justify-between mt-2">
                   <span class="text-blue-600 font-semibold">${{ service.basePrice.toLocaleString() }}</span>
@@ -116,6 +179,71 @@
           </div>
         </div>
       </div>
+
+      <!-- Step 2: Date and Time Selection -->
+      <div v-else-if="bookingStore.currentStep === 2" class="max-w-lg mx-auto p-4">
+        <!-- Back button -->
+        <button
+          @click="goBackToStep1"
+          class="flex items-center text-blue-600 hover:text-blue-700 mb-4 transition-colors"
+        >
+          <IconChevronLeft class="w-5 h-5 mr-1" />
+          <span>Cambiar servicio</span>
+        </button>
+
+        <!-- Selected service summary -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-blue-600 font-medium">Servicio seleccionado:</p>
+              <p class="text-gray-800 font-semibold">{{ bookingStore.selectedService?.name }}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-blue-600 font-semibold">${{ bookingStore.selectedService?.basePrice.toLocaleString() }}</p>
+              <p class="text-xs text-gray-600">{{ formatDuration(bookingStore.selectedService?.estimatedDuration || 0) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date/Time Selector Component -->
+        <DateTimeSelector
+          v-if="techniciansStore.technician"
+          :technician-user-uid="techniciansStore.technician.userUid"
+        />
+      </div>
+
+      <!-- Step 3: Confirmation (placeholder for now) -->
+      <div v-else-if="bookingStore.currentStep === 3" class="max-w-lg mx-auto p-4">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">Confirmar reserva</h2>
+        <p class="text-gray-600">Step 3 - Placeholder</p>
+      </div>
+
+      <!-- Sticky Continue Button -->
+      <transition
+        enter-active-class="transition-all duration-300 ease-out"
+        enter-from-class="translate-y-full opacity-0"
+        enter-to-class="translate-y-0 opacity-100"
+        leave-active-class="transition-all duration-300 ease-in"
+        leave-from-class="translate-y-0 opacity-100"
+        leave-to-class="translate-y-full opacity-0"
+      >
+        <div
+          v-if="showContinueButton"
+          class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4"
+        >
+          <div class="max-w-lg mx-auto">
+            <button
+              @click="handleContinue"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center"
+            >
+              <span>{{ continueButtonText }}</span>
+              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </transition>
 
       <!-- WhatsApp Contact -->
       <a
@@ -142,17 +270,17 @@ import IconClipboardText from '~icons/mdi/clipboard-text-outline'
 import IconToolbox from '~icons/mdi/toolbox-outline'
 import IconClock from '~icons/mdi/clock-outline'
 import IconWhatsapp from '~icons/mdi/whatsapp'
+import IconCheckCircle from '~icons/mdi/check-circle'
+import IconChevronLeft from '~icons/mdi/chevron-left'
 
 // Stores
 const techniciansStore = useTechniciansStore()
 const serviceTypesStore = useServiceTypesStore()
+const bookingStore = useBookingStore()
 
 // Route
 const route = useRoute()
 const technicianSlug = route.params.technician as string
-
-// Progress bar
-const progressWidth = ref('33%')
 
 // Helper: Format duration from minutes to readable format
 const formatDuration = (minutes: number): string => {
@@ -165,6 +293,48 @@ const formatDuration = (minutes: number): string => {
     return `${hours}h`
   } else {
     return `${mins}min`
+  }
+}
+
+// Service selection handler
+const selectService = (service: any) => {
+  bookingStore.selectService(service)
+}
+
+// Continue to step 2
+const continueToStep2 = () => {
+  bookingStore.nextStep()
+}
+
+// Go back to step 1
+const goBackToStep1 = () => {
+  bookingStore.previousStep()
+}
+
+// Continue button logic
+const showContinueButton = computed(() => {
+  if (bookingStore.currentStep === 1) {
+    return bookingStore.canProceedToStep2()
+  } else if (bookingStore.currentStep === 2) {
+    return bookingStore.canProceedToStep3()
+  }
+  return false
+})
+
+const continueButtonText = computed(() => {
+  if (bookingStore.currentStep === 1) {
+    return 'Continuar'
+  } else if (bookingStore.currentStep === 2) {
+    return 'Confirmar reserva'
+  }
+  return 'Continuar'
+})
+
+const handleContinue = () => {
+  if (bookingStore.currentStep === 1) {
+    continueToStep2()
+  } else if (bookingStore.currentStep === 2) {
+    bookingStore.nextStep()
   }
 }
 

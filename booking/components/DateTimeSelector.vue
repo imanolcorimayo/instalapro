@@ -1,0 +1,287 @@
+<template>
+  <div class="date-time-selector">
+    <!-- Date Selection: Week Calendar View -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Selecciona una fecha</h3>
+
+      <!-- Week Navigation -->
+      <div class="flex items-center justify-between mb-4">
+        <button
+          @click="previousWeek"
+          :disabled="isCurrentWeek"
+          :class="[
+            'p-2 rounded-lg transition-colors',
+            isCurrentWeek
+              ? 'text-gray-300 cursor-not-allowed'
+              : 'text-blue-600 hover:bg-blue-50'
+          ]"
+        >
+          <IconChevronLeft class="w-6 h-6" />
+        </button>
+
+        <span class="text-sm font-medium text-gray-700">
+          {{ weekRangeText }}
+        </span>
+
+        <button
+          @click="nextWeek"
+          class="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+        >
+          <IconChevronRight class="w-6 h-6" />
+        </button>
+      </div>
+
+      <!-- Week Days Grid -->
+      <div class="grid grid-cols-7 gap-2">
+        <div
+          v-for="day in weekDays"
+          :key="day.date"
+          @click="selectDate(day.date)"
+          :class="[
+            'flex flex-col items-center justify-center p-3 rounded-lg cursor-pointer transition-all border-2',
+            selectedDate === day.date
+              ? 'bg-blue-600 text-white border-blue-600'
+              : day.isPast
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+              : day.hasAvailableSlots
+              ? 'bg-white text-gray-800 border-gray-200 hover:border-blue-500'
+              : 'bg-gray-50 text-gray-400 border-gray-200'
+          ]"
+        >
+          <span class="text-xs font-medium">{{ day.dayName }}</span>
+          <span class="text-lg font-semibold mt-1">{{ day.dayNumber }}</span>
+          <span v-if="day.hasAvailableSlots && selectedDate !== day.date" class="text-xs mt-1 text-blue-600">
+            {{ day.availableCount }} slots
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time Slot Selection -->
+    <div v-if="selectedDate">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Selecciona un horario</h3>
+
+      <!-- Loading State -->
+      <div v-if="slotStore.loading" class="text-center py-8">
+        <div class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+        <p class="text-gray-500 text-sm">Cargando horarios...</p>
+      </div>
+
+      <!-- No slots available -->
+      <div v-else-if="availableHoursForSelectedDate.length === 0" class="text-center py-8">
+        <IconCalendarRemove class="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <p class="text-gray-600">No hay horarios disponibles para esta fecha.</p>
+        <p class="text-gray-500 text-sm mt-2">Por favor, selecciona otra fecha.</p>
+      </div>
+
+      <!-- Time slots grouped by time of day -->
+      <div v-else class="space-y-6">
+        <!-- Morning -->
+        <div v-if="timeSlotsByPeriod.morning.length > 0">
+          <h4 class="text-sm font-medium text-gray-600 mb-3 flex items-center">
+            <IconWeatherSunny class="w-5 h-5 mr-2 text-yellow-500" />
+            Mañana (6:00 AM - 11:59 AM)
+          </h4>
+          <div class="grid grid-cols-3 gap-3">
+            <button
+              v-for="hour in timeSlotsByPeriod.morning"
+              :key="hour"
+              @click="selectTime(hour)"
+              :class="[
+                'py-3 px-4 rounded-lg font-medium transition-all border-2',
+                selectedHour === hour
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-800 border-gray-200 hover:border-blue-500'
+              ]"
+            >
+              {{ formatHour(hour) }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Afternoon -->
+        <div v-if="timeSlotsByPeriod.afternoon.length > 0">
+          <h4 class="text-sm font-medium text-gray-600 mb-3 flex items-center">
+            <IconWeatherPartlyCloudy class="w-5 h-5 mr-2 text-orange-500" />
+            Tarde (12:00 PM - 5:59 PM)
+          </h4>
+          <div class="grid grid-cols-3 gap-3">
+            <button
+              v-for="hour in timeSlotsByPeriod.afternoon"
+              :key="hour"
+              @click="selectTime(hour)"
+              :class="[
+                'py-3 px-4 rounded-lg font-medium transition-all border-2',
+                selectedHour === hour
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-800 border-gray-200 hover:border-blue-500'
+              ]"
+            >
+              {{ formatHour(hour) }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Evening -->
+        <div v-if="timeSlotsByPeriod.evening.length > 0">
+          <h4 class="text-sm font-medium text-gray-600 mb-3 flex items-center">
+            <IconWeatherNight class="w-5 h-5 mr-2 text-indigo-500" />
+            Noche (6:00 PM - 10:00 PM)
+          </h4>
+          <div class="grid grid-cols-3 gap-3">
+            <button
+              v-for="hour in timeSlotsByPeriod.evening"
+              :key="hour"
+              @click="selectTime(hour)"
+              :class="[
+                'py-3 px-4 rounded-lg font-medium transition-all border-2',
+                selectedHour === hour
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-800 border-gray-200 hover:border-blue-500'
+              ]"
+            >
+              {{ formatHour(hour) }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No date selected message -->
+    <div v-else class="text-center py-12">
+      <IconCalendarBlank class="w-16 h-16 text-gray-300 mx-auto mb-4" />
+      <p class="text-gray-500">Selecciona una fecha para ver los horarios disponibles</p>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useDayjs } from '#dayjs'
+import IconChevronLeft from '~icons/mdi/chevron-left'
+import IconChevronRight from '~icons/mdi/chevron-right'
+import IconWeatherSunny from '~icons/mdi/weather-sunny'
+import IconWeatherPartlyCloudy from '~icons/mdi/weather-partly-cloudy'
+import IconWeatherNight from '~icons/mdi/weather-night'
+import IconCalendarBlank from '~icons/mdi/calendar-blank-outline'
+import IconCalendarRemove from '~icons/mdi/calendar-remove-outline'
+
+const dayjs = useDayjs()
+const bookingStore = useBookingStore()
+const slotStore = useSlotAvailabilityStore()
+
+interface Props {
+  technicianUserUid: string
+}
+
+const props = defineProps<Props>()
+
+// State
+const currentWeekStart = ref(dayjs().startOf('week'))
+const selectedDate = ref<string | null>(bookingStore.selectedDate)
+const selectedHour = ref<number | null>(bookingStore.selectedHour)
+
+// Computed
+const isCurrentWeek = computed(() => {
+  return currentWeekStart.value.isSame(dayjs().startOf('week'), 'day')
+})
+
+const weekRangeText = computed(() => {
+  const start = currentWeekStart.value
+  const end = currentWeekStart.value.add(6, 'days')
+
+  if (start.month() === end.month()) {
+    return `${start.format('D')} - ${end.format('D')} de ${start.format('MMMM YYYY')}`
+  } else {
+    return `${start.format('D MMM')} - ${end.format('D MMM YYYY')}`
+  }
+})
+
+const weekDays = computed(() => {
+  const days = []
+  const today = dayjs().startOf('day')
+
+  for (let i = 0; i < 7; i++) {
+    const date = currentWeekStart.value.add(i, 'days')
+    const dateString = date.format('YYYY-MM-DD')
+    const availableHours = slotStore.getAvailableHoursForDate(dateString)
+
+    days.push({
+      date: dateString,
+      dayName: date.format('ddd'),
+      dayNumber: date.format('D'),
+      isPast: date.isBefore(today),
+      hasAvailableSlots: availableHours.length > 0,
+      availableCount: availableHours.length
+    })
+  }
+
+  return days
+})
+
+const availableHoursForSelectedDate = computed(() => {
+  if (!selectedDate.value) return []
+  return slotStore.getAvailableHoursForDate(selectedDate.value)
+})
+
+const timeSlotsByPeriod = computed(() => {
+  if (!selectedDate.value) {
+    return { morning: [], afternoon: [], evening: [] }
+  }
+  return slotStore.getSlotsByTimeOfDay(selectedDate.value)
+})
+
+// Methods
+const previousWeek = () => {
+  if (!isCurrentWeek.value) {
+    currentWeekStart.value = currentWeekStart.value.subtract(7, 'days')
+    loadSlotsForWeek()
+  }
+}
+
+const nextWeek = () => {
+  currentWeekStart.value = currentWeekStart.value.add(7, 'days')
+  loadSlotsForWeek()
+}
+
+const selectDate = (date: string) => {
+  const selectedDay = dayjs(date)
+  const today = dayjs().startOf('day')
+
+  if (selectedDay.isBefore(today)) {
+    return // Don't allow selecting past dates
+  }
+
+  selectedDate.value = date
+  selectedHour.value = null // Reset hour when changing date
+}
+
+const selectTime = (hour: number) => {
+  selectedHour.value = hour
+
+  if (selectedDate.value && selectedHour.value !== null) {
+    bookingStore.selectDateTime(selectedDate.value, selectedHour.value)
+  }
+}
+
+const formatHour = (hour: number): string => {
+  const period = hour >= 12 ? 'PM' : 'AM'
+  const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour
+  return `${displayHour}:00 ${period}`
+}
+
+const loadSlotsForWeek = async () => {
+  const startDate = currentWeekStart.value.format('YYYY-MM-DD')
+  const endDate = currentWeekStart.value.add(6, 'days').format('YYYY-MM-DD')
+
+  console.log('[DateTimeSelector] Loading slots for week:', { startDate, endDate, technicianUserUid: props.technicianUserUid })
+  await slotStore.loadAvailableSlots(startDate, endDate, props.technicianUserUid)
+  console.log('[DateTimeSelector] Loaded slots:', slotStore.availableSlots.length, 'slots')
+  console.log('[DateTimeSelector] Slot details:', slotStore.availableSlots)
+}
+
+// Load initial data
+onMounted(async () => {
+  console.log('[DateTimeSelector] Component mounted')
+  await loadSlotsForWeek()
+})
+</script>

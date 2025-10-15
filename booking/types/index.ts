@@ -35,6 +35,21 @@ export interface ServiceType {
 }
 
 // ==========================================
+// SLOT AVAILABILITY INTERFACES
+// ==========================================
+
+export interface SlotAvailability {
+  id: string
+  userUid: string
+  date: string // YYYY-MM-DD
+  hour: number // 6-22
+  isAvailable: boolean
+  isManual: boolean // true = manually set, false = auto-closed by job
+  createdAt: Date
+  updatedAt: Date
+}
+
+// ==========================================
 // BOOKING REQUEST INTERFACES
 // ==========================================
 
@@ -48,6 +63,7 @@ export interface BookingRequest {
   serviceTypeId: string
   serviceTypeName: string
   preferredDate?: Date
+  preferredTime?: string // HH:mm format
   address?: string
   notes?: string
   status: 'pending' | 'confirmed' | 'rejected'
@@ -64,6 +80,7 @@ export interface BookingRequestCreateInput {
   serviceTypeId: string
   serviceTypeName: string
   preferredDate?: Date
+  preferredTime?: string
   address?: string
   notes?: string
 }
