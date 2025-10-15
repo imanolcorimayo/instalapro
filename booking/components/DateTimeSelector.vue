@@ -199,19 +199,26 @@ const weekRangeText = computed(() => {
 const weekDays = computed(() => {
   const days = []
   const today = dayjs().startOf('day')
+  const serviceDuration = bookingStore.selectedService?.estimatedDuration || 60
 
   for (let i = 0; i < 7; i++) {
     const date = currentWeekStart.value.add(i, 'days')
     const dateString = date.format('YYYY-MM-DD')
-    const availableHours = slotStore.getAvailableHoursForDate(dateString)
+    const allHours = slotStore.getAvailableHoursForDate(dateString)
+
+    // Filter hours based on service duration
+    const validHours = allHours.filter(hour => {
+      const serviceEndHour = hour + Math.ceil(serviceDuration / 60)
+      return serviceEndHour <= 22
+    })
 
     days.push({
       date: dateString,
       dayName: date.format('ddd'),
       dayNumber: date.format('D'),
       isPast: date.isBefore(today),
-      hasAvailableSlots: availableHours.length > 0,
-      availableCount: availableHours.length
+      hasAvailableSlots: validHours.length > 0,
+      availableCount: validHours.length
     })
   }
 
@@ -227,7 +234,27 @@ const timeSlotsByPeriod = computed(() => {
   if (!selectedDate.value) {
     return { morning: [], afternoon: [], evening: [] }
   }
-  return slotStore.getSlotsByTimeOfDay(selectedDate.value)
+
+  // Get all available hours for the selected date
+  const hours = slotStore.getAvailableHoursForDate(selectedDate.value)
+
+  // Get service duration (default to 60 minutes if not set)
+  const serviceDuration = bookingStore.selectedService?.estimatedDuration || 60
+
+  // Filter hours based on service duration
+  // A slot is valid if: slotHour + Math.ceil(serviceDuration / 60) <= 22
+  // This ensures the service ends by 10 PM (hour 22)
+  const validHours = hours.filter(hour => {
+    const serviceEndHour = hour + Math.ceil(serviceDuration / 60)
+    return serviceEndHour <= 22
+  })
+
+  // Group filtered hours by time of day
+  return {
+    morning: validHours.filter(h => h >= 6 && h < 12),   // 6 AM - 11:59 AM
+    afternoon: validHours.filter(h => h >= 12 && h < 18), // 12 PM - 5:59 PM
+    evening: validHours.filter(h => h >= 18 && h <= 22)   // 6 PM - 10 PM
+  }
 })
 
 // Methods

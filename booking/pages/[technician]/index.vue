@@ -220,8 +220,39 @@
 
       <!-- Step 3: Confirmation (placeholder for now) -->
       <div v-else-if="bookingStore.currentStep === 3" class="max-w-lg mx-auto p-4">
+        <!-- Back button -->
+        <button
+          @click="goBackToStep2"
+          class="flex items-center text-blue-600 hover:text-blue-700 mb-4 transition-colors"
+        >
+          <IconChevronLeft class="w-5 h-5 mr-1" />
+          <span>Cambiar fecha/hora</span>
+        </button>
+
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Confirmar reserva</h2>
-        <p class="text-gray-600">Step 3 - Placeholder</p>
+
+        <!-- Booking Summary -->
+        <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+          <h3 class="text-sm font-medium text-gray-600 mb-3">Resumen de tu reserva</h3>
+
+          <!-- Service -->
+          <div class="mb-4">
+            <p class="text-xs text-gray-500">Servicio</p>
+            <p class="font-semibold text-gray-800">{{ bookingStore.selectedService?.name }}</p>
+            <div class="flex items-center justify-between mt-1">
+              <span class="text-blue-600 font-semibold">${{ bookingStore.selectedService?.basePrice.toLocaleString() }}</span>
+              <span class="text-sm text-gray-500">{{ formatDuration(bookingStore.selectedService?.estimatedDuration || 0) }}</span>
+            </div>
+          </div>
+
+          <!-- Date & Time -->
+          <div>
+            <p class="text-xs text-gray-500">Fecha y hora</p>
+            <p class="font-semibold text-gray-800">{{ formatBookingDateTime }}</p>
+          </div>
+        </div>
+
+        <p class="text-gray-600">Formulario de datos del cliente - Por implementar</p>
       </div>
 
       <!-- Sticky Continue Button -->
@@ -317,6 +348,11 @@ const goBackToStep1 = () => {
   bookingStore.previousStep()
 }
 
+// Go back to step 2
+const goBackToStep2 = () => {
+  bookingStore.previousStep()
+}
+
 // Continue button logic
 const showContinueButton = computed(() => {
   if (bookingStore.currentStep === 1) {
@@ -343,6 +379,31 @@ const handleContinue = () => {
     bookingStore.nextStep()
   }
 }
+
+// Format booking date and time for display
+const formatBookingDateTime = computed(() => {
+  if (!bookingStore.selectedDate || bookingStore.selectedHour === null) return ''
+
+  // Parse date
+  const [year, month, day] = bookingStore.selectedDate.split('-')
+  const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+
+  // Format date in Spanish
+  const dateFormatter = new Intl.DateTimeFormat('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+  const formattedDate = dateFormatter.format(dateObj)
+
+  // Format time
+  const hour = bookingStore.selectedHour
+  const period = hour >= 12 ? 'PM' : 'AM'
+  const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour
+
+  return `${formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)} - ${displayHour}:00 ${period}`
+})
 
 // WhatsApp URL
 const whatsappUrl = computed(() => {
