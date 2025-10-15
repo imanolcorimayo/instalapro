@@ -325,11 +325,19 @@ onMounted(async () => {
   console.log('[DateTimeSelector] Component mounted')
   await loadSlotsForWeek()
 
-  // Auto-select today's date if no date is already selected
+  // Auto-select first available date if no date is already selected
   if (!selectedDate.value) {
-    const today = dayjs().format('YYYY-MM-DD')
-    selectedDate.value = today
-    console.log('[DateTimeSelector] Auto-selected today:', today)
+    // Find the first day that has available slots and is not in the past
+    const firstAvailableDay = weekDays.value.find(day =>
+      !day.isPast && day.hasAvailableSlots
+    )
+
+    if (firstAvailableDay) {
+      selectedDate.value = firstAvailableDay.date
+      console.log('[DateTimeSelector] Auto-selected first available date:', firstAvailableDay.date, `(${firstAvailableDay.availableCount} slots)`)
+    } else {
+      console.log('[DateTimeSelector] No available dates found in the current week')
+    }
   }
 })
 </script>
