@@ -48,12 +48,13 @@
 
       <!-- Progress Bar -->
       <div class="bg-white border-b">
-        <div class="max-w-lg mx-auto p-4">
+        <div class="max-w-lg mx-auto px-3 py-4 sm:px-4">
           <div class="flex items-center justify-between">
-            <div class="flex items-center">
+            <!-- Step 1 -->
+            <div class="flex items-center flex-shrink-0">
               <div
                 :class="[
-                  'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold',
+                  'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold',
                   bookingStore.currentStep >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
                 ]"
               >
@@ -61,20 +62,25 @@
               </div>
               <span
                 :class="[
-                  'ml-2 text-sm font-medium',
+                  'ml-1.5 sm:ml-2 text-xs sm:text-sm font-medium whitespace-nowrap',
                   bookingStore.currentStep >= 1 ? 'text-blue-600' : 'text-gray-500'
                 ]"
               >
-                Servicio
+                <span class="hidden xs:inline">Servicio</span>
+                <span class="xs:hidden">Serv.</span>
               </span>
             </div>
-            <div class="flex-1 mx-4 h-1 bg-gray-200 rounded">
+
+            <!-- Progress Bar 1-2 -->
+            <div class="flex-1 mx-2 sm:mx-3 h-1 bg-gray-200 rounded min-w-0">
               <div class="h-1 bg-blue-600 rounded transition-all duration-300" :style="{ width: bookingStore.currentStep >= 2 ? '100%' : '33%' }"></div>
             </div>
-            <div class="flex items-center">
+
+            <!-- Step 2 -->
+            <div class="flex items-center flex-shrink-0">
               <div
                 :class="[
-                  'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold',
+                  'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold',
                   bookingStore.currentStep >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
                 ]"
               >
@@ -82,20 +88,25 @@
               </div>
               <span
                 :class="[
-                  'ml-2 text-sm font-medium',
+                  'ml-1.5 sm:ml-2 text-xs sm:text-sm font-medium whitespace-nowrap',
                   bookingStore.currentStep >= 2 ? 'text-blue-600' : 'text-gray-500'
                 ]"
               >
-                Fecha/Hora
+                <span class="hidden xs:inline">Fecha/Hora</span>
+                <span class="xs:hidden">Fecha</span>
               </span>
             </div>
-            <div class="flex-1 mx-4 h-1 bg-gray-200 rounded">
+
+            <!-- Progress Bar 2-3 -->
+            <div class="flex-1 mx-2 sm:mx-3 h-1 bg-gray-200 rounded min-w-0">
               <div class="h-1 bg-blue-600 rounded transition-all duration-300" :style="{ width: bookingStore.canProceedToStep3() ? '100%' : '0%' }"></div>
             </div>
-            <div class="flex items-center">
+
+            <!-- Step 3 -->
+            <div class="flex items-center flex-shrink-0">
               <div
                 :class="[
-                  'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold',
+                  'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold',
                   bookingStore.currentStep >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
                 ]"
               >
@@ -103,11 +114,12 @@
               </div>
               <span
                 :class="[
-                  'ml-2 text-sm font-medium',
+                  'ml-1.5 sm:ml-2 text-xs sm:text-sm font-medium whitespace-nowrap',
                   bookingStore.currentStep >= 3 ? 'text-blue-600' : 'text-gray-500'
                 ]"
               >
-                Confirmar
+                <span class="hidden xs:inline">Confirmar</span>
+                <span class="xs:hidden">Conf.</span>
               </span>
             </div>
           </div>
