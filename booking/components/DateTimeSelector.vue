@@ -165,6 +165,7 @@ import IconWeatherPartlyCloudy from '~icons/mdi/weather-partly-cloudy'
 import IconWeatherNight from '~icons/mdi/weather-night'
 import IconCalendarBlank from '~icons/mdi/calendar-blank-outline'
 import IconCalendarRemove from '~icons/mdi/calendar-remove-outline'
+import { filterHoursByTimeConstraints } from '~/utils/timeUtils'
 
 const dayjs = useDayjs()
 const bookingStore = useBookingStore()
@@ -207,8 +208,11 @@ const weekDays = computed(() => {
     const dateString = date.format('YYYY-MM-DD')
     const allHours = slotStore.getAvailableHoursForDate(dateString)
 
-    // Filter hours based on service duration
-    const validHours = allHours.filter(hour => {
+    // Step 1: Filter by time constraints (past hours + minimum advance for today)
+    const hoursAfterTimeFilter = filterHoursByTimeConstraints(dateString, allHours)
+
+    // Step 2: Filter by service duration (must end by 10 PM)
+    const validHours = hoursAfterTimeFilter.filter(hour => {
       const serviceEndHour = hour + Math.ceil(serviceDuration / 60)
       return serviceEndHour <= 22
     })
@@ -242,10 +246,13 @@ const timeSlotsByPeriod = computed(() => {
   // Get service duration (default to 60 minutes if not set)
   const serviceDuration = bookingStore.selectedService?.estimatedDuration || 60
 
-  // Filter hours based on service duration
+  // Step 1: Filter by time constraints (past hours + minimum advance for today)
+  const hoursAfterTimeFilter = filterHoursByTimeConstraints(selectedDate.value, hours)
+
+  // Step 2: Filter by service duration
   // A slot is valid if: slotHour + Math.ceil(serviceDuration / 60) <= 22
   // This ensures the service ends by 10 PM (hour 22)
-  const validHours = hours.filter(hour => {
+  const validHours = hoursAfterTimeFilter.filter(hour => {
     const serviceEndHour = hour + Math.ceil(serviceDuration / 60)
     return serviceEndHour <= 22
   })
