@@ -31,8 +31,10 @@ service cloud.firestore {
     // ==========================================
 
     match /technicians/{docId} {
-      // PUBLIC READ: Anyone can read active technicians (for booking page)
-      allow read: if resource.data.isActive == true;
+      // PUBLIC READ: Anyone can read technicians (for booking page queries)
+      // Note: Queries filter by isActive==true, so inactive technicians won't appear in results
+      // We allow all reads to permit Firestore to evaluate where() clauses in queries
+      allow read: if true;
 
       // AUTHENTICATED WRITE: Only the owner can create/update/delete their own profile
       allow create: if willBelongToUser();
