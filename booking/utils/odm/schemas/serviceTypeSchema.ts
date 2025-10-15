@@ -50,13 +50,21 @@ export class ServiceTypesSchema extends Schema {
   };
 
   // Find active service types for a technician
+  // NOTE: We query all active services and filter client-side by userUid
+  // This is because Firestore security rules only allow reading by isActive,
+  // not compound queries with userUid (which would require authentication)
   async findByTechnicianUserUid(userUid: string) {
-    return this.find({
+    const result = await this.find({
       where: [
-        { field: 'userUid', operator: '==', value: userUid },
         { field: 'isActive', operator: '==', value: true }
-      ],
-      orderBy: [{ field: 'name', direction: 'asc' }]
+      ]
     });
+
+    // Filter client-side by userUid
+    if (result.success && result.data) {
+      result.data = result.data.filter(service => service.userUid === userUid);
+    }
+
+    return result;
   }
 }

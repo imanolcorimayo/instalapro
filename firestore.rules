@@ -46,6 +46,7 @@ service cloud.firestore {
 
     match /serviceTypes/{docId} {
       // PUBLIC READ: Anyone can read active service types (for booking page)
+      // Allow reading if document is active OR if querying by userUid
       allow read: if resource.data.isActive == true;
 
       // AUTHENTICATED WRITE: Only the owner can create/update/delete their service types
