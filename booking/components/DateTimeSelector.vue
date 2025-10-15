@@ -33,18 +33,19 @@
 
       <!-- Week Days Grid -->
       <div class="grid grid-cols-7 gap-2">
-        <div
+        <button
           v-for="day in weekDays"
           :key="day.date"
           @click="selectDate(day.date)"
+          :disabled="day.isPast"
           :class="[
-            'flex flex-col items-center justify-center p-3 rounded-lg cursor-pointer transition-all border-2',
+            'flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer transition-all duration-200 border-2',
             selectedDate === day.date
-              ? 'bg-blue-600 text-white border-blue-600'
+              ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
               : day.isPast
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
               : day.hasAvailableSlots
-              ? 'bg-white text-gray-800 border-gray-200 hover:border-blue-500'
+              ? 'bg-white text-gray-800 border-gray-200 hover:border-gray-300 hover:shadow-sm'
               : 'bg-gray-50 text-gray-400 border-gray-200'
           ]"
         >
@@ -53,7 +54,7 @@
           <span v-if="!day.isPast && day.hasAvailableSlots && selectedDate !== day.date" class="text-xs mt-1 text-blue-600">
             {{ day.availableCount }} slots
           </span>
-        </div>
+        </button>
       </div>
     </div>
 
@@ -88,10 +89,10 @@
               :key="hour"
               @click="selectTime(hour)"
               :class="[
-                'py-3 px-4 rounded-lg font-medium transition-all border-2',
+                'py-3 px-4 rounded-xl font-medium transition-all duration-200 border-2',
                 selectedHour === hour
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-800 border-gray-200 hover:border-blue-500'
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                  : 'bg-white text-gray-800 border-gray-200 hover:border-gray-300 hover:shadow-sm'
               ]"
             >
               {{ formatHour(hour) }}
@@ -111,10 +112,10 @@
               :key="hour"
               @click="selectTime(hour)"
               :class="[
-                'py-3 px-4 rounded-lg font-medium transition-all border-2',
+                'py-3 px-4 rounded-xl font-medium transition-all duration-200 border-2',
                 selectedHour === hour
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-800 border-gray-200 hover:border-blue-500'
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                  : 'bg-white text-gray-800 border-gray-200 hover:border-gray-300 hover:shadow-sm'
               ]"
             >
               {{ formatHour(hour) }}
@@ -134,10 +135,10 @@
               :key="hour"
               @click="selectTime(hour)"
               :class="[
-                'py-3 px-4 rounded-lg font-medium transition-all border-2',
+                'py-3 px-4 rounded-xl font-medium transition-all duration-200 border-2',
                 selectedHour === hour
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-800 border-gray-200 hover:border-blue-500'
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                  : 'bg-white text-gray-800 border-gray-200 hover:border-gray-300 hover:shadow-sm'
               ]"
             >
               {{ formatHour(hour) }}

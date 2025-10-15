@@ -131,7 +131,7 @@
         v-if="bookingStore.currentStep === 1"
         :class="[
           'max-w-lg mx-auto p-4',
-          showContinueButton ? 'pb-24' : ''
+          showContinueButton ? 'pb-28' : ''
         ]"
       >
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Selecciona el servicio</h2>
@@ -151,44 +151,65 @@
 
         <!-- Service List -->
         <div v-else class="space-y-3">
-          <div
+          <button
             v-for="service in serviceTypesStore.activeServiceTypes"
             :key="service.id"
             @click="selectService(service)"
             :class="[
-              'bg-white border-2 rounded-lg p-4 cursor-pointer transition-all',
+              'w-full text-left p-5 rounded-xl border-2 transition-all duration-200',
               bookingStore.selectedService?.id === service.id
-                ? 'border-blue-600 shadow-md'
-                : 'border-gray-200 hover:border-blue-500'
+                ? 'border-blue-600 bg-blue-50/50 shadow-sm'
+                : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
             ]"
           >
-            <div class="flex items-start space-x-3">
-              <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                <IconSnowflake v-if="service.category === 'Instalación'" class="w-6 h-6 text-white" />
-                <IconWrench v-else-if="service.category === 'Mantenimiento'" class="w-6 h-6 text-white" />
-                <IconHammerWrench v-else-if="service.category === 'Reparación'" class="w-6 h-6 text-white" />
-                <IconClipboardText v-else-if="service.category === 'Consultoría'" class="w-6 h-6 text-white" />
-                <IconToolbox v-else class="w-6 h-6 text-white" />
+            <div class="flex items-start gap-4">
+              <div
+                :class="[
+                  'w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 transition-colors',
+                  bookingStore.selectedService?.id === service.id
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-blue-100 text-blue-600'
+                ]"
+              >
+                <IconSnowflake v-if="service.category === 'Instalación'" class="w-5 h-5" />
+                <IconWrench v-else-if="service.category === 'Mantenimiento'" class="w-5 h-5" />
+                <IconHammerWrench v-else-if="service.category === 'Reparación'" class="w-5 h-5" />
+                <IconClipboardText v-else-if="service.category === 'Consultoría'" class="w-5 h-5" />
+                <IconToolbox v-else class="w-5 h-5" />
               </div>
+
               <div class="flex-1 min-w-0">
-                <div class="flex items-start justify-between">
-                  <h3 class="font-semibold text-gray-800">{{ service.name }}</h3>
-                  <IconCheckCircle
-                    v-if="bookingStore.selectedService?.id === service.id"
-                    class="w-6 h-6 text-blue-600 flex-shrink-0 ml-2"
-                  />
+                <div class="flex items-start justify-between gap-3 mb-1">
+                  <h3 class="font-semibold text-gray-900 text-base">{{ service.name }}</h3>
+                  <transition
+                    enter-active-class="transition-all duration-200 ease-out"
+                    enter-from-class="scale-0 opacity-0"
+                    enter-to-class="scale-100 opacity-100"
+                    leave-active-class="transition-all duration-200 ease-in"
+                    leave-from-class="scale-100 opacity-100"
+                    leave-to-class="scale-0 opacity-0"
+                  >
+                    <div
+                      v-if="bookingStore.selectedService?.id === service.id"
+                      class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0"
+                    >
+                      <IconCheck class="w-4 h-4 text-white" />
+                    </div>
+                  </transition>
                 </div>
-                <p v-if="service.description" class="text-sm text-gray-600 mt-1">{{ service.description }}</p>
-                <div class="flex items-center justify-between mt-2">
-                  <span class="text-blue-600 font-semibold">${{ service.basePrice.toLocaleString() }}</span>
-                  <span class="text-sm text-gray-500 flex items-center">
-                    <IconClock class="w-4 h-4 mr-1" />
-                    {{ formatDuration(service.estimatedDuration) }}
-                  </span>
+
+                <p v-if="service.description" class="text-sm text-gray-600 mb-3 leading-relaxed">{{ service.description }}</p>
+
+                <div class="flex items-center justify-between gap-4">
+                  <span class="text-lg font-semibold text-blue-600">${{ service.basePrice.toLocaleString() }}</span>
+                  <div class="flex items-center gap-1.5 text-sm text-gray-500">
+                    <IconClock class="w-4 h-4" />
+                    <span>{{ formatDuration(service.estimatedDuration) }}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -197,7 +218,7 @@
         v-else-if="bookingStore.currentStep === 2"
         :class="[
           'max-w-lg mx-auto p-4',
-          showContinueButton ? 'pb-24' : ''
+          showContinueButton ? 'pb-28' : ''
         ]"
       >
         <!-- Back button -->
@@ -267,7 +288,7 @@
         <p class="text-gray-600">Formulario de datos del cliente - Por implementar</p>
       </div>
 
-      <!-- Sticky Continue Button -->
+      <!-- Continue Button - Sticky Bottom Bar -->
       <transition
         enter-active-class="transition-all duration-300 ease-out"
         enter-from-class="translate-y-full opacity-0"
@@ -278,30 +299,28 @@
       >
         <div
           v-if="showContinueButton"
-          class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4"
+          class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg z-40"
         >
-          <div class="max-w-lg mx-auto">
+          <div class="max-w-lg mx-auto p-4">
             <button
               @click="handleContinue"
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
             >
               <span>{{ continueButtonText }}</span>
-              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
+              <IconChevronRight class="w-5 h-5" />
             </button>
           </div>
         </div>
       </transition>
 
-      <!-- WhatsApp Contact -->
+      <!-- WhatsApp FAB -->
       <a
         v-if="techniciansStore.technician.phone"
         :href="whatsappUrl"
         target="_blank"
-        class="fixed bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-colors flex items-center justify-center"
+        class="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-green-500 hover:bg-green-600 flex items-center justify-center z-50"
       >
-        <IconWhatsapp class="w-7 h-7" />
+        <IconWhatsapp class="w-7 h-7 text-white" />
       </a>
     </div>
   </div>
@@ -319,8 +338,9 @@ import IconClipboardText from '~icons/mdi/clipboard-text-outline'
 import IconToolbox from '~icons/mdi/toolbox-outline'
 import IconClock from '~icons/mdi/clock-outline'
 import IconWhatsapp from '~icons/mdi/whatsapp'
-import IconCheckCircle from '~icons/mdi/check-circle'
+import IconCheck from '~icons/mdi/check'
 import IconChevronLeft from '~icons/mdi/chevron-left'
+import IconChevronRight from '~icons/mdi/chevron-right'
 
 // Stores
 const techniciansStore = useTechniciansStore()
