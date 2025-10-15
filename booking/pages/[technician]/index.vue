@@ -129,10 +129,7 @@
       <!-- Step 1: Service Selection -->
       <div
         v-if="bookingStore.currentStep === 1"
-        :class="[
-          'max-w-lg mx-auto p-4',
-          showContinueButton ? 'pb-28' : ''
-        ]"
+        class="max-w-lg mx-auto p-4"
       >
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Selecciona el servicio</h2>
 
@@ -216,10 +213,7 @@
       <!-- Step 2: Date and Time Selection -->
       <div
         v-else-if="bookingStore.currentStep === 2"
-        :class="[
-          'max-w-lg mx-auto p-4',
-          showContinueButton ? 'pb-28' : ''
-        ]"
+        class="max-w-lg mx-auto p-4"
       >
         <!-- Back button -->
         <button
@@ -288,37 +282,31 @@
         <p class="text-gray-600">Formulario de datos del cliente - Por implementar</p>
       </div>
 
-      <!-- Continue Button - Sticky Bottom Bar -->
+      <!-- Continue Button (Primary FAB) - Centered Bottom -->
       <transition
-        enter-active-class="transition-all duration-300 ease-out"
-        enter-from-class="translate-y-full opacity-0"
+        enter-active-class="transition-all duration-200 ease-out"
+        enter-from-class="translate-y-8 opacity-0"
         enter-to-class="translate-y-0 opacity-100"
-        leave-active-class="transition-all duration-300 ease-in"
+        leave-active-class="transition-all duration-200 ease-in"
         leave-from-class="translate-y-0 opacity-100"
-        leave-to-class="translate-y-full opacity-0"
+        leave-to-class="translate-y-8 opacity-0"
       >
-        <div
+        <button
           v-if="showContinueButton"
-          class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg z-40"
+          @click="handleContinue"
+          class="fixed bottom-6 left-1/2 -translate-x-1/2 h-14 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-blue-600 hover:bg-blue-700 hover:scale-105 text-white font-light flex items-center gap-2 z-50"
         >
-          <div class="max-w-lg mx-auto p-4">
-            <button
-              @click="handleContinue"
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
-            >
-              <span>{{ continueButtonText }}</span>
-              <IconChevronRight class="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+          <span>{{ continueButtonText }}</span>
+          <IconChevronRight class="w-5 h-5" />
+        </button>
       </transition>
 
-      <!-- WhatsApp FAB -->
+      <!-- WhatsApp Button (Secondary FAB) - Bottom Right -->
       <a
         v-if="techniciansStore.technician.phone"
         :href="whatsappUrl"
         target="_blank"
-        class="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-green-500 hover:bg-green-600 flex items-center justify-center z-50"
+        class="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-green-500 hover:bg-green-600 hover:scale-105 flex items-center justify-center z-50"
       >
         <IconWhatsapp class="w-7 h-7 text-white" />
       </a>
