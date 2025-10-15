@@ -125,7 +125,7 @@
     <!-- Settings Cards Grid -->
     <div
       v-else
-      class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start"
+      class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start"
     >
       <!-- Personal Information Card -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -216,12 +216,12 @@
           <div v-if="techniciansStore.technician?.urlSlug" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p class="text-xs font-medium text-blue-700 mb-2">Tu URL actual:</p>
             <div class="flex items-center gap-2">
-              <code class="flex-1 text-sm font-mono text-blue-900 bg-white px-3 py-2 rounded border border-blue-200">
+              <code class="flex-1 min-w-0 text-sm font-mono text-blue-900 bg-white px-3 py-2 rounded border border-blue-200 truncate">
                 agenda.instalapro.com/{{ techniciansStore.technician.urlSlug }}
               </code>
               <button
                 @click="copyUrlToClipboard"
-                class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                class="flex-shrink-0 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
                 title="Copiar URL"
               >
                 <IconContentCopy class="w-5 h-5" />
