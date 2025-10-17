@@ -245,7 +245,7 @@
         />
       </div>
 
-      <!-- Step 3: Confirmation (placeholder for now) -->
+      <!-- Step 3: Client Information -->
       <div v-else-if="bookingStore.currentStep === 3" class="max-w-lg mx-auto p-4">
         <!-- Back button -->
         <button
@@ -279,7 +279,97 @@
           </div>
         </div>
 
-        <p class="text-gray-600">Formulario de datos del cliente - Por implementar</p>
+        <!-- Client Information Form -->
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+          <h3 class="text-sm font-medium text-gray-600 mb-4">Tus datos</h3>
+
+          <form @submit.prevent class="space-y-4">
+            <!-- Email Field -->
+            <div>
+              <label for="client-email" class="block text-sm font-medium text-gray-700 mb-1">
+                Email <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <input
+                  id="client-email"
+                  v-model="bookingStore.clientInfo.email"
+                  @blur="handleEmailBlur"
+                  type="email"
+                  class="w-full h-11 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="tu@email.com"
+                  required
+                />
+                <div v-if="clientsStore.loading" class="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div class="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                </div>
+              </div>
+              <p v-if="emailError" class="text-xs text-red-500 mt-1">{{ emailError }}</p>
+              <p v-else-if="clientFound" class="text-xs text-green-600 mt-1 flex items-center gap-1">
+                <IconCheck class="w-4 h-4" />
+                Cliente encontrado - datos precargados
+              </p>
+            </div>
+
+            <!-- Name Field -->
+            <div>
+              <label for="client-name" class="block text-sm font-medium text-gray-700 mb-1">
+                Nombre <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="client-name"
+                v-model="bookingStore.clientInfo.name"
+                type="text"
+                class="w-full h-11 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Tu nombre"
+                required
+              />
+            </div>
+
+            <!-- Phone Field -->
+            <div>
+              <label for="client-phone" class="block text-sm font-medium text-gray-700 mb-1">
+                Teléfono <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="client-phone"
+                v-model="bookingStore.clientInfo.phone"
+                type="tel"
+                class="w-full h-11 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="+54 9 11 1234-5678"
+                required
+              />
+            </div>
+
+            <!-- Address Field -->
+            <div>
+              <label for="client-address" class="block text-sm font-medium text-gray-700 mb-1">
+                Dirección <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="client-address"
+                v-model="bookingStore.clientInfo.address"
+                type="text"
+                class="w-full h-11 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Calle, número, piso, depto"
+                required
+              />
+            </div>
+
+            <!-- Notes Field -->
+            <div>
+              <label for="client-notes" class="block text-sm font-medium text-gray-700 mb-1">
+                Notas adicionales
+              </label>
+              <textarea
+                id="client-notes"
+                v-model="bookingStore.clientInfo.notes"
+                rows="3"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                placeholder="Ej: Piso 2, timbre A, horario preferido..."
+              ></textarea>
+            </div>
+          </form>
+        </div>
       </div>
 
       <!-- Continue Button (Primary FAB) - Centered Bottom -->
@@ -294,7 +384,13 @@
         <button
           v-if="showContinueButton"
           @click="handleContinue"
-          class="fixed bottom-6 left-1/2 -translate-x-1/2 h-14 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-blue-600 hover:bg-blue-700 hover:scale-105 text-white font-light flex items-center gap-2 z-50 whitespace-nowrap"
+          :disabled="isContinueButtonDisabled"
+          :class="[
+            'fixed bottom-6 left-1/2 -translate-x-1/2 h-14 px-6 rounded-full shadow-lg transition-all duration-200 text-white font-light flex items-center gap-2 z-50 whitespace-nowrap',
+            isContinueButtonDisabled
+              ? 'bg-gray-400 cursor-not-allowed opacity-60'
+              : 'bg-blue-600 hover:bg-blue-700 hover:shadow-xl hover:scale-105'
+          ]"
         >
           <span>{{ continueButtonText }}</span>
           <IconChevronRight class="w-5 h-5" />
@@ -337,10 +433,72 @@ import { formatPrice } from '@/utils'
 const techniciansStore = useTechniciansStore()
 const serviceTypesStore = useServiceTypesStore()
 const bookingStore = useBookingStore()
+const clientsStore = useClientsStore()
 
 // Route
 const route = useRoute()
 const technicianSlug = route.params.technician
+
+// Cookie for email persistence
+const emailCookie = useCookie('booking_client_email')
+
+// Client lookup state
+const clientFound = ref(false)
+const emailError = ref(null)
+
+// Handle email blur - lookup client
+const handleEmailBlur = async () => {
+  const email = bookingStore.clientInfo.email.trim()
+
+  // Reset state
+  clientFound.value = false
+  emailError.value = null
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!email) {
+    return
+  }
+
+  if (!emailRegex.test(email)) {
+    emailError.value = 'Email inválido'
+    return
+  }
+
+  // Save email to cookie
+  emailCookie.value = email
+
+  // Lookup client
+  if (techniciansStore.technician?.userUid) {
+    const client = await clientsStore.findClientByEmail(email, techniciansStore.technician.userUid)
+
+    if (client) {
+      // Client found - pre-populate form (keep original name from DB)
+      clientFound.value = true
+      bookingStore.updateClientInfo({
+        name: client.name,
+        phone: client.phone,
+        address: client.address,
+        notes: client.notes || ''
+      })
+    }
+  }
+}
+
+// Load email from cookie and trigger lookup on mount of step 3
+const loadEmailFromCookie = async () => {
+  if (emailCookie.value && bookingStore.currentStep === 3) {
+    bookingStore.updateClientInfo({ email: emailCookie.value })
+    await handleEmailBlur()
+  }
+}
+
+// Watch for step 3 to load email from cookie
+watch(() => bookingStore.currentStep, async (newStep) => {
+  if (newStep === 3 && emailCookie.value && !bookingStore.clientInfo.email) {
+    await loadEmailFromCookie()
+  }
+})
 
 // Helper: Format duration from minutes to readable format
 const formatDuration = (minutes) => {
@@ -382,6 +540,15 @@ const showContinueButton = computed(() => {
     return bookingStore.canProceedToStep2()
   } else if (bookingStore.currentStep === 2) {
     return bookingStore.canProceedToStep3()
+  } else if (bookingStore.currentStep === 3) {
+    return true // Always show in step 3, but may be disabled
+  }
+  return false
+})
+
+const isContinueButtonDisabled = computed(() => {
+  if (bookingStore.currentStep === 3) {
+    return !bookingStore.canSubmitBooking()
   }
   return false
 })

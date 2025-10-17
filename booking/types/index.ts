@@ -84,3 +84,27 @@ export interface BookingRequestCreateInput {
   address?: string
   notes?: string
 }
+
+// ==========================================
+// CLIENT INTERFACES (MINIMAL FOR BOOKING)
+// ==========================================
+
+export interface Client {
+  id: string
+  userUid: string
+  name: string
+  email: string
+  phone: string
+  address: string
+  notes?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface ClientCreateInput {
+  name: string
+  email: string
+  phone: string
+  address: string
+  notes?: string
+}

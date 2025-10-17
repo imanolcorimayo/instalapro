@@ -47,7 +47,10 @@ export interface ClientUpdateInput {
   address?: string
   email?: string
   notes?: string
-  preferredServiceTypes?: string[]
+  preferredServiceTypes?: string[],
+  serviceHistory?: JobHistory[],
+  totalJobs?: number,
+  totalSpent?: number,
 }
 
 export const useClientsStore = defineStore('clients', () => {
@@ -114,7 +117,7 @@ export const useClientsStore = defineStore('clients', () => {
     error.value = null
 
     try {
-      const result: FetchResult<Client> = await clientSchema.find()
+      const result: FetchResult<Client> = await clientSchema.find() as FetchResult<Client>
 
       console.log('Loaded clients:', result);
       
@@ -183,7 +186,7 @@ export const useClientsStore = defineStore('clients', () => {
             ...clients.value[clientIndex],
             ...updates,
             updatedAt: new Date()
-          }
+          } as Client
           updateCache(clients.value[clientIndex])
         }
       } else {

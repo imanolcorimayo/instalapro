@@ -14,8 +14,8 @@ export const useBookingStore = defineStore('booking', () => {
   // Client information
   const clientInfo = ref({
     name: '',
-    phone: '',
     email: '',
+    phone: '',
     address: '',
     notes: ''
   })
@@ -68,8 +68,8 @@ export const useBookingStore = defineStore('booking', () => {
     currentStep.value = 1
     clientInfo.value = {
       name: '',
-      phone: '',
       email: '',
+      phone: '',
       address: '',
       notes: ''
     }
@@ -79,7 +79,14 @@ export const useBookingStore = defineStore('booking', () => {
   const isServiceSelected = () => selectedService.value !== null
   const isDateTimeSelected = () => selectedDate.value !== null && selectedHour.value !== null
   const isClientInfoComplete = () => {
-    return clientInfo.value.name.trim() !== '' && clientInfo.value.phone.trim() !== ''
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return (
+      clientInfo.value.name.trim() !== '' &&
+      clientInfo.value.email.trim() !== '' &&
+      emailRegex.test(clientInfo.value.email.trim()) &&
+      clientInfo.value.phone.trim() !== '' &&
+      clientInfo.value.address.trim() !== ''
+    )
   }
 
   const canProceedToStep2 = () => isServiceSelected()
