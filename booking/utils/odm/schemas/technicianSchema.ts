@@ -26,6 +26,17 @@ export class TechniciansSchema extends Schema {
       required: true,
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     },
+    secondaryEmail: {
+      type: 'string',
+      required: false,
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    },
+    businessName: {
+      type: 'string',
+      required: false,
+      maxLength: 100,
+      minLength: 1
+    },
     urlSlug: {
       type: 'string',
       required: false,
@@ -44,6 +55,18 @@ export class TechniciansSchema extends Schema {
     updatedAt: {
       type: 'date',
       required: true
+    },
+    createdBy: {
+      type: 'string',
+      required: false
+    },
+    archivedAt: {
+      type: 'date',
+      required: false
+    },
+    deactivatedAt: {
+      type: 'date',
+      required: false
     }
   };
 

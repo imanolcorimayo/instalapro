@@ -31,6 +31,12 @@ export class TechniciansSchema extends Schema {
       required: false,
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     },
+    businessName: {
+      type: 'string',
+      required: false,
+      maxLength: 100,
+      minLength: 1
+    },
     urlSlug: {
       type: 'string',
       required: false,

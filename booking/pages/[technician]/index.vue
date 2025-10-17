@@ -35,7 +35,7 @@
               <IconAccount class="w-10 h-10 text-white" />
             </div>
             <div class="flex-1">
-              <h1 class="text-xl font-bold text-gray-800">{{ techniciansStore.technician.name }}</h1>
+              <h1 class="text-xl font-bold text-gray-800">{{ techniciansStore.technician.businessName || techniciansStore.technician.name }}</h1>
               <p class="text-sm text-gray-600">Técnico en Aire Acondicionado</p>
               <div class="flex items-center mt-1">
                 <IconPhone class="w-4 h-4 text-gray-500 mr-1" />
@@ -432,7 +432,8 @@ const formatBookingDateTime = computed(() => {
 const whatsappUrl = computed(() => {
   if (!techniciansStore.technician?.phone) return '#'
   const phone = techniciansStore.technician.phone.replace(/[^0-9]/g, '')
-  const message = encodeURIComponent(`Hola ${techniciansStore.technician.name}, me gustaría solicitar información sobre tus servicios.`)
+  const displayName = techniciansStore.technician.businessName || techniciansStore.technician.name
+  const message = encodeURIComponent(`Hola ${displayName}, me gustaría solicitar información sobre tus servicios.`)
   return `https://wa.me/${phone}?text=${message}`
 })
 
@@ -454,9 +455,21 @@ onMounted(async () => {
 
 // SEO Meta
 useSeoMeta({
-  title: () => techniciansStore.technician ? `Reservar con ${techniciansStore.technician.name} - InstalarPro` : 'Reservar Cita - InstalarPro',
-  description: () => techniciansStore.technician ? `Agenda tu cita de aire acondicionado con ${techniciansStore.technician.name}. Instalación, reparación y mantenimiento profesional.` : 'Agenda tu cita de aire acondicionado',
-  ogTitle: () => techniciansStore.technician ? `${techniciansStore.technician.name} - Técnico de Aire Acondicionado` : 'Reservar Cita',
+  title: () => {
+    if (!techniciansStore.technician) return 'Reservar Cita - InstalarPro'
+    const displayName = techniciansStore.technician.businessName || techniciansStore.technician.name
+    return `Reservar con ${displayName} - InstalarPro`
+  },
+  description: () => {
+    if (!techniciansStore.technician) return 'Agenda tu cita de aire acondicionado'
+    const displayName = techniciansStore.technician.businessName || techniciansStore.technician.name
+    return `Agenda tu cita de aire acondicionado con ${displayName}. Instalación, reparación y mantenimiento profesional.`
+  },
+  ogTitle: () => {
+    if (!techniciansStore.technician) return 'Reservar Cita'
+    const displayName = techniciansStore.technician.businessName || techniciansStore.technician.name
+    return `${displayName} - Técnico de Aire Acondicionado`
+  },
   ogDescription: 'Sistema de reservas online para técnicos especializados en aire acondicionado.'
 })
 </script>

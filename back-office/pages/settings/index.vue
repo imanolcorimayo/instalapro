@@ -138,6 +138,15 @@
             </div>
           </div>
 
+          <!-- Business Name -->
+          <div v-if="techniciansStore.technician?.businessName" class="flex items-start justify-between">
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-600">Nombre de Negocio</p>
+              <p class="text-base font-medium text-gray-900">{{ techniciansStore.technician.businessName }}</p>
+              <p class="text-xs text-gray-500 mt-1">Se muestra en tu página de reservas</p>
+            </div>
+          </div>
+
           <!-- Contact Info Grid -->
           <div class="grid grid-cols-1 gap-4">
             <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
@@ -448,7 +457,22 @@
               placeholder="Ingrese su nombre completo"
             />
           </div>
-          
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Nombre de Negocio (Opcional)
+            </label>
+            <input
+              v-model="currentForm.businessName"
+              type="text"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="ej. Instalaciones Pérez"
+            />
+            <p class="text-xs text-gray-500 mt-1">
+              Se mostrará en tu página de reservas si lo agregas
+            </p>
+          </div>
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               Teléfono *
@@ -760,14 +784,16 @@ const isSavingSlug = ref(false)
 const editForm = reactive({
   name: '',
   phone: '',
-  secondaryEmail: ''
+  secondaryEmail: '',
+  businessName: ''
 })
 
 // Form for initial setup
 const setupForm = reactive({
   name: '',
   phone: '',
-  secondaryEmail: ''
+  secondaryEmail: '',
+  businessName: ''
 })
 
 // Form for service types
@@ -810,7 +836,8 @@ const openSetupModal = () => {
   setupForm.name = ''
   setupForm.phone = ''
   setupForm.secondaryEmail = ''
-  
+  setupForm.businessName = ''
+
   if (editProfileModalRef.value) {
     editProfileModalRef.value.showModal()
   }
@@ -822,8 +849,9 @@ const openEditProfileModal = () => {
     editForm.name = techniciansStore.technician.name || ''
     editForm.phone = techniciansStore.technician.phone || ''
     editForm.secondaryEmail = techniciansStore.technician.secondaryEmail || ''
+    editForm.businessName = techniciansStore.technician.businessName || ''
   }
-  
+
   if (editProfileModalRef.value) {
     editProfileModalRef.value.showModal()
   }
@@ -863,14 +891,16 @@ const saveProfile = async () => {
       success = await techniciansStore.createTechnician({
         name: setupForm.name,
         phone: setupForm.phone,
-        secondaryEmail: setupForm.secondaryEmail || undefined
+        secondaryEmail: setupForm.secondaryEmail || undefined,
+        businessName: setupForm.businessName || undefined
       })
     } else {
       // Updating existing profile
       success = await techniciansStore.updateProfile({
         name: editForm.name,
         phone: editForm.phone,
-        secondaryEmail: editForm.secondaryEmail || undefined
+        secondaryEmail: editForm.secondaryEmail || undefined,
+        businessName: editForm.businessName || undefined
       })
     }
     
