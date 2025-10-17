@@ -143,7 +143,11 @@ export class Validator {
         const isDayjs = value && typeof value.format === 'function' && typeof value.isValid === 'function';
         const isDate = value instanceof Date;
         const isTimestamp = value && typeof value.toDate === 'function';
-        const isServerTimestamp = value && value._methodName === 'serverTimestamp';
+        // Check for serverTimestamp() - it has a specific structure
+        const isServerTimestamp = value && (
+          value._methodName === 'serverTimestamp' ||
+          (typeof value === 'object' && value.constructor && value.constructor.name === 'ServerTimestampTransform')
+        );
 
         if (!isDayjs && !isDate && !isTimestamp && !isServerTimestamp) {
           errors.push({

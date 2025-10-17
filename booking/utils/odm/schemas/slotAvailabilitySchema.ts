@@ -92,4 +92,42 @@ export class SlotAvailabilitySchema extends Schema {
 
     return result;
   }
+
+  // Close time slots for a booked job (auto-close)
+  async closeSlotsByDateAndHours(date: string, hours: number[], userUid: string) {
+    try {
+      // Find all slots for the specified date and hours
+      const result = await this.find({
+        where: [
+          { field: 'isAvailable', operator: '==', value: true }
+        ]
+      });
+
+      if (!result.success || !result.data) {
+        return { success: false, error: 'Failed to find slots' };
+      }
+
+      // Filter client-side by date, hours, and userUid
+      const slotsToClose = result.data.filter(slot => {
+        return slot.userUid === userUid &&
+               slot.date === date &&
+               hours.includes(slot.hour);
+      });
+
+      // Update each slot to be unavailable (auto-closed)
+      const updatePromises = slotsToClose.map(slot =>
+        this.update(slot.id, {
+          isAvailable: false,
+          isManual: false // Auto-closed by job creation
+        }, userUid)
+      );
+
+      await Promise.all(updatePromises);
+
+      return { success: true, closedCount: slotsToClose.length };
+    } catch (error) {
+      console.error('Error closing slots:', error);
+      return { success: false, error: `Failed to close slots: ${error}` };
+    }
+  }
 }

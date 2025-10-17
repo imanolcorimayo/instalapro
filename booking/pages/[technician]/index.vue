@@ -407,6 +407,83 @@
         <IconWhatsapp class="w-7 h-7 text-white" />
       </a>
     </div>
+
+    <!-- Success Confirmation Modal -->
+    <div
+      v-if="showSuccessModal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+      @click.self="closeSuccessModal"
+    >
+      <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
+        <!-- Success Icon -->
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <IconCheckCircle class="w-12 h-12 text-green-600" />
+        </div>
+
+        <!-- Success Message -->
+        <h2 class="text-2xl font-bold text-gray-800 text-center mb-3">¡Reserva confirmada!</h2>
+        <p class="text-gray-600 text-center mb-6">
+          Tu cita ha sido agendada exitosamente. El técnico recibirá la notificación y confirmará tu reserva pronto.
+        </p>
+
+        <!-- Booking Summary -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-6 space-y-3">
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Servicio</p>
+            <p class="font-semibold text-gray-800">{{ bookingStore.selectedService?.name }}</p>
+          </div>
+
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Fecha y hora</p>
+            <p class="font-semibold text-gray-800">{{ formatBookingDateTime }}</p>
+          </div>
+
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Dirección</p>
+            <p class="font-semibold text-gray-800">{{ bookingStore.clientInfo.address }}</p>
+          </div>
+
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Técnico</p>
+            <p class="font-semibold text-gray-800">{{ techniciansStore.technician?.businessName || techniciansStore.technician?.name }}</p>
+            <a
+              :href="whatsappUrl"
+              target="_blank"
+              class="text-sm text-green-600 hover:text-green-700 flex items-center gap-1 mt-1"
+            >
+              <IconWhatsapp class="w-4 h-4" />
+              Contactar por WhatsApp
+            </a>
+          </div>
+        </div>
+
+        <!-- Important Note -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <p class="text-sm text-blue-800">
+            <strong>Importante:</strong> Recibirás un correo de confirmación. El técnico se comunicará contigo para confirmar la cita.
+          </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="space-y-3">
+          <button
+            @click="closeSuccessModal"
+            class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+          >
+            Agendar otra cita
+          </button>
+
+          <a
+            :href="whatsappUrl"
+            target="_blank"
+            class="w-full h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            <IconWhatsapp class="w-5 h-5" />
+            Contactar al técnico
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -423,6 +500,7 @@ import IconToolbox from '~icons/mdi/toolbox-outline'
 import IconClock from '~icons/mdi/clock-outline'
 import IconWhatsapp from '~icons/mdi/whatsapp'
 import IconCheck from '~icons/mdi/check'
+import IconCheckCircle from '~icons/mdi/check-circle'
 import IconChevronLeft from '~icons/mdi/chevron-left'
 import IconChevronRight from '~icons/mdi/chevron-right'
 
@@ -434,6 +512,7 @@ const techniciansStore = useTechniciansStore()
 const serviceTypesStore = useServiceTypesStore()
 const bookingStore = useBookingStore()
 const clientsStore = useClientsStore()
+const jobsStore = useJobsStore()
 
 // Route
 const route = useRoute()
@@ -445,6 +524,10 @@ const emailCookie = useCookie('booking_client_email')
 // Client lookup state
 const clientFound = ref(false)
 const emailError = ref(null)
+
+// Booking submission state
+const showSuccessModal = ref(false)
+const submittingBooking = ref(false)
 
 // Handle email blur - lookup client
 const handleEmailBlur = async () => {
@@ -548,7 +631,7 @@ const showContinueButton = computed(() => {
 
 const isContinueButtonDisabled = computed(() => {
   if (bookingStore.currentStep === 3) {
-    return !bookingStore.canSubmitBooking()
+    return !bookingStore.canSubmitBooking() || submittingBooking.value
   }
   return false
 })
@@ -557,7 +640,9 @@ const continueButtonText = computed(() => {
   if (bookingStore.currentStep === 1) {
     return 'Continuar'
   } else if (bookingStore.currentStep === 2) {
-    return 'Confirmar reserva'
+    return 'Continuar'
+  } else if (bookingStore.currentStep === 3) {
+    return submittingBooking.value ? 'Enviando...' : 'Confirmar reserva'
   }
   return 'Continuar'
 })
@@ -567,7 +652,105 @@ const handleContinue = () => {
     continueToStep2()
   } else if (bookingStore.currentStep === 2) {
     bookingStore.nextStep()
+  } else if (bookingStore.currentStep === 3) {
+    handleSubmitBooking()
   }
+}
+
+// Submit booking (create client + job)
+const handleSubmitBooking = async () => {
+  if (!bookingStore.canSubmitBooking()) {
+    return
+  }
+
+  if (!techniciansStore.technician || !bookingStore.selectedService || !bookingStore.selectedDate || bookingStore.selectedHour === null) {
+    return
+  }
+
+  submittingBooking.value = true
+
+  try {
+    const technicianUserUid = techniciansStore.technician.userUid
+    const clientEmail = bookingStore.clientInfo.email.trim().toLowerCase()
+
+    // Step 1: Create or update client
+    let clientId;
+
+    // Check if client already exists
+    const existingClient = await clientsStore.findClientByEmail(clientEmail, technicianUserUid)
+
+    if (existingClient) {
+      // Update existing client with latest info
+      clientId = existingClient.id
+      // Note: Could add update logic here if needed
+    } else {
+      // Create new client
+      const { ClientsSchema } = await import('~/utils/odm/schemas/clientSchema')
+      const clientsSchema = new ClientsSchema()
+
+      const clientData = {
+        userUid: technicianUserUid,
+        name: bookingStore.clientInfo.name.trim(),
+        email: clientEmail,
+        phone: bookingStore.clientInfo.phone.trim(),
+        address: bookingStore.clientInfo.address.trim(),
+        notes: bookingStore.clientInfo.notes.trim()
+      }
+
+      const clientResult = await clientsSchema.create(clientData)
+
+      if (!clientResult.success) {
+        throw new Error(clientResult.error || 'Error al crear cliente')
+      }
+
+      clientId = clientResult.data?.id
+    }
+
+    // Step 2: Create job
+    const [year, month, day] = bookingStore.selectedDate.split('-')
+    const scheduledDate = new Date(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(day),
+      bookingStore.selectedHour,
+      0,
+      0
+    )
+
+    const jobData = {
+      userUid: technicianUserUid,
+      clientId: clientId,
+      clientName: bookingStore.clientInfo.name.trim(),
+      clientPhone: bookingStore.clientInfo.phone.trim(),
+      clientEmail: clientEmail,
+      serviceType: bookingStore.selectedService.name,
+      description: `${bookingStore.selectedService.name} - Reserva desde agenda online`,
+      address: bookingStore.clientInfo.address.trim(),
+      scheduledDate: scheduledDate,
+      estimatedDuration: bookingStore.selectedService.estimatedDuration,
+      price: bookingStore.selectedService.basePrice,
+      notes: bookingStore.clientInfo.notes.trim(),
+      status: 'pending',
+      source: 'client_booking'
+    }
+
+    await jobsStore.createJob(jobData)
+
+    // Success - show confirmation
+    showSuccessModal.value = true
+  } catch (err) {
+    console.error('Error submitting booking:', err)
+    alert('Error al crear la reserva. Por favor, intenta nuevamente o contacta al técnico por WhatsApp.')
+  } finally {
+    submittingBooking.value = false
+  }
+}
+
+// Close success modal and reset booking
+const closeSuccessModal = () => {
+  showSuccessModal.value = false
+  bookingStore.resetBooking()
+  clientsStore.clearClient()
 }
 
 // Format booking date and time for display
