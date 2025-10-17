@@ -156,7 +156,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { useDayjs } from '#dayjs'
 import IconChevronLeft from '~icons/mdi/chevron-left'
 import IconChevronRight from '~icons/mdi/chevron-right'
@@ -171,16 +171,17 @@ const dayjs = useDayjs()
 const bookingStore = useBookingStore()
 const slotStore = useSlotAvailabilityStore()
 
-interface Props {
-  technicianUserUid: string
-}
-
-const props = defineProps<Props>()
+const props = defineProps({
+  technicianUserUid: {
+    type: String,
+    required: true
+  }
+})
 
 // State
 const currentWeekStart = ref(dayjs().startOf('week'))
-const selectedDate = ref<string | null>(bookingStore.selectedDate)
-const selectedHour = ref<number | null>(bookingStore.selectedHour)
+const selectedDate = ref(bookingStore.selectedDate)
+const selectedHour = ref(bookingStore.selectedHour)
 
 // Computed
 const isCurrentWeek = computed(() => {
@@ -278,7 +279,7 @@ const nextWeek = () => {
   loadSlotsForWeek()
 }
 
-const selectDate = (date: string) => {
+const selectDate = (date) => {
   const selectedDay = dayjs(date)
   const today = dayjs().startOf('day')
 
@@ -290,7 +291,7 @@ const selectDate = (date: string) => {
   selectedHour.value = null // Reset hour when changing date
 }
 
-const selectTime = (hour: number) => {
+const selectTime = (hour) => {
   // Toggle selection - if same hour clicked, deselect it
   if (selectedHour.value === hour) {
     selectedHour.value = null
@@ -304,7 +305,7 @@ const selectTime = (hour: number) => {
   }
 }
 
-const formatHour = (hour: number): string => {
+const formatHour = (hour) => {
   const period = hour >= 12 ? 'PM' : 'AM'
   const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour
   return `${displayHour}:00 ${period}`

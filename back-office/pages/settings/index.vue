@@ -235,6 +235,15 @@
             <p class="text-xs text-gray-500 mt-1">
               Solo letras minúsculas, números y guiones
             </p>
+
+            <!-- Warning when editing existing URL -->
+            <div v-if="techniciansStore.technician?.urlSlug && slugPreview && slugPreview !== techniciansStore.technician.urlSlug" class="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
+              <IconAlertOutline class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div class="text-sm text-yellow-800">
+                <p class="font-medium mb-1">Advertencia</p>
+                <p>Al cambiar tu URL, los clientes que tengan guardada tu URL anterior ya no podrán acceder a tu perfil. Asegúrate de compartir la nueva URL con tus clientes.</p>
+              </div>
+            </div>
           </div>
 
           <!-- Slug Preview -->

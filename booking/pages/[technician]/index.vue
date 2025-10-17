@@ -314,7 +314,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 // Icons
 import IconAlertCircle from '~icons/mdi/alert-circle'
 import IconAccount from '~icons/mdi/account-circle'
@@ -340,10 +340,10 @@ const bookingStore = useBookingStore()
 
 // Route
 const route = useRoute()
-const technicianSlug = route.params.technician as string
+const technicianSlug = route.params.technician
 
 // Helper: Format duration from minutes to readable format
-const formatDuration = (minutes: number): string => {
+const formatDuration = (minutes) => {
   const hours = Math.floor(minutes / 60)
   const mins = minutes % 60
 
@@ -357,7 +357,7 @@ const formatDuration = (minutes: number): string => {
 }
 
 // Service selection handler
-const selectService = (service: any) => {
+const selectService = (service) => {
   bookingStore.selectService(service)
 }
 

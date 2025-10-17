@@ -68,6 +68,35 @@ Before creating ANY new component:
 - **Touch Targets**: Minimum `h-11` (44px) for all interactive elements
 - **Spacing**: Use Tailwind's spacing scale for consistent layouts
 
+## TypeScript Usage Policy
+
+**CRITICAL: TypeScript is ONLY allowed in stores and utils**
+- **Vue Files (.vue)**: Use plain JavaScript in `<script setup>` tags (NO `lang="ts"`)
+- **Stores (stores/*.ts)**: TypeScript allowed for state management and type safety
+- **Utils (utils/*.ts)**: TypeScript allowed for utility functions and shared logic
+- **Props in Vue**: Use runtime prop validation with `defineProps({ ... })` instead of TypeScript interfaces
+
+**Examples**:
+```javascript
+// ❌ WRONG - Vue component with TypeScript
+<script setup lang="ts">
+interface Props {
+  technicianUserUid: string
+}
+const props = defineProps<Props>()
+</script>
+
+// ✅ CORRECT - Vue component with JavaScript
+<script setup>
+const props = defineProps({
+  technicianUserUid: {
+    type: String,
+    required: true
+  }
+})
+</script>
+```
+
 ## Library Guidelines
 
 **ALLOWED LIBRARIES ONLY**:
@@ -81,7 +110,7 @@ Before creating ANY new component:
 
 **FORBIDDEN**:
 - **NO additional UI libraries**
-- **NO additional icon libraries** 
+- **NO additional icon libraries**
 - **NO CSS frameworks** beyond Tailwind
 - **NO date libraries** beyond dayjs
 

@@ -74,6 +74,7 @@ export class SlotAvailabilitySchema extends Schema {
 
     // Query only by isAvailable to avoid index requirement
     // Then filter client-side by date range and userUid
+    // TODO: Warning - this is inneficient for large datasets and insecure
     const result = await this.find({
       where: [
         { field: 'isAvailable', operator: '==', value: true }

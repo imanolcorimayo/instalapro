@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia'
-import type { 
-  Technician, 
-  TechnicianCreateInput, 
+import type {
+  Technician,
+  TechnicianCreateInput,
   TechnicianUpdateInput
 } from '~/types'
 import { TechniciansSchema } from '~/utils/odm/schemas/technicianSchema'
+import { getFirestoreInstance } from '~/utils/firebase'
+import { collection, query, where, getDocs } from 'firebase/firestore'
 
 export const useTechniciansStore = defineStore('technicians', () => {
   // ==========================================
@@ -244,11 +246,26 @@ export const useTechniciansStore = defineStore('technicians', () => {
 
   const checkSlugAvailability = async (slug: string): Promise<{ available: boolean; error: string | null | undefined }> => {
     try {
-      const result = await techniciansSchema.checkSlugAvailability(
-        slug,
-        technician.value?.id
-      )
-      return result
+      const db = getFirestoreInstance()
+      const techniciansCollection = collection(db, 'technicians')
+
+      // Query ALL technicians with this slug (not user-scoped)
+      const q = query(techniciansCollection, where('urlSlug', '==', slug))
+      const querySnapshot = await getDocs(q)
+
+      // If no documents found, slug is available
+      if (querySnapshot.empty) {
+        return { available: true, error: null }
+      }
+
+      // If documents found, check if it's the current technician's own slug
+      if (technician.value?.id) {
+        const isOwnSlug = querySnapshot.docs.every(doc => doc.id === technician.value?.id)
+        return { available: isOwnSlug, error: null }
+      }
+
+      // Slug is taken by another technician
+      return { available: false, error: null }
     } catch (err: any) {
       return { available: false, error: err.message || 'Error verificando disponibilidad' }
     }
