@@ -129,7 +129,7 @@
       <!-- Step 1: Service Selection -->
       <div
         v-if="bookingStore.currentStep === 1"
-        class="max-w-lg mx-auto p-4"
+        class="max-w-lg mx-auto p-4 pb-28"
       >
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Selecciona el servicio</h2>
 
@@ -213,7 +213,7 @@
       <!-- Step 2: Date and Time Selection -->
       <div
         v-else-if="bookingStore.currentStep === 2"
-        class="max-w-lg mx-auto p-4"
+        class="max-w-lg mx-auto p-4 pb-28"
       >
         <!-- Back button -->
         <button
@@ -246,7 +246,7 @@
       </div>
 
       <!-- Step 3: Client Information -->
-      <div v-else-if="bookingStore.currentStep === 3" class="max-w-lg mx-auto p-4">
+      <div v-else-if="bookingStore.currentStep === 3" class="max-w-lg mx-auto p-4 pb-28">
         <!-- Back button -->
         <button
           @click="goBackToStep2"
