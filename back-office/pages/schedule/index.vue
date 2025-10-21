@@ -305,18 +305,34 @@
                       v-for="job in getDayJobs(day.date)"
                       :key="job.id"
                       :class="[
-                        'absolute left-1 right-1 rounded border-l-2 p-1 cursor-pointer hover:shadow-sm transition-all pointer-events-auto',
-                        getJobStatusColor(job.status)
+                        'absolute left-1.5 right-1.5 rounded border-l-2 border border-opacity-30 cursor-pointer hover:shadow-md transition-all pointer-events-auto overflow-hidden shadow-sm',
+                        getJobStatusColor(job.status),
+                        getJobDisplayMode(job) === 'compact' ? 'p-0.5' : 'p-1'
                       ]"
                       :style="getWeeklyTimelineJobPosition(job)"
                       @click="editJob(job)"
                     >
-                      <div class="text-xs font-medium text-gray-900 truncate">
+                      <!-- Compact mode: only name (< 45 min) -->
+                      <div v-if="getJobDisplayMode(job) === 'compact'" class="text-xs font-medium text-gray-900 truncate leading-tight">
                         {{ job.clientName }}
                       </div>
-                      <div class="text-xs text-gray-600 truncate">
-                        {{ job.serviceType }}
+
+                      <!-- Normal mode: name + service on same line (45-90 min) -->
+                      <div v-else-if="getJobDisplayMode(job) === 'normal'" class="flex items-center gap-1">
+                        <span class="text-xs font-medium text-gray-900 truncate">{{ job.clientName }}</span>
+                        <span class="text-xs text-gray-500">·</span>
+                        <span class="text-xs text-gray-600 truncate">{{ job.serviceType }}</span>
                       </div>
+
+                      <!-- Full mode: all info (> 90 min) -->
+                      <template v-else>
+                        <div class="text-xs font-medium text-gray-900 truncate">
+                          {{ job.clientName }}
+                        </div>
+                        <div class="text-xs text-gray-600 truncate">
+                          {{ job.serviceType }}
+                        </div>
+                      </template>
                     </div>
                   </div>
                 </div>
@@ -426,21 +442,42 @@
                     v-for="job in getDayJobs(day.date)"
                     :key="job.id"
                     :class="[
-                      'absolute left-2 right-2 rounded border-l-4 p-2 cursor-pointer hover:shadow-sm transition-all pointer-events-auto',
-                      getJobStatusColor(job.status)
+                      'absolute left-3 right-3 rounded border-l-4 border border-opacity-30 cursor-pointer hover:shadow-lg transition-all pointer-events-auto overflow-hidden shadow-md',
+                      getJobStatusColor(job.status),
+                      getJobDisplayMode(job) === 'compact' ? 'p-1' : 'p-2'
                     ]"
                     :style="getWeeklyTimelineJobPosition(job)"
                     @click="editJob(job)"
                   >
-                    <div class="text-sm font-medium text-gray-900 truncate">
+                    <!-- Compact mode: only name (< 45 min) -->
+                    <div v-if="getJobDisplayMode(job) === 'compact'" class="text-xs font-medium text-gray-900 truncate leading-tight">
                       {{ job.clientName }}
                     </div>
-                    <div class="text-xs text-gray-600 truncate">
-                      {{ job.serviceType }}
+
+                    <!-- Normal mode: name + service on same line (45-90 min) -->
+                    <div v-else-if="getJobDisplayMode(job) === 'normal'">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-sm font-medium text-gray-900 truncate">{{ job.clientName }}</span>
+                        <span class="text-xs text-gray-400">·</span>
+                        <span class="text-xs text-gray-600 truncate">{{ job.serviceType }}</span>
+                      </div>
+                      <div class="text-xs text-gray-500 mt-0.5">
+                        ${{ formatPrice(job.price) }}
+                      </div>
                     </div>
-                    <div class="text-xs text-gray-500">
-                      ${{ formatPrice(job.price) }}
-                    </div>
+
+                    <!-- Full mode: all info (> 90 min) -->
+                    <template v-else>
+                      <div class="text-sm font-medium text-gray-900 truncate">
+                        {{ job.clientName }}
+                      </div>
+                      <div class="text-xs text-gray-600 truncate">
+                        {{ job.serviceType }}
+                      </div>
+                      <div class="text-xs text-gray-500">
+                        ${{ formatPrice(job.price) }}
+                      </div>
+                    </template>
                   </div>
                 </div>
               </div>
@@ -505,21 +542,42 @@
                   v-for="job in getDayJobs(currentDayView)"
                   :key="job.id"
                   :class="[
-                    'absolute left-1 right-1 sm:left-2 sm:right-2 rounded border-l-4 p-1 sm:p-2 cursor-pointer hover:shadow-sm transition-all pointer-events-auto',
-                    getJobStatusColor(job.status)
+                    'absolute left-2 right-2 sm:left-3 sm:right-3 rounded border-l-4 border border-opacity-30 cursor-pointer hover:shadow-lg transition-all pointer-events-auto overflow-hidden shadow-md',
+                    getJobStatusColor(job.status),
+                    getJobDisplayMode(job) === 'compact' ? 'p-0.5 sm:p-1' : 'p-1 sm:p-2'
                   ]"
                   :style="getDayViewJobPosition(job)"
                   @click="editJob(job)"
                 >
-                  <div class="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                  <!-- Compact mode: only name (< 45 min) -->
+                  <div v-if="getJobDisplayMode(job) === 'compact'" class="text-xs sm:text-sm font-medium text-gray-900 truncate leading-tight">
                     {{ job.clientName }}
                   </div>
-                  <div class="text-xs text-gray-600 truncate">
-                    {{ job.serviceType }}
+
+                  <!-- Normal mode: name + service on same line (45-90 min) -->
+                  <div v-else-if="getJobDisplayMode(job) === 'normal'">
+                    <div class="flex items-center gap-1 sm:gap-1.5">
+                      <span class="text-xs sm:text-sm font-medium text-gray-900 truncate">{{ job.clientName }}</span>
+                      <span class="text-xs text-gray-400">·</span>
+                      <span class="text-xs text-gray-600 truncate">{{ job.serviceType }}</span>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-0.5 hidden sm:block">
+                      ${{ formatPrice(job.price) }}
+                    </div>
                   </div>
-                  <div class="text-xs text-gray-500 hidden sm:block">
-                    ${{ formatPrice(job.price) }}
-                  </div>
+
+                  <!-- Full mode: all info (> 90 min) -->
+                  <template v-else>
+                    <div class="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                      {{ job.clientName }}
+                    </div>
+                    <div class="text-xs text-gray-600 truncate">
+                      {{ job.serviceType }}
+                    </div>
+                    <div class="text-xs text-gray-500 hidden sm:block">
+                      ${{ formatPrice(job.price) }}
+                    </div>
+                  </template>
                 </div>
               </div>
             </div>
@@ -1334,6 +1392,17 @@ const getDayViewJobPosition = (job) => {
 // Use store method for weekly timeline positioning
 const getWeeklyTimelineJobPosition = (job) => {
   return jobsStore.getWeeklyTimelineJobPosition(job)
+}
+
+// Determine display mode based on job duration
+const getJobDisplayMode = (job) => {
+  const duration = job.estimatedDuration || 120
+  // compact: < 45 min (show only name)
+  // normal: 45-90 min (show name + service on single line)
+  // full: > 90 min (show all info)
+  if (duration < 45) return 'compact'
+  if (duration < 90) return 'normal'
+  return 'full'
 }
 
 // Modal actions
