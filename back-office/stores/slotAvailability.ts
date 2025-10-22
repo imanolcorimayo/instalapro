@@ -365,8 +365,6 @@ export const useSlotAvailabilityStore = defineStore('slotAvailability', () => {
         }
       })
 
-      console.log(`Opened ${successCount} slots for day ${date}`)
-
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Error al abrir horarios del día'
       console.error('Error opening all slots for day:', err)
@@ -445,8 +443,6 @@ export const useSlotAvailabilityStore = defineStore('slotAvailability', () => {
         }
       })
 
-      console.log(`Closed ${successCount} slots for day ${date}`)
-
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Error al cerrar horarios del día'
       console.error('Error closing all slots for day:', err)
@@ -457,8 +453,144 @@ export const useSlotAvailabilityStore = defineStore('slotAvailability', () => {
   }
 
   /**
-   * Remove auto-closed slot when job is deleted
-   * Only removes if slot was auto-closed (isManual = false)
+   * Auto-close multiple slots for a job spanning multiple hours
+   * Called from jobs store when new job is created with duration > 60 minutes
+   */
+  const autoCloseSlotsForDuration = async (date: string, startHour: number, durationMinutes: number): Promise<void> => {
+    loading.value = true
+    error.value = null
+
+    try {
+      // Calculate how many hour slots are affected
+      const hoursAffected = Math.ceil(durationMinutes / 60)
+      const promises = []
+
+      // Close all affected slots
+      for (let i = 0; i < hoursAffected; i++) {
+        const hour = startHour + i
+        if (hour >= 6 && hour <= 22) { // Only close valid working hours
+          const cacheKey = `${date}-${hour}`
+          const existingSlot = slotsCache.get(cacheKey)
+
+          if (existingSlot) {
+            // Update existing slot to unavailable
+            promises.push(
+              slotSchema.update(existingSlot.id, {
+                isAvailable: false,
+                isManual: false
+              }).then(result => ({ result, hour, existing: existingSlot }))
+            )
+          } else {
+            // Create new unavailable slot
+            const slotData: SlotAvailabilityCreateInput = {
+              date,
+              hour,
+              isAvailable: false,
+              isManual: false
+            }
+            promises.push(
+              slotSchema.create(slotData).then(result => ({ result, hour, existing: null }))
+            )
+          }
+        }
+      }
+
+      // Execute all operations
+      const results = await Promise.all(promises)
+
+      // Update local state
+      results.forEach(({ result, hour, existing }) => {
+        if (result.success) {
+          if (existing) {
+            // Updated existing slot
+            existing.isAvailable = false
+            existing.isManual = false
+            existing.updatedAt = new Date()
+            updateCache(existing)
+
+            // Update reactive array
+            const slotIndex = slots.value.findIndex(s => s.id === existing.id)
+            if (slotIndex !== -1) {
+              slots.value[slotIndex] = { ...existing }
+            }
+          } else if (result.data) {
+            // Created new slot
+            const newSlot = result.data as SlotAvailability
+            slots.value.push(newSlot)
+            updateCache(newSlot)
+          }
+        }
+      })
+
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Error al cerrar horarios automáticamente'
+      console.error('Error auto-closing slots for duration:', err)
+      // Don't throw here as this is called from job creation
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Reopen multiple auto-closed slots when a multi-hour job is deleted
+   */
+  const removeAutoClosedSlotsForDuration = async (date: string, startHour: number, durationMinutes: number): Promise<void> => {
+    loading.value = true
+    error.value = null
+
+    try {
+      // Calculate how many hour slots are affected
+      const hoursAffected = Math.ceil(durationMinutes / 60)
+      const promises = []
+
+      // Reopen all affected slots
+      for (let i = 0; i < hoursAffected; i++) {
+        const hour = startHour + i
+        if (hour >= 6 && hour <= 22) { // Only process valid working hours
+          const cacheKey = `${date}-${hour}`
+          const existingSlot = slotsCache.get(cacheKey)
+
+          if (existingSlot && !existingSlot.isManual && !existingSlot.isAvailable) {
+            // This slot was auto-closed, reopen it
+            promises.push(
+              slotSchema.update(existingSlot.id, {
+                isAvailable: true,
+                isManual: false
+              }).then(result => ({ result, hour, slot: existingSlot }))
+            )
+          }
+        }
+      }
+
+      // Execute all operations
+      const results = await Promise.all(promises)
+
+      // Update local state
+      results.forEach(({ result, hour, slot }) => {
+        if (result.success) {
+          slot.isAvailable = true
+          slot.updatedAt = new Date()
+          updateCache(slot)
+
+          // Update reactive array
+          const slotIndex = slots.value.findIndex(s => s.id === slot.id)
+          if (slotIndex !== -1) {
+            slots.value[slotIndex] = { ...slot }
+          }
+        }
+      })
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Error al restaurar horarios'
+      console.error('Error reopening auto-closed slots:', err)
+      // Don't throw here as this is called from job deletion
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Reopen auto-closed slot when job is deleted
+   * Only reopens if slot was auto-closed (isManual = false)
    */
   const removeAutoClosedSlot = async (date: string, hour: number): Promise<void> => {
     loading.value = true
@@ -469,18 +601,28 @@ export const useSlotAvailabilityStore = defineStore('slotAvailability', () => {
       const existingSlot = slotsCache.get(cacheKey)
 
       if (existingSlot && !existingSlot.isManual && !existingSlot.isAvailable) {
-        // This slot was auto-closed, remove it
-        const result: DeleteResult = await slotSchema.delete(existingSlot.id)
-        
+        // This slot was auto-closed, reopen it
+        const result: UpdateResult = await slotSchema.update(existingSlot.id, {
+          isAvailable: true,
+          isManual: false
+        })
+
         if (result.success) {
-          // Remove from local state
-          slots.value = slots.value.filter(slot => slot.id !== existingSlot.id)
-          removeFromCache(date, hour)
+          // Update local state
+          existingSlot.isAvailable = true
+          existingSlot.updatedAt = new Date()
+          updateCache(existingSlot)
+
+          // Update reactive array
+          const slotIndex = slots.value.findIndex(s => s.id === existingSlot.id)
+          if (slotIndex !== -1) {
+            slots.value[slotIndex] = { ...existingSlot }
+          }
         }
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Error al restaurar horario'
-      console.error('Error removing auto-closed slot:', err)
+      console.error('Error reopening auto-closed slot:', err)
       // Don't throw here as this is called from job deletion
     } finally {
       loading.value = false
@@ -601,7 +743,9 @@ export const useSlotAvailabilityStore = defineStore('slotAvailability', () => {
     openAllSlotsForDay,
     closeAllSlotsForDay,
     autoCloseSlot,
+    autoCloseSlotsForDuration,
     removeAutoClosedSlot,
+    removeAutoClosedSlotsForDuration,
 
     // Week Management
     loadWeekSlots,

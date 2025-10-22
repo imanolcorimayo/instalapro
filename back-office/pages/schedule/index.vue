@@ -1759,21 +1759,45 @@ const saveJob = async () => {
     if (editingJob.value) {
       const oldJob = editingJob.value
       await jobsStore.updateJob(editingJob.value.id, jobData)
-      
+
+      // Auto-close slots for the new time if job was rescheduled or duration changed
+      const oldDate = toBuenosAires(oldJob.scheduledDate.toDate()).format('YYYY-MM-DD')
+      const oldHour = toBuenosAires(oldJob.scheduledDate.toDate()).hour()
+      const oldDuration = oldJob.estimatedDuration
+      const newDate = jobForm.value.date
+      const newHour = scheduledDateTime.hour()
+      const newDuration = durationMinutes
+
+      const wasRescheduled = oldDate !== newDate || oldHour !== newHour
+      const durationChanged = oldDuration !== newDuration
+
+      if (wasRescheduled || durationChanged) {
+        // Reopen old slots if they were auto-closed
+        await slotAvailabilityStore.removeAutoClosedSlotsForDuration(oldDate, oldHour, oldDuration)
+
+        // Close new slots for the job duration
+        await slotAvailabilityStore.autoCloseSlotsForDuration(newDate, newHour, newDuration)
+      }
+
       // Update client stats if job status changed
       if (selectedClient.value) {
         await updateClientStatsFromJob(selectedClient.value.id, jobData, oldJob)
       }
-      
+
       useToast().success('Trabajo actualizado exitosamente')
     } else {
       await jobsStore.createJob(jobData)
-      
+
+      // Auto-close all slots covered by the job duration
+      const jobDate = jobForm.value.date
+      const jobHour = scheduledDateTime.hour()
+      await slotAvailabilityStore.autoCloseSlotsForDuration(jobDate, jobHour, durationMinutes)
+
       // Update client stats only if job is completed at creation
       if (selectedClient.value && jobData.status === 'completed') {
         await updateClientStatsFromJob(selectedClient.value.id, jobData)
       }
-      
+
       useToast().success('Trabajo creado exitosamente')
     }
 
@@ -1794,7 +1818,16 @@ const deleteJob = async () => {
   }
 
   try {
-    await jobsStore.deleteJob(editingJob.value.id)
+    const jobToDelete = editingJob.value
+    
+    // Reopen all slots that were auto-closed by this job
+    const jobDate = toBuenosAires(jobToDelete.scheduledDate.toDate()).format('YYYY-MM-DD')
+    const jobHour = toBuenosAires(jobToDelete.scheduledDate.toDate()).hour()
+    const jobDuration = jobToDelete.estimatedDuration
+
+    await slotAvailabilityStore.removeAutoClosedSlotsForDuration(jobDate, jobHour, jobDuration)
+    await jobsStore.deleteJob(jobToDelete.id)
+
     useToast().success('Trabajo eliminado exitosamente')
     jobModal.value?.closeModal()
   } catch (err) {
