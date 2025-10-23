@@ -1,6 +1,6 @@
 # InstalarPro - Back Office
 
-**🌐 Live Demo**: [https://instalapro-back-office.web.app/](https://instalapro-back-office.web.app/)
+**🌐 Live Demo**: [https://instalapro-booking.web.app/](https://instalapro-booking.web.app/)
 
 ## Overview
 Complete business management dashboard for air conditioner technicians.

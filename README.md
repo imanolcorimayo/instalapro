@@ -36,6 +36,7 @@ InstalarPro is a comprehensive platform connecting air conditioner technicians w
 - **Purpose**: Simple appointment booking
 - **Target**: End customers booking appointments
 - **Features**: Service selection, time slots, booking confirmation
+- **🚀 Live Demo**: https://instalapro-booking.web.app/
 
 ## Integration Points
 
