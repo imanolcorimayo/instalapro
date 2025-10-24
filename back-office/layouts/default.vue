@@ -174,10 +174,10 @@ const pageTitle = computed(() => {
     '/': 'Panel Principal',
     '/schedule': 'Agenda',
     '/clients': 'Clientes',
-    '/quotes': 'Presupuestos',
+    '/reportes': 'Reportes',
     '/settings': 'Configuración'
   }
-  
+
   return titles[route.path] || 'InstalarPro'
 })
 
@@ -207,8 +207,8 @@ const navigationItems = computed(() => [
     component: IconAccountGroupOutline
   },
   {
-    name: 'Presupuestos',
-    href: '/quotes',
+    name: 'Reportes',
+    href: '/reportes',
     icon: 'mdi:file-document-outline',
     component: IconFileDocumentOutline
   }

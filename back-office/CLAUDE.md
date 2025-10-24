@@ -187,7 +187,7 @@ Before creating ANY new component, you MUST:
 - **Purpose**: Simple financial tracking for self-employed technicians
 - **Features**: Simple revenue tracking, payment status monitoring
 - **Scope**: Basic numbers for self-employed technicians (no complex accounting)
-- **Data**: Monthly billing summary, paid/pending job status
+- **Data**: Monthly billing summary, pending job status
 - **Reports**: Clear, understandable financial overview
 - **Store**: `cashFlow.ts` | **Collection**: `/payments` (userUid-scoped)
 

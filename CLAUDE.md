@@ -144,7 +144,6 @@ interface Job {
   estimatedDuration: number
   status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled'
   price: number
-  paid: boolean
   notes: string
   source: 'back_office' | 'client_booking' | 'phone'
   createdAt: Date

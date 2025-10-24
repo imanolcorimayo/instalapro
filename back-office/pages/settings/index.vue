@@ -217,7 +217,7 @@
             <p class="text-xs font-medium text-blue-700 mb-2">Tu URL actual:</p>
             <div class="flex items-center gap-2">
               <code class="flex-1 min-w-0 text-sm font-mono text-blue-900 bg-white px-3 py-2 rounded border border-blue-200 truncate">
-                agenda.instalapro.com/{{ techniciansStore.technician.urlSlug }}
+                instalapro-booking.web.app/{{ techniciansStore.technician.urlSlug }}
               </code>
               <button
                 @click="copyUrlToClipboard"
@@ -259,7 +259,7 @@
           <div v-if="slugPreview" class="bg-gray-50 border border-gray-200 rounded-lg p-3">
             <p class="text-xs font-medium text-gray-600 mb-1">Vista previa:</p>
             <code class="text-sm font-mono text-gray-900">
-              agenda.instalapro.com/{{ slugPreview }}
+              instalapro-booking.web.app/{{ slugPreview }}
             </code>
           </div>
 
@@ -1140,7 +1140,7 @@ const saveSlug = async () => {
 const copyUrlToClipboard = async () => {
   if (!techniciansStore.technician?.urlSlug) return
 
-  const url = `https://instalapro-agenda.web.app/${techniciansStore.technician.urlSlug}`
+  const url = `https://instalapro-booking.web.app/${techniciansStore.technician.urlSlug}`
 
   try {
     await navigator.clipboard.writeText(url)

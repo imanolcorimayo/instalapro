@@ -19,7 +19,6 @@ export interface Job {
   estimatedDuration: number
   status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled'
   price: number
-  paid: boolean
   notes: string
   source: 'back_office' | 'client_booking' | 'phone'
   isActive: boolean
@@ -57,7 +56,6 @@ export interface JobUpdateInput {
   estimatedDuration?: number
   status?: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled'
   price?: number
-  paid?: boolean
   notes?: string
 }
 
@@ -112,9 +110,17 @@ export const useJobsStore = defineStore('jobs', () => {
   const upcomingJobs = computed(() => {
     const now = nowInBuenosAires()
     return activeJobs.value.filter(job => {
-      const jobDate = toBuenosAires(job.scheduledDate)
+      if (!job.scheduledDate) return false
+
+      // Handle both Date objects and Firestore Timestamps
+      const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
+      const jobDate = toBuenosAires(actualDate)
       return jobDate.isAfter(now) && ['pending', 'confirmed', 'in_progress'].includes(job.status)
-    }).sort((a, b) => toBuenosAires(a.scheduledDate).diff(toBuenosAires(b.scheduledDate)))
+    }).sort((a, b) => {
+      const dateA = a.scheduledDate.toDate ? a.scheduledDate.toDate() : a.scheduledDate
+      const dateB = b.scheduledDate.toDate ? b.scheduledDate.toDate() : b.scheduledDate
+      return toBuenosAires(dateA).diff(toBuenosAires(dateB))
+    })
   })
 
   const todaysJobs = computed(() => {
@@ -199,7 +205,6 @@ export const useJobsStore = defineStore('jobs', () => {
         notes: jobData.notes || '',
         status: jobData.status || 'pending',
         source: jobData.source || 'back_office',
-        paid: false,
         isActive: true
       }
 

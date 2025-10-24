@@ -71,11 +71,6 @@ export class JobSchema extends Schema {
       min: 0,
       default: 0
     },
-    paid: {
-      type: 'boolean',
-      required: false,
-      default: false
-    },
     notes: {
       type: 'string',
       required: false,

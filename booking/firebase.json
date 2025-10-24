@@ -1,0 +1,7 @@
+{
+  "hosting": {
+    "site": "instalapro-booking",
+    "public": ".output/public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+  }
+}

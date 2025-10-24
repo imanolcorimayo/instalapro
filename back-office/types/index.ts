@@ -85,7 +85,6 @@ export interface Job {
   estimatedDuration: number // minutes
   status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled'
   price: number
-  paid: boolean
   notes: string
   createdAt: Date
   updatedAt: Date
@@ -114,7 +113,6 @@ export interface JobUpdateInput {
   estimatedDuration?: number
   status?: Job['status']
   price?: number
-  paid?: boolean
   notes?: string
 }
 
@@ -236,7 +234,6 @@ export interface MonthlyReport {
   month: string // YYYY-MM format
   totalRevenue: number
   totalJobs: number
-  paidJobs: number
   pendingPayments: number
   topServices: ServiceSummary[]
   createdAt: Date
