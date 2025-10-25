@@ -1,4 +1,5 @@
-// Minimal server-side Firestore connection test
+// Cron job to update pending jobs to completed status
+// Runs daily at midnight Buenos Aires time (03:00 UTC)
 import admin from "firebase-admin";
 import serviceAccount from "../service-account.json" with { type: "json" };
 
@@ -7,27 +8,69 @@ admin.initializeApp({
 });
 const db = admin.firestore();
 
-async function testFirestoreConnection() {
+async function updateJobsStatus() {
   try {
-    console.log('Testing Firestore connection...')
+    const now = new Date();
+    console.log('🕐 Running job status update cron...');
+    console.log('📅 Current datetime:', now.toISOString());
+    console.log('🌍 Current datetime (UTC-3):', new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString());
 
-    // Insert random test object
-    const testData = {
-      timestamp: new Date().toISOString(),
-      randomValue: Math.random(),
-      message: 'Test connection from server-side script',
-      createdAt: new Date()
+    // Query for pending jobs with scheduledDate before now
+    const jobsQuery = db.collection('jobs')
+      .where('status', '==', 'pending')
+      .where('scheduledDate', '<', now);
+
+    const snapshot = await jobsQuery.get();
+
+    if (snapshot.empty) {
+      console.log('✅ No pending jobs found that need status update');
+      return;
     }
 
-    const docRef = await db.collection('test-collection').add(testData)
+    console.log(`📋 Found ${snapshot.size} pending job(s) to update`);
 
-    console.log(' Success! Document created with ID:', docRef.id)
-    console.log('Test data:', testData)
+    // Update each job to completed status
+    const batch = db.batch();
+    const updates = [];
+
+    snapshot.forEach(doc => {
+      const jobData = doc.data();
+      console.log(`  - Job ${doc.id}:`, {
+        clientName: jobData.clientName,
+        serviceType: jobData.serviceType,
+        scheduledDate: jobData.scheduledDate.toDate().toISOString(),
+        currentStatus: jobData.status
+      });
+
+      batch.update(doc.ref, {
+        status: 'completed',
+        updatedAt: now
+      });
+
+      updates.push({
+        id: doc.id,
+        clientName: jobData.clientName,
+        serviceType: jobData.serviceType,
+        scheduledDate: jobData.scheduledDate.toDate()
+      });
+    });
+
+    // Commit the batch update
+    await batch.commit();
+
+    console.log('✅ Successfully updated jobs to completed status:');
+    updates.forEach(job => {
+      console.log(`  ✓ ${job.id} - ${job.clientName} (${job.serviceType}) - ${job.scheduledDate.toISOString()}`);
+    });
+
+    console.log(`🎉 Cron job completed successfully. Updated ${updates.length} job(s)`);
 
   } catch (error) {
-    console.error('L Error connecting to Firestore:', error)
+    console.error('❌ Error updating job statuses:', error);
+    console.error('Stack trace:', error.stack);
+    process.exit(1);
   }
 }
 
-// Run the test
-testFirestoreConnection()
+// Run the update
+updateJobsStatus();
