@@ -502,7 +502,8 @@ const currentWeekOutcome = computed(() => {
   return wallets
     .filter(wallet => {
       if (wallet.movementType !== 'outcome' || wallet.deletedAt) return false
-      return wallet.date >= start && wallet.date <= end
+      const walletDate = $dayjs(wallet.date).format('YYYY-MM-DD')
+      return walletDate >= start && walletDate <= end
     })
     .reduce((sum, wallet) => sum + wallet.amount, 0)
 })
@@ -549,7 +550,8 @@ const previousWeekOutcome = computed(() => {
   return wallets
     .filter(wallet => {
       if (wallet.movementType !== 'outcome' || wallet.deletedAt) return false
-      return wallet.date >= start && wallet.date <= end
+      const walletDate = $dayjs(wallet.date).format('YYYY-MM-DD')
+      return walletDate >= start && walletDate <= end
     })
     .reduce((sum, wallet) => sum + wallet.amount, 0)
 })
@@ -614,7 +616,8 @@ const weeklyChartData = computed(() => {
     const outcome = (walletsStore.wallets || [])
       .filter(wallet => {
         if (wallet.movementType !== 'outcome' || wallet.deletedAt) return false
-        return wallet.date >= startStr && wallet.date <= endStr
+        const walletDate = $dayjs(wallet.date).format('YYYY-MM-DD')
+        return walletDate >= startStr && walletDate <= endStr
       })
       .reduce((sum, wallet) => sum + wallet.amount, 0)
 
@@ -677,7 +680,8 @@ const outcomeByCategory = computed(() => {
   wallets
     .filter(wallet => {
       if (wallet.movementType !== 'outcome' || wallet.deletedAt) return false
-      return wallet.date >= start && wallet.date <= end
+      const walletDate = $dayjs(wallet.date).format('YYYY-MM-DD')
+      return walletDate >= start && walletDate <= end
     })
     .forEach(wallet => {
       const category = wallet.category || 'otros'
@@ -925,7 +929,7 @@ const handleSubmit = async () => {
 
     const walletData = {
       amount: form.value.amount,
-      date: form.value.date,
+      date: $dayjs(form.value.date).toDate(), // Convert string to Date object
       category: form.value.category,
       notes: form.value.notes || '',
       ...(clientId && { clientId }),

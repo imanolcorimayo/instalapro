@@ -31,11 +31,8 @@ export class WalletSchema extends Schema {
       min: 0 // Amount must be positive
     },
     date: {
-      type: 'string',
-      required: true,
-      pattern: /^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD format
-      maxLength: 10,
-      minLength: 10
+      type: 'date',
+      required: true
     },
     category: {
       type: 'string',
@@ -68,7 +65,7 @@ export class WalletSchema extends Schema {
   };
 
   // Wallet-specific query methods (validation and basic queries only)
-  async findByDateRange(startDate: string, endDate: string) {
+  async findByDateRange(startDate: Date, endDate: Date) {
     if (!startDate || !endDate) {
       return { success: true, data: [] };
     }
@@ -126,8 +123,15 @@ export class WalletSchema extends Schema {
   }
 
   async findActiveWallets() {
+    // Calculate date 2 months ago
+    const twoMonthsAgo = new Date();
+    twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+
     return this.find({
-      where: [{ field: 'deletedAt', operator: '==', value: null }],
+      where: [
+        { field: 'deletedAt', operator: '==', value: null },
+        { field: 'date', operator: '>=', value: twoMonthsAgo }
+      ],
       orderBy: [{ field: 'date', direction: 'desc' }]
     });
   }

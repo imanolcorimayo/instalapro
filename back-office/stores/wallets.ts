@@ -1,3 +1,4 @@
+import type { Timestamp } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { WalletSchema } from '~/utils/odm/schemas/walletSchema'
 import type { FetchResult, CreateResult, UpdateResult, DeleteResult } from '~/utils/odm/types'
@@ -10,20 +11,20 @@ export interface Wallet {
   jobId?: string
   movementType: 'income' | 'outcome'
   amount: number
-  date: string // YYYY-MM-DD format
+  date: Date
   category: string
   notes: string
   createdAt: Date
   createdBy?: string
   updatedAt: Date
-  deletedAt?: Date
+  deletedAt?: Date | null
 }
 
 export interface WalletCreateInput {
   clientId?: string
   jobId?: string
   amount: number
-  date: string // YYYY-MM-DD format
+  date: Date
   category: string
   notes?: string
 }
@@ -32,7 +33,7 @@ export interface WalletUpdateInput {
   clientId?: string
   jobId?: string
   amount?: number
-  date?: string
+  date?: Date
   category?: string
   notes?: string
 }
@@ -106,13 +107,24 @@ export const useWalletsStore = defineStore('wallets', () => {
     loading.value = true
     error.value = null
 
+    const { $dayjs } = useNuxtApp()
+
     try {
       const result: FetchResult<Wallet> = await walletSchema.findActiveWallets() as FetchResult<Wallet>
 
-      console.log('Loaded wallets:', result);
 
       if (result.success && result.data) {
         wallets.value = result.data
+
+        // Convert date strings to Date objects
+        wallets.value = wallets.value.map((wallet: any) => ({
+          ...wallet,
+          date: wallet.date.toDate(),
+          createdAt: wallet.createdAt.toDate(),
+          updatedAt: wallet.updatedAt.toDate(),
+          deletedAt: wallet.deletedAt ? wallet.deletedAt.toDate() : undefined
+        }))
+
         refreshCache()
       } else {
         throw new Error(result.error || 'Failed to load wallets')
@@ -135,7 +147,8 @@ export const useWalletsStore = defineStore('wallets', () => {
       const dataWithDefaults = {
         ...walletData,
         movementType: 'outcome' as const,
-        notes: walletData.notes || ''
+        notes: walletData.notes || '',
+        deletedAt: null
       }
 
       const result: CreateResult = await walletSchema.create(dataWithDefaults)
@@ -252,7 +265,7 @@ export const useWalletsStore = defineStore('wallets', () => {
   // ACTIONS - SPECIALIZED WALLET OPERATIONS
   // ==========================================
 
-  const getWalletsByDateRange = async (startDate: string, endDate: string): Promise<Wallet[]> => {
+  const getWalletsByDateRange = async (startDate: Date, endDate: Date): Promise<Wallet[]> => {
     try {
       const result = await walletSchema.findByDateRange(startDate, endDate)
 
@@ -308,7 +321,7 @@ export const useWalletsStore = defineStore('wallets', () => {
     }
   }
 
-  const getTotalExpensesByDateRange = async (startDate: string, endDate: string): Promise<number> => {
+  const getTotalExpensesByDateRange = async (startDate: Date, endDate: Date): Promise<number> => {
     const wallets = await getWalletsByDateRange(startDate, endDate)
     return wallets
       .filter(wallet => wallet.movementType === 'outcome')
