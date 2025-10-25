@@ -23,3 +23,6 @@ logs
 .env.*
 !.env.example
 .claude/settings.local.json
+
+# Firebase service account
+/scripts/service-account.json

@@ -1,0 +1,42 @@
+name: BackOffice-Daily-Cron
+
+on:
+  schedule:
+    # ORIGINAL (daily at local midnight Buenos Aires = 03:00 UTC):
+    # - cron: '0 3 * * *'
+
+    # TESTING: run every 5 minutes (minimum allowed by Actions)
+    - cron: '*/5 * * * *'
+  workflow_dispatch: {}  # optional: lets you run it manually
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    # Run all shell commands from the /back-office folder
+    defaults:
+      run:
+        working-directory: back-office
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: back-office/yarn.lock
+
+      # If you're on Yarn Classic (v1):
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Create service account file
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > scripts/service-account.json
+
+      - name: Run cron script
+        env:
+          NODE_ENV: production
+        run: node scripts/crons/update-jobs-status.js
