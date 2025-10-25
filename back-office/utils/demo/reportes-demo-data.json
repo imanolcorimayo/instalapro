@@ -1,0 +1,642 @@
+{
+  "jobs": [
+    {
+      "id": "job-001",
+      "clientId": "client-001",
+      "clientName": "Grupo Residencial Norte",
+      "serviceType": "Instalación",
+      "price": 220000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 0,
+      "dayOffset": 2
+    },
+    {
+      "id": "job-002",
+      "clientId": "client-001",
+      "clientName": "Grupo Residencial Norte",
+      "serviceType": "Mantenimiento",
+      "price": 143000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 0,
+      "dayOffset": 4
+    },
+    {
+      "id": "job-003",
+      "clientId": "client-002",
+      "clientName": "Constructora Andina",
+      "serviceType": "Reparación",
+      "price": 238000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 1,
+      "dayOffset": 2
+    },
+    {
+      "id": "job-004",
+      "clientId": "client-003",
+      "clientName": "Hotel Aurora",
+      "serviceType": "Carga de Refrigerante",
+      "price": 185000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 1,
+      "dayOffset": 3
+    },
+    {
+      "id": "job-005",
+      "clientId": "client-004",
+      "clientName": "Parque Industrial Oeste",
+      "serviceType": "Inspección",
+      "price": 120000,
+      "status": "pending",
+      "isActive": true,
+      "weekOffset": 1,
+      "dayOffset": 5
+    },
+    {
+      "id": "job-006",
+      "clientId": "client-005",
+      "clientName": "Farmacia Central",
+      "serviceType": "Reparación",
+      "price": 154700,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 2,
+      "dayOffset": 1
+    },
+    {
+      "id": "job-007",
+      "clientId": "client-006",
+      "clientName": "Oficinas Torres Blancas",
+      "serviceType": "Instalación",
+      "price": 350000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 2,
+      "dayOffset": 3
+    },
+    {
+      "id": "job-008",
+      "clientId": "client-001",
+      "clientName": "Grupo Residencial Norte",
+      "serviceType": "Mantenimiento",
+      "price": 143000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 2,
+      "dayOffset": 5
+    },
+    {
+      "id": "job-009",
+      "clientId": "client-007",
+      "clientName": "Tienda de Electrónica",
+      "serviceType": "Reparación",
+      "price": 256000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 3,
+      "dayOffset": 2
+    },
+    {
+      "id": "job-010",
+      "clientId": "client-008",
+      "clientName": "Residencia Familiar Sur",
+      "serviceType": "Desmontaje",
+      "price": 95000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 3,
+      "dayOffset": 4
+    },
+    {
+      "id": "job-011",
+      "clientId": "client-002",
+      "clientName": "Constructora Andina",
+      "serviceType": "Instalación",
+      "price": 410000,
+      "status": "pending",
+      "isActive": true,
+      "weekOffset": 4,
+      "dayOffset": 1
+    },
+    {
+      "id": "job-012",
+      "clientId": "client-003",
+      "clientName": "Hotel Aurora",
+      "serviceType": "Urgencia",
+      "price": 275000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 4,
+      "dayOffset": 3
+    },
+    {
+      "id": "job-013",
+      "clientId": "client-004",
+      "clientName": "Parque Industrial Oeste",
+      "serviceType": "Inspección",
+      "price": 120000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 4,
+      "dayOffset": 5
+    },
+    {
+      "id": "job-014",
+      "clientId": "client-005",
+      "clientName": "Farmacia Central",
+      "serviceType": "Mantenimiento",
+      "price": 166400,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 5,
+      "dayOffset": 2
+    },
+    {
+      "id": "job-015",
+      "clientId": "client-006",
+      "clientName": "Oficinas Torres Blancas",
+      "serviceType": "Carga de Refrigerante",
+      "price": 195000,
+      "status": "cancelled",
+      "isActive": false,
+      "weekOffset": 5,
+      "dayOffset": 4
+    },
+    {
+      "id": "job-016",
+      "clientId": "client-007",
+      "clientName": "Tienda de Electrónica",
+      "serviceType": "Reparación",
+      "price": 292000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 6,
+      "dayOffset": 1
+    },
+    {
+      "id": "job-017",
+      "clientId": "client-008",
+      "clientName": "Residencia Familiar Sur",
+      "serviceType": "Instalación",
+      "price": 320000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 6,
+      "dayOffset": 3
+    },
+    {
+      "id": "job-018",
+      "clientId": "client-009",
+      "clientName": "Gimnasio El Músculo",
+      "serviceType": "Mantenimiento",
+      "price": 189800,
+      "status": "pending",
+      "isActive": true,
+      "weekOffset": 6,
+      "dayOffset": 5
+    },
+    {
+      "id": "job-019",
+      "clientId": "client-010",
+      "clientName": "Panadería El Trigo",
+      "serviceType": "Reparación",
+      "price": 201500,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 7,
+      "dayOffset": 2
+    },
+    {
+      "id": "job-020",
+      "clientId": "client-001",
+      "clientName": "Grupo Residencial Norte",
+      "serviceType": "Inspección",
+      "price": 130000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 7,
+      "dayOffset": 4
+    },
+    {
+      "id": "job-021",
+      "clientId": "client-003",
+      "clientName": "Hotel Aurora",
+      "serviceType": "Instalación",
+      "price": 450000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 8,
+      "dayOffset": 1
+    },
+    {
+      "id": "job-022",
+      "clientId": "client-004",
+      "clientName": "Parque Industrial Oeste",
+      "serviceType": "Reparación",
+      "price": 256000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 8,
+      "dayOffset": 3
+    },
+    {
+      "id": "job-023",
+      "clientId": "client-005",
+      "clientName": "Farmacia Central",
+      "serviceType": "Carga de Refrigerante",
+      "price": 185000,
+      "status": "pending",
+      "isActive": true,
+      "weekOffset": 8,
+      "dayOffset": 5
+    },
+    {
+      "id": "job-024",
+      "clientId": "client-006",
+      "clientName": "Oficinas Torres Blancas",
+      "serviceType": "Mantenimiento",
+      "price": 143000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 9,
+      "dayOffset": 2
+    },
+    {
+      "id": "job-025",
+      "clientId": "client-007",
+      "clientName": "Tienda de Electrónica",
+      "serviceType": "Instalación",
+      "price": 380000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 9,
+      "dayOffset": 4
+    },
+    {
+      "id": "job-026",
+      "clientId": "client-008",
+      "clientName": "Residencia Familiar Sur",
+      "serviceType": "Reparación",
+      "price": 201500,
+      "status": "cancelled",
+      "isActive": false,
+      "weekOffset": 10,
+      "dayOffset": 1
+    },
+    {
+      "id": "job-027",
+      "clientId": "client-009",
+      "clientName": "Gimnasio El Músculo",
+      "serviceType": "Urgencia",
+      "price": 290000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 10,
+      "dayOffset": 3
+    },
+    {
+      "id": "job-028",
+      "clientId": "client-010",
+      "clientName": "Panadería El Trigo",
+      "serviceType": "Desmontaje",
+      "price": 95000,
+      "status": "pending",
+      "isActive": true,
+      "weekOffset": 10,
+      "dayOffset": 5
+    },
+    {
+      "id": "job-029",
+      "clientId": "client-001",
+      "clientName": "Grupo Residencial Norte",
+      "serviceType": "Instalación",
+      "price": 310000,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 11,
+      "dayOffset": 2
+    },
+    {
+      "id": "job-030",
+      "clientId": "client-002",
+      "clientName": "Constructora Andina",
+      "serviceType": "Mantenimiento",
+      "price": 166400,
+      "status": "completed",
+      "isActive": true,
+      "weekOffset": 11,
+      "dayOffset": 4
+    }
+  ],
+  "wallets": [
+    {
+      "id": "inc-001",
+      "movementType": "income",
+      "category": "pago_adelantado",
+      "amount": 110000,
+      "notes": "Anticipo instalación job-001",
+      "weekOffset": 0,
+      "dayOffset": 1
+    },
+    {
+      "id": "out-001",
+      "movementType": "outcome",
+      "category": "materiales",
+      "amount": 116160,
+      "notes": "Compra de compresor y refrigerante",
+      "weekOffset": 0,
+      "dayOffset": 3
+    },
+    {
+      "id": "out-002",
+      "movementType": "outcome",
+      "category": "herramientas",
+      "amount": 65340,
+      "notes": "Calibración de manómetros",
+      "weekOffset": 0,
+      "dayOffset": 5
+    },
+    {
+      "id": "inc-002",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 250000,
+      "notes": "Cobro total jobs 001 y 002 (saldo y mantenimiento)",
+      "weekOffset": 1,
+      "dayOffset": 0
+    },
+    {
+      "id": "out-003",
+      "movementType": "outcome",
+      "category": "transporte",
+      "amount": 45000,
+      "notes": "Peajes y tickets de parqueo",
+      "weekOffset": 1,
+      "dayOffset": 1
+    },
+    {
+      "id": "inc-003",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 185000,
+      "notes": "Cobro trabajo job-004",
+      "weekOffset": 1,
+      "dayOffset": 4
+    },
+    {
+      "id": "out-004",
+      "movementType": "outcome",
+      "category": "combustible",
+      "amount": 70686,
+      "notes": "Carga de combustible semanal",
+      "weekOffset": 1,
+      "dayOffset": 5
+    },
+    {
+      "id": "inc-004",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 238000,
+      "notes": "Cobro trabajo job-003",
+      "weekOffset": 2,
+      "dayOffset": 0
+    },
+    {
+      "id": "out-005",
+      "movementType": "outcome",
+      "category": "salarios",
+      "amount": 120000,
+      "notes": "Pago de salario a ayudante (Semana 1)",
+      "weekOffset": 2,
+      "dayOffset": 2
+    },
+    {
+      "id": "out-006",
+      "movementType": "outcome",
+      "category": "materiales",
+      "amount": 135168,
+      "notes": "Filtros, cañerías y aislantes",
+      "weekOffset": 2,
+      "dayOffset": 4
+    },
+    {
+      "id": "inc-005",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 154700,
+      "notes": "Cobro trabajo job-006",
+      "weekOffset": 3,
+      "dayOffset": 1
+    },
+    {
+      "id": "out-007",
+      "movementType": "outcome",
+      "category": "subcontratacion",
+      "amount": 76032,
+      "notes": "Servicio de altura para job-007",
+      "weekOffset": 3,
+      "dayOffset": 3
+    },
+    {
+      "id": "inc-006",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 350000,
+      "notes": "Cobro trabajo job-007",
+      "weekOffset": 3,
+      "dayOffset": 5
+    },
+    {
+      "id": "out-008",
+      "movementType": "outcome",
+      "category": "licencias_seguros",
+      "amount": 81378,
+      "notes": "Renovación seguro de vehículo",
+      "weekOffset": 4,
+      "dayOffset": 0
+    },
+    {
+      "id": "inc-007",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 256000,
+      "notes": "Cobro trabajo job-009",
+      "weekOffset": 4,
+      "dayOffset": 2
+    },
+    {
+      "id": "out-009",
+      "movementType": "outcome",
+      "category": "marketing",
+      "amount": 30000,
+      "notes": "Publicidad digital mensual",
+      "weekOffset": 4,
+      "dayOffset": 4
+    },
+    {
+      "id": "inc-008",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 275000,
+      "notes": "Cobro urgencia job-012",
+      "weekOffset": 5,
+      "dayOffset": 0
+    },
+    {
+      "id": "out-010",
+      "movementType": "outcome",
+      "category": "herramientas",
+      "amount": 92070,
+      "notes": "Renovación de bomba de vacío",
+      "weekOffset": 5,
+      "dayOffset": 3
+    },
+    {
+      "id": "inc-009",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 166400,
+      "notes": "Cobro mantenimiento job-014",
+      "weekOffset": 6,
+      "dayOffset": 1
+    },
+    {
+      "id": "out-011",
+      "movementType": "outcome",
+      "category": "transporte",
+      "amount": 97416,
+      "notes": "Cambio de aceite y filtros del vehículo",
+      "weekOffset": 6,
+      "dayOffset": 4
+    },
+    {
+      "id": "out-012",
+      "movementType": "outcome",
+      "category": "salarios",
+      "amount": 120000,
+      "notes": "Pago de salario a ayudante (Semana 5)",
+      "weekOffset": 6,
+      "dayOffset": 5
+    },
+    {
+      "id": "inc-010",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 292000,
+      "notes": "Cobro trabajo job-016",
+      "weekOffset": 7,
+      "dayOffset": 0
+    },
+    {
+      "id": "out-013",
+      "movementType": "outcome",
+      "category": "combustible",
+      "amount": 102762,
+      "notes": "Carga de combustible semanal",
+      "weekOffset": 7,
+      "dayOffset": 3
+    },
+    {
+      "id": "inc-011",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 320000,
+      "notes": "Cobro trabajo job-017",
+      "weekOffset": 8,
+      "dayOffset": 0
+    },
+    {
+      "id": "out-014",
+      "movementType": "outcome",
+      "category": "materiales",
+      "amount": 173184,
+      "notes": "Compra grande de termostatos y fusibles",
+      "weekOffset": 8,
+      "dayOffset": 2
+    },
+    {
+      "id": "inc-012",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 450000,
+      "notes": "Cobro instalación job-021",
+      "weekOffset": 9,
+      "dayOffset": 1
+    },
+    {
+      "id": "out-015",
+      "movementType": "outcome",
+      "category": "subcontratacion",
+      "amount": 60000,
+      "notes": "Servicio de camión con pluma para job-021",
+      "weekOffset": 9,
+      "dayOffset": 3
+    },
+    {
+      "id": "out-016",
+      "movementType": "outcome",
+      "category": "licencias_seguros",
+      "amount": 55000,
+      "notes": "Cuota de seguro de responsabilidad civil",
+      "weekOffset": 9,
+      "dayOffset": 5
+    },
+    {
+      "id": "inc-013",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 256000,
+      "notes": "Cobro trabajo job-022",
+      "weekOffset": 10,
+      "dayOffset": 0
+    },
+    {
+      "id": "inc-014",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 143000,
+      "notes": "Cobro mantenimiento job-024",
+      "weekOffset": 10,
+      "dayOffset": 2
+    },
+    {
+      "id": "out-017",
+      "movementType": "outcome",
+      "category": "salarios",
+      "amount": 120000,
+      "notes": "Pago de salario a ayudante (Semana 9)",
+      "weekOffset": 10,
+      "dayOffset": 4
+    },
+    {
+      "id": "inc-015",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 380000,
+      "notes": "Cobro trabajo job-025",
+      "weekOffset": 11,
+      "dayOffset": 1
+    },
+    {
+      "id": "out-018",
+      "movementType": "outcome",
+      "category": "transporte",
+      "amount": 50000,
+      "notes": "Recarga de tarjeta de peajes",
+      "weekOffset": 11,
+      "dayOffset": 3
+    },
+    {
+      "id": "inc-016",
+      "movementType": "income",
+      "category": "pago_trabajo",
+      "amount": 290000,
+      "notes": "Cobro urgencia job-027",
+      "weekOffset": 12,
+      "dayOffset": 0
+    }
+  ]
+}

@@ -5,15 +5,37 @@
       <div>
         <h1 class="text-2xl font-bold text-gray-900">Reportes</h1>
         <p class="text-sm text-gray-500 mt-1">Análisis de ingresos y gastos de su negocio</p>
+        <div
+          v-if="isTestingMode"
+          class="inline-flex items-center gap-2 mt-3 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-xs font-medium border border-purple-200"
+        >
+          <IconFlaskOutline class="w-4 h-4" />
+          Datos de demostración activos
+        </div>
       </div>
 
-      <button
-        @click="openAddExpenseModal"
-        class="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors"
-      >
-        <IconWallet class="w-5 h-5" />
-        Agregar Gasto
-      </button>
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          @click="toggleTestingData"
+          :class="[
+            'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors border',
+            isTestingMode
+              ? 'bg-purple-600 border-purple-600 text-white hover:bg-purple-500'
+              : 'border-purple-500 text-purple-600 hover:bg-purple-50'
+          ]"
+        >
+          <IconFlaskOutline class="w-5 h-5" />
+          {{ isTestingMode ? 'Volver a datos reales' : 'Usar datos demo' }}
+        </button>
+        <button
+          @click="openAddExpenseModal"
+          class="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors"
+        >
+          <IconWallet class="w-5 h-5" />
+          Agregar Gasto
+        </button>
+      </div>
     </div>
 
     <!-- Week Selector -->
@@ -112,7 +134,12 @@
     <!-- Chart Section -->
     <section>
       <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Tendencia</h2>
-      <div class="bg-white rounded-lg border border-gray-200 p-4">
+      <div
+        :class="[
+          'bg-white rounded-lg border border-gray-200 p-4 transition-all duration-300',
+          isTestingMode ? 'ring-2 ring-purple-400 shadow-sm' : ''
+        ]"
+      >
         <div class="h-80">
           <canvas ref="chartCanvas"></canvas>
         </div>
@@ -124,7 +151,12 @@
       <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Desglose</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <!-- Income by Service -->
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
+        <div
+          :class="[
+            'bg-white rounded-lg border border-gray-200 p-4 transition-all duration-300',
+            isTestingMode ? 'ring-2 ring-purple-400 shadow-sm' : ''
+          ]"
+        >
           <h3 class="text-sm font-semibold text-gray-900 mb-4">Ingresos por Servicio</h3>
           <div v-if="incomeByService.length === 0" class="text-center py-8">
             <p class="text-sm text-gray-500">No hay ingresos registrados</p>
@@ -152,7 +184,12 @@
         </div>
 
         <!-- Expenses by Category -->
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
+        <div
+          :class="[
+            'bg-white rounded-lg border border-gray-200 p-4 transition-all duration-300',
+            isTestingMode ? 'ring-2 ring-purple-400 shadow-sm' : ''
+          ]"
+        >
           <h3 class="text-sm font-semibold text-gray-900 mb-4">Gastos por Categoría</h3>
           <div v-if="outcomeByCategory.length === 0" class="text-center py-8">
             <p class="text-sm text-gray-500">No hay gastos registrados</p>
@@ -417,6 +454,8 @@ import IconTrendingUp from '~icons/mdi/trending-up'
 import IconTrendingDown from '~icons/mdi/trending-down'
 import IconCashMultiple from '~icons/mdi/cash-multiple'
 import IconCashMinus from '~icons/mdi/cash-minus'
+import IconFlaskOutline from '~icons/mdi/flask-outline'
+import testingReportesData from '@/utils/demo/reportes-demo-data.json'
 
 // Register Chart.js components
 Chart.register(...registerables)
@@ -445,6 +484,17 @@ const addExpenseModal = ref(null)
 // Chart ref
 const chartCanvas = ref(null)
 let chartInstance = null
+
+const isTestingMode = ref(false)
+const testingDataset = hydrateTestingDataset(testingReportesData)
+
+const effectiveJobs = computed(() =>
+  isTestingMode.value ? testingDataset.jobs : (jobsStore.jobs || [])
+)
+
+const effectiveWallets = computed(() =>
+  isTestingMode.value ? testingDataset.wallets : (walletsStore.wallets || [])
+)
 
 // Week navigation state
 const selectedWeekStart = ref($dayjs().startOf('week').add(1, 'day')) // Monday
@@ -477,7 +527,7 @@ const isCurrentWeek = computed(() => {
 // ==========================================
 
 const currentWeekIncome = computed(() => {
-  const jobs = jobsStore.jobs || []
+  const jobs = effectiveJobs.value
   const start = selectedWeekStart.value.format('YYYY-MM-DD')
   const end = selectedWeekEnd.value.format('YYYY-MM-DD')
 
@@ -495,7 +545,7 @@ const currentWeekIncome = computed(() => {
 })
 
 const currentWeekOutcome = computed(() => {
-  const wallets = walletsStore.wallets || []
+  const wallets = effectiveWallets.value
   const start = selectedWeekStart.value.format('YYYY-MM-DD')
   const end = selectedWeekEnd.value.format('YYYY-MM-DD')
 
@@ -525,7 +575,7 @@ const previousWeekEnd = computed(() => {
 })
 
 const previousWeekIncome = computed(() => {
-  const jobs = jobsStore.jobs || []
+  const jobs = effectiveJobs.value
   const start = previousWeekStart.value.format('YYYY-MM-DD')
   const end = previousWeekEnd.value.format('YYYY-MM-DD')
 
@@ -543,7 +593,7 @@ const previousWeekIncome = computed(() => {
 })
 
 const previousWeekOutcome = computed(() => {
-  const wallets = walletsStore.wallets || []
+  const wallets = effectiveWallets.value
   const start = previousWeekStart.value.format('YYYY-MM-DD')
   const end = previousWeekEnd.value.format('YYYY-MM-DD')
 
@@ -600,7 +650,7 @@ const weeklyChartData = computed(() => {
     const endStr = weekEnd.format('YYYY-MM-DD')
 
     // Calculate income for this week
-    const income = (jobsStore.jobs || [])
+    const income = effectiveJobs.value
       .filter(job => {
         if (job.status !== 'completed' || job.isActive === false) return false
         if (!job.scheduledDate) return false
@@ -613,7 +663,7 @@ const weeklyChartData = computed(() => {
       .reduce((sum, job) => sum + (job.price || 0), 0)
 
     // Calculate outcome for this week
-    const outcome = (walletsStore.wallets || [])
+    const outcome = effectiveWallets.value
       .filter(wallet => {
         if (wallet.movementType !== 'outcome' || wallet.deletedAt) return false
         const walletDate = $dayjs(wallet.date).format('YYYY-MM-DD')
@@ -637,7 +687,7 @@ const weeklyChartData = computed(() => {
 // ==========================================
 
 const incomeByService = computed(() => {
-  const jobs = jobsStore.jobs || []
+  const jobs = effectiveJobs.value
   const start = selectedWeekStart.value.format('YYYY-MM-DD')
   const end = selectedWeekEnd.value.format('YYYY-MM-DD')
 
@@ -671,7 +721,7 @@ const incomeByService = computed(() => {
 })
 
 const outcomeByCategory = computed(() => {
-  const wallets = walletsStore.wallets || []
+  const wallets = effectiveWallets.value
   const start = selectedWeekStart.value.format('YYYY-MM-DD')
   const end = selectedWeekEnd.value.format('YYYY-MM-DD')
 
@@ -708,7 +758,7 @@ const todayDate = computed(() => $dayjs().format('YYYY-MM-DD'))
 
 const recentJobs = computed(() => {
   const twoWeeksAgo = $dayjs().subtract(2, 'weeks')
-  const jobs = jobsStore.jobs || []
+  const jobs = effectiveJobs.value
 
   const filtered = jobs.filter(job => {
     const actualDate = job.scheduledDate?.toDate ? job.scheduledDate.toDate() : job.scheduledDate
@@ -733,6 +783,52 @@ const selectedJobClient = computed(() => {
   const job = recentJobs.value.find(j => j.id === form.value.selectedJobId)
   return job ? job.clientName : null
 })
+
+// ==========================================
+// METHODS - TESTING DATA
+// ==========================================
+
+const toggleTestingData = () => {
+  isTestingMode.value = !isTestingMode.value
+  updateChart()
+}
+
+function hydrateTestingDataset(source) {
+  const baseWeek = $dayjs().startOf('week').add(1, 'day')
+
+  const jobs = (source.jobs || []).map((job) => {
+    const weekStart = baseWeek.subtract(job.weekOffset ?? 0, 'week')
+    const scheduledDate = weekStart.add(job.dayOffset ?? 0, 'day').toDate()
+
+    return {
+      id: job.id,
+      status: job.status,
+      isActive: job.isActive,
+      scheduledDate,
+      price: job.price,
+      serviceType: job.serviceType,
+      clientName: job.clientName,
+      clientId: job.clientId
+    }
+  })
+
+  const wallets = (source.wallets || []).map((wallet) => {
+    const weekStart = baseWeek.subtract(wallet.weekOffset ?? 0, 'week')
+    const date = weekStart.add(wallet.dayOffset ?? 0, 'day').format('YYYY-MM-DD')
+
+    return {
+      id: wallet.id,
+      movementType: wallet.movementType,
+      deletedAt: null,
+      date,
+      amount: wallet.amount,
+      category: wallet.category,
+      notes: wallet.notes
+    }
+  })
+
+  return { jobs, wallets }
+}
 
 // ==========================================
 // METHODS - WEEK NAVIGATION
@@ -975,7 +1071,11 @@ watch([selectedWeekStart, selectedWeekEnd], () => {
 })
 
 // Watch for data changes and update chart
-watch([() => jobsStore.jobs, () => walletsStore.wallets], () => {
+watch([effectiveJobs, effectiveWallets], () => {
   updateChart()
 }, { deep: true })
+
+watch(isTestingMode, () => {
+  updateChart()
+})
 </script>
