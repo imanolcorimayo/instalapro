@@ -32,12 +32,6 @@ export class ClientSchema extends Schema {
       required: false,
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     },
-    serviceHistory: {
-      type: 'array',
-      required: false,
-      default: [],
-      arrayOf: 'object'
-    },
     totalJobs: {
       type: 'number',
       required: false,
@@ -49,12 +43,6 @@ export class ClientSchema extends Schema {
       required: false,
       default: 0,
       min: 0
-    },
-    preferredServiceTypes: {
-      type: 'array',
-      required: false,
-      default: [],
-      arrayOf: 'string'
     },
     notes: {
       type: 'string',

@@ -9,10 +9,8 @@ export interface Client {
   phone: string
   address: string
   email?: string
-  serviceHistory: JobHistory[]
   totalJobs: number
   totalSpent: number
-  preferredServiceTypes: string[]
   notes: string
   userUid: string
   isActive: boolean
@@ -20,15 +18,6 @@ export interface Client {
   updatedAt: Date
   createdBy?: string
   archivedAt?: Date
-}
-
-export interface JobHistory {
-  jobId: string
-  date: Date
-  serviceType: string
-  description: string
-  price: number
-  status: string
 }
 
 export interface ClientCreateInput {
@@ -47,10 +36,8 @@ export interface ClientUpdateInput {
   address?: string
   email?: string
   notes?: string
-  preferredServiceTypes?: string[],
-  serviceHistory?: JobHistory[],
-  totalJobs?: number,
-  totalSpent?: number,
+  totalJobs?: number
+  totalSpent?: number
 }
 
 export const useClientsStore = defineStore('clients', () => {
@@ -144,10 +131,8 @@ export const useClientsStore = defineStore('clients', () => {
       // Prepare data with defaults
       const dataWithDefaults = {
         ...clientData,
-        serviceHistory: [],
         totalJobs: clientData.totalJobs || 0,
         totalSpent: clientData.totalSpent || 0,
-        preferredServiceTypes: [],
         notes: clientData.notes || '',
         isActive: true
       }
@@ -227,37 +212,6 @@ export const useClientsStore = defineStore('clients', () => {
   // ==========================================
   // ACTIONS - SPECIALIZED CLIENT OPERATIONS
   // ==========================================
-
-  const updateServiceHistory = async (clientId: string, jobHistoryEntry: JobHistory): Promise<void> => {
-    try {
-      const client = getClientById.value(clientId)
-      if (!client) {
-        throw new Error('Client not found')
-      }
-      
-      const updatedHistory = [...(client.serviceHistory || []), jobHistoryEntry]
-      const newTotalJobs = updatedHistory.length
-      const newTotalSpent = updatedHistory.reduce((sum, entry) => sum + (entry.price || 0), 0)
-      
-      await updateClient(clientId, {
-        serviceHistory: updatedHistory,
-        totalJobs: newTotalJobs,
-        totalSpent: newTotalSpent
-      })
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Error al actualizar historial de servicios'
-      throw err
-    }
-  }
-  
-  const updatePreferredServices = async (clientId: string, serviceTypes: string[]): Promise<void> => {
-    try {
-      await updateClient(clientId, { preferredServiceTypes: serviceTypes })
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Error al actualizar servicios preferidos'
-      throw err
-    }
-  }
 
   const addNote = async (clientId: string, note: string): Promise<void> => {
     try {
@@ -393,8 +347,6 @@ export const useClientsStore = defineStore('clients', () => {
     createClient,
     updateClient,
     deleteClient,
-    updateServiceHistory,
-    updatePreferredServices,
     addNote,
     searchClients,
     initialize,

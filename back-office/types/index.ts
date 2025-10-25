@@ -120,25 +120,14 @@ export interface JobUpdateInput {
 // CLIENT INTERFACES
 // ==========================================
 
-export interface JobHistory {
-  jobId: string
-  date: Date
-  serviceType: string
-  description: string
-  price: number
-  status: string
-}
-
 export interface Client {
   id: string
   name: string
   phone: string
   address: string
   email?: string
-  serviceHistory: JobHistory[]
   totalJobs: number
   totalSpent: number
-  preferredServiceTypes: string[]
   notes: string
   createdAt: Date
   updatedAt: Date
@@ -158,7 +147,6 @@ export interface ClientUpdateInput {
   address?: string
   email?: string
   notes?: string
-  preferredServiceTypes?: string[]
 }
 
 // ==========================================
@@ -257,6 +245,44 @@ export interface PaymentUpdateInput {
 }
 
 // ==========================================
+// WALLET INTERFACES
+// ==========================================
+
+export interface Wallet {
+  id: string
+  userUid: string
+  clientId?: string
+  jobId?: string
+  movementType: 'income' | 'outcome'
+  amount: number
+  date: string // YYYY-MM-DD format
+  category: string
+  notes: string
+  createdAt: Date
+  createdBy?: string
+  updatedAt: Date
+  deletedAt?: Date
+}
+
+export interface WalletCreateInput {
+  clientId?: string
+  jobId?: string
+  amount: number
+  date: string // YYYY-MM-DD format
+  category: string
+  notes?: string
+}
+
+export interface WalletUpdateInput {
+  clientId?: string
+  jobId?: string
+  amount?: number
+  date?: string
+  category?: string
+  notes?: string
+}
+
+// ==========================================
 // SCHEDULE & TIME SLOT INTERFACES
 // ==========================================
 
@@ -346,3 +372,5 @@ export type PaymentMethod = 'cash' | 'transfer' | 'card'
 export type TimeSlotStatus = 'available' | 'booked' | 'blocked' | 'break'
 
 export type ScheduleView = 'day' | 'week' | 'month'
+
+export type MovementType = 'income' | 'outcome'
