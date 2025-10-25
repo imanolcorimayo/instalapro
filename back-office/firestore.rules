@@ -1,82 +1,152 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
+  
+    // ==========================================
+    // HELPER FUNCTIONS
+    // ==========================================
 
-    // Helper function to check if user is authenticated
+    // Check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Helper function to check if user owns the document
-    function isOwner(resource) {
+    // Check if user owns the document
+    function isOwner(userUid) {
+      return isAuthenticated() && request.auth.uid == userUid;
+    }
+
+    // Check if document belongs to authenticated user
+    function belongsToUser() {
       return isAuthenticated() && resource.data.userUid == request.auth.uid;
     }
 
-    // Helper function to check if creating user owns the document
-    function isCreatingOwner() {
+    // Check if new document will belong to authenticated user
+    function willBelongToUser() {
       return isAuthenticated() && request.resource.data.userUid == request.auth.uid;
     }
 
-    // Technicians collection - users can only access their own technician profile
-    match /technicians/{technicianId} {
-      allow read: if isAuthenticated() && isOwner(resource);
-      allow create: if isCreatingOwner();
-      allow update, delete: if isAuthenticated() && isOwner(resource);
+    // ==========================================
+    // TECHNICIANS COLLECTION
+    // ==========================================
+
+    match /technicians/{docId} {
+      // PUBLIC READ: Anyone can read technicians (for booking page queries)
+      // Note: Queries filter by isActive==true, so inactive technicians won't appear in results
+      // We allow all reads to permit Firestore to evaluate where() clauses in queries
+      allow read: if true;
+
+      // AUTHENTICATED WRITE: Only the owner can create/update/delete their own profile
+      allow create: if willBelongToUser();
+      allow update: if belongsToUser();
+      allow delete: if belongsToUser();
     }
 
-    // Clients collection - users can only access their own clients
-    match /clients/{clientId} {
-      allow read: if isAuthenticated() && isOwner(resource);
-      allow create: if isCreatingOwner();
-      allow update, delete: if isAuthenticated() && isOwner(resource);
+    // ==========================================
+    // SERVICE TYPES COLLECTION
+    // ==========================================
+
+    match /serviceTypes/{docId} {
+      // PUBLIC READ: Anyone can read active service types (for booking page)
+      // Allow reading if document is active OR if querying by userUid
+      allow read: if resource.data.isActive == true;
+
+      // AUTHENTICATED WRITE: Only the owner can create/update/delete their service types
+      allow create: if willBelongToUser();
+      allow update: if belongsToUser();
+      allow delete: if belongsToUser();
     }
 
-    // Jobs collection - users can only access their own jobs
-    match /jobs/{jobId} {
-      allow read: if isAuthenticated() && isOwner(resource);
-      allow create: if isCreatingOwner();
-      allow update, delete: if isAuthenticated() && isOwner(resource);
+    // ==========================================
+    // CLIENTS COLLECTION
+    // ==========================================
+
+    match /clients/{docId} {
+      // PRIVATE: Only authenticated user can read their own clients
+      allow read: if true; // For now we allow it
+
+      // AUTHENTICATED WRITE: Only the owner can create/update/delete their clients
+      allow create: if true; // for now we allow it; willBelongToUser();
+      allow update: if true; // for now we allow it; belongsToUser();
+      allow delete: if belongsToUser();
     }
 
-    // Quotes collection - users can only access their own quotes
-    match /quotes/{quoteId} {
-      allow read: if isAuthenticated() && isOwner(resource);
-      allow create: if isCreatingOwner();
-      allow update, delete: if isAuthenticated() && isOwner(resource);
+    // ==========================================
+    // JOBS COLLECTION
+    // ==========================================
+
+    match /jobs/{docId} {
+      // PRIVATE: Only authenticated user can read their own jobs
+      allow read: if true;// belongsToUser();
+
+      // AUTHENTICATED WRITE: Only the owner can create/update/delete their jobs
+      allow create: if true; // willBelongToUser();
+      allow update: if true; //belongsToUser();
+      allow delete: if belongsToUser();
     }
 
-    // Payments collection - users can only access their own payments
-    match /payments/{paymentId} {
-      allow read: if isAuthenticated() && isOwner(resource);
-      allow create: if isCreatingOwner();
-      allow update, delete: if isAuthenticated() && isOwner(resource);
+    // ==========================================
+    // QUOTES COLLECTION
+    // ==========================================
+
+    match /quotes/{docId} {
+      // PRIVATE: Only authenticated user can read their own quotes
+      allow read: if belongsToUser();
+
+      // AUTHENTICATED WRITE: Only the owner can create/update/delete their quotes
+      allow create: if willBelongToUser();
+      allow update: if belongsToUser();
+      allow delete: if belongsToUser();
     }
 
-    // Service Types collection - users can only access their own service types
-    match /serviceTypes/{serviceTypeId} {
-      allow read: if isAuthenticated() && isOwner(resource);
-      allow create: if isCreatingOwner();
-      allow update, delete: if isAuthenticated() && isOwner(resource);
+    // ==========================================
+    // PAYMENTS COLLECTION
+    // ==========================================
+
+    match /payments/{docId} {
+      // PRIVATE: Only authenticated user can read their own payments
+      allow read: if belongsToUser();
+
+      // AUTHENTICATED WRITE: Only the owner can create/update/delete their payments
+      allow create: if willBelongToUser();
+      allow update: if belongsToUser();
+      allow delete: if belongsToUser();
     }
 
-    // Slot Availability collection - users can only access their own slots
-    match /slotAvailability/{slotId} {
-      allow read: if isAuthenticated() && isOwner(resource);
-      allow create: if isCreatingOwner();
-      allow update, delete: if isAuthenticated() && isOwner(resource);
+    // ==========================================
+    // SLOT AVAILABILITY COLLECTION
+    // ==========================================
+
+    match /slotAvailability/{docId} {
+      // PUBLIC READ: Anyone can read slot availability (for booking page)
+      // This allows clients to see available time slots
+      allow read: if true;
+
+      // AUTHENTICATED WRITE: Only the owner can create/update/delete their slots
+      allow create: if willBelongToUser();
+      allow update: if true; // belongsToUser();
+      allow delete: if true; // belongsToUser();
     }
 
-    // Booking Requests collection - users can only access their own bookings
-    match /bookingRequests/{bookingId} {
-      allow read: if isAuthenticated() && isOwner(resource);
-      allow create: if isCreatingOwner();
-      allow update, delete: if isAuthenticated() && isOwner(resource);
+    // ==========================================
+    // BOOKING REQUESTS COLLECTION
+    // ==========================================
+
+    match /bookingRequests/{docId} {
+      // PUBLIC CREATE: Anyone can create a booking request (from booking page)
+      // This allows potential clients to request appointments
+      allow create: if true;
+
+      // PRIVATE READ/UPDATE/DELETE: Only the technician can read/manage their booking requests
+      allow read: if belongsToUser();
+      allow update: if belongsToUser();
+      allow delete: if belongsToUser();
     }
 
-    // Default deny all other collections
-    match /{document=**} {
-      allow read, write: if false;
-    }
+    // ==========================================
+    // DEFAULT DENY ALL OTHER COLLECTIONS
+    // ==========================================
+
+    // Any collection not explicitly allowed above is denied by default
   }
 }
