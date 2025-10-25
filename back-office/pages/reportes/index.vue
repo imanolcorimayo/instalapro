@@ -340,9 +340,11 @@
                 <tr>
                   <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
                   <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente/Trabajo</th>
                   <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
                   <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notas</th>
                   <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
+                  <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
@@ -359,6 +361,13 @@
                       {{ getMovementTypeLabel(entry.movementType) }}
                     </span>
                   </td>
+                  <td class="px-3 py-2">
+                    <div v-if="getClientJobInfo(entry).client">
+                      <div class="text-sm text-gray-900">{{ getClientJobInfo(entry).client }}</div>
+                      <div v-if="getClientJobInfo(entry).job" class="text-xs text-gray-500">{{ getClientJobInfo(entry).job }}</div>
+                    </div>
+                    <span v-else class="text-sm text-gray-500">-</span>
+                  </td>
                   <td class="px-3 py-2 text-sm text-gray-700">
                     {{ formatCategory(entry.category || 'otros') }}
                   </td>
@@ -367,6 +376,25 @@
                   </td>
                   <td class="px-3 py-2 whitespace-nowrap text-sm text-right font-semibold" :class="entry.movementType === 'income' ? 'text-emerald-600' : 'text-amber-600'">
                     {{ entry.movementType === 'income' ? '+' : '-' }}{{ formatCurrency(entry.amount) }}
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap text-right">
+                    <div v-if="entry.movementType === 'outcome' && !entry.isJobIncome" class="flex items-center justify-end gap-2">
+                      <button
+                        @click="openEditExpenseModal(entry)"
+                        class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Editar gasto"
+                      >
+                        <IconPencil class="w-4 h-4" />
+                      </button>
+                      <button
+                        @click="confirmDeleteExpense(entry)"
+                        class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Eliminar gasto"
+                      >
+                        <IconDelete class="w-4 h-4" />
+                      </button>
+                    </div>
+                    <span v-else class="text-gray-400 text-xs">-</span>
                   </td>
                 </tr>
               </tbody>
@@ -377,221 +405,11 @@
     </div>
 
     <!-- Wallet Entry Modal -->
-    <ModalStructure
-      ref="addExpenseModal"
-      title="Agregar Gasto"
-      @on-close="resetForm"
-    >
-      <form @submit.prevent="handleSubmit" class="space-y-4">
-        <!-- Association Type Selection -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Asociar con:
-          </label>
-          <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-            <button
-              type="button"
-              @click="form.associationType = 'job'"
-              :class="[
-                'flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border-2 transition-all text-sm sm:text-base',
-                form.associationType === 'job'
-                  ? 'border-purple-500 bg-purple-50 text-purple-700'
-                  : 'border-gray-300 bg-white text-gray-700 hover:border-purple-300 hover:bg-purple-50'
-              ]"
-            >
-              <IconBriefcase class="w-4 h-4 sm:w-5 sm:h-5" />
-              <span class="font-medium">Trabajo</span>
-            </button>
-            <button
-              type="button"
-              @click="form.associationType = 'client'"
-              :class="[
-                'flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border-2 transition-all text-sm sm:text-base',
-                form.associationType === 'client'
-                  ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                  : 'border-gray-300 bg-white text-gray-700 hover:border-emerald-300 hover:bg-emerald-50'
-              ]"
-            >
-              <IconAccount class="w-4 h-4 sm:w-5 sm:h-5" />
-              <span class="font-medium">Cliente</span>
-            </button>
-            <button
-              type="button"
-              @click="form.associationType = 'none'"
-              :class="[
-                'flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border-2 transition-all text-sm sm:text-base',
-                form.associationType === 'none'
-                  ? 'border-gray-500 bg-gray-100 text-gray-700'
-                  : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50'
-              ]"
-            >
-              <IconCancel class="w-4 h-4 sm:w-5 sm:h-5" />
-              <span class="font-medium">Ninguno</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Job Selection (when associationType is 'job') -->
-        <div v-if="form.associationType === 'job'">
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Trabajo *
-          </label>
-
-          <!-- Loading state -->
-          <div v-if="jobsStore.loading" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 text-sm">
-            Cargando trabajos...
-          </div>
-
-          <!-- No jobs available -->
-          <div v-else-if="recentJobs.length === 0" class="w-full px-3 py-2 border border-yellow-300 rounded-lg bg-yellow-50 text-yellow-700 text-sm">
-            No hay trabajos recientes (últimas 2 semanas)
-          </div>
-
-          <!-- Jobs dropdown -->
-          <select
-            v-else
-            v-model="form.selectedJobId"
-            @change="onJobSelected"
-            required
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          >
-            <option value="">Seleccionar trabajo...</option>
-            <option
-              v-for="job in recentJobs"
-              :key="job.id"
-              :value="job.id"
-            >
-              {{ formatJobDate(job.scheduledDate) }} - {{ job.clientName }} - {{ job.serviceType }}
-            </option>
-          </select>
-
-          <!-- Auto-populated Client Display -->
-          <div v-if="form.selectedJobId && selectedJobClient" class="mt-2 p-2 bg-purple-50 rounded text-sm text-purple-700 border border-purple-200">
-            <IconAccount class="w-4 h-4 inline mr-1" />
-            Cliente: {{ selectedJobClient }}
-          </div>
-        </div>
-
-        <!-- Client Selection (when associationType is 'client') -->
-        <div v-if="form.associationType === 'client'">
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Cliente *
-          </label>
-
-          <!-- Loading state -->
-          <div v-if="clientsStore.loading" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 text-sm">
-            Cargando clientes...
-          </div>
-
-          <!-- No clients available -->
-          <div v-else-if="allClients.length === 0" class="w-full px-3 py-2 border border-yellow-300 rounded-lg bg-yellow-50 text-yellow-700 text-sm">
-            No hay clientes registrados. Por favor, agregue clientes primero.
-          </div>
-
-          <!-- Clients dropdown -->
-          <select
-            v-else
-            v-model="form.selectedClientId"
-            required
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          >
-            <option value="">Seleccionar cliente...</option>
-            <option
-              v-for="client in allClients"
-              :key="client.id"
-              :value="client.id"
-            >
-              {{ client.name }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Amount -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Monto *
-          </label>
-          <div class="relative">
-            <span class="absolute left-3 top-2 text-gray-500">$</span>
-            <input
-              type="number"
-              v-model.number="form.amount"
-              required
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-              class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        <!-- Date -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Fecha *
-          </label>
-          <input
-            type="date"
-            v-model="form.date"
-            required
-            :max="todayDate"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          />
-        </div>
-
-        <!-- Category -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Categoría *
-          </label>
-          <select
-            v-model="form.category"
-            required
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          >
-            <option value="">Seleccionar categoría...</option>
-            <option value="materiales">Materiales</option>
-            <option value="herramientas">Herramientas</option>
-            <option value="transporte">Transporte</option>
-            <option value="combustible">Combustible</option>
-            <option value="repuestos">Repuestos</option>
-            <option value="subcontratacion">Subcontratación</option>
-            <option value="otros">Otros</option>
-          </select>
-        </div>
-
-        <!-- Notes -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Notas
-          </label>
-          <textarea
-            v-model="form.notes"
-            rows="3"
-            placeholder="Información adicional sobre el gasto..."
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-          ></textarea>
-        </div>
-
-        <!-- Form Actions -->
-        <div class="flex gap-3 pt-4">
-          <button
-            type="button"
-            @click="closeModal"
-            class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            :disabled="submitting"
-            class="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-          >
-            {{ submitting ? 'Guardando...' : 'Guardar Gasto' }}
-          </button>
-        </div>
-      </form>
-    </ModalStructure>
+    <WalletExpenseModal
+      ref="expenseModal"
+      :expense="selectedExpense"
+      @saved="onExpenseSaved"
+    />
   </div>
 </template>
 
@@ -604,8 +422,6 @@ import { useClientsStore } from '@/stores/clients'
 import { useJobsStore } from '@/stores/jobs'
 import IconWallet from '~icons/mdi/wallet'
 import IconBriefcase from '~icons/mdi/briefcase'
-import IconAccount from '~icons/mdi/account'
-import IconCancel from '~icons/mdi/cancel'
 import IconChevronLeft from '~icons/mdi/chevron-left'
 import IconChevronRight from '~icons/mdi/chevron-right'
 import IconTrendingUp from '~icons/mdi/trending-up'
@@ -614,6 +430,8 @@ import IconCashMultiple from '~icons/mdi/cash-multiple'
 import IconCashMinus from '~icons/mdi/cash-minus'
 import IconFlaskOutline from '~icons/mdi/flask-outline'
 import IconChartLine from '~icons/mdi/chart-line'
+import IconPencil from '~icons/mdi/pencil'
+import IconDelete from '~icons/mdi/delete'
 import testingReportesData from '@/utils/demo/reportes-demo-data.json'
 
 // Register Chart.js components
@@ -638,7 +456,8 @@ const clientsStore = useClientsStore()
 const jobsStore = useJobsStore()
 
 // Modal ref
-const addExpenseModal = ref(null)
+const expenseModal = ref(null)
+const selectedExpense = ref(null)
 
 // Chart ref
 const chartCanvas = ref(null)
@@ -658,19 +477,6 @@ const effectiveWallets = computed(() =>
 // Week navigation state
 const selectedWeekStart = ref($dayjs().startOf('week').add(1, 'day')) // Monday
 const selectedWeekEnd = ref($dayjs().endOf('week').add(1, 'day')) // Sunday
-
-// Form state (for wallet modal)
-const form = ref({
-  associationType: 'none',
-  selectedJobId: '',
-  selectedClientId: '',
-  amount: null,
-  date: '',
-  category: '',
-  notes: ''
-})
-
-const submitting = ref(false)
 
 // Tab state
 const activeTab = ref('resumen')
@@ -913,40 +719,6 @@ const outcomeByCategory = computed(() => {
 })
 
 // ==========================================
-// COMPUTED PROPERTIES - WALLET MODAL
-// ==========================================
-
-const todayDate = computed(() => $dayjs().format('YYYY-MM-DD'))
-
-const recentJobs = computed(() => {
-  const twoWeeksAgo = $dayjs().subtract(2, 'weeks')
-  const jobs = effectiveJobs.value
-
-  const filtered = jobs.filter(job => {
-    const actualDate = job.scheduledDate?.toDate ? job.scheduledDate.toDate() : job.scheduledDate
-    const jobDate = $dayjs(actualDate)
-    return jobDate.isAfter(twoWeeksAgo) || jobDate.isSame(twoWeeksAgo, 'day')
-  }).sort((a, b) => {
-    const dateA = a.scheduledDate?.toDate ? a.scheduledDate.toDate() : a.scheduledDate
-    const dateB = b.scheduledDate?.toDate ? b.scheduledDate.toDate() : b.scheduledDate
-    return $dayjs(dateB).diff($dayjs(dateA))
-  })
-
-  return filtered
-})
-
-const allClients = computed(() => {
-  const clients = clientsStore.activeClients || []
-  return clients
-})
-
-const selectedJobClient = computed(() => {
-  if (!form.value.selectedJobId) return null
-  const job = recentJobs.value.find(j => j.id === form.value.selectedJobId)
-  return job ? job.clientName : null
-})
-
-// ==========================================
 // COMPUTED PROPERTIES - TAB DATA
 // ==========================================
 
@@ -1107,11 +879,6 @@ const formatCategory = (category) => {
   return categoryNames[category] || category
 }
 
-const formatJobDate = (date) => {
-  const actualDate = date?.toDate ? date.toDate() : date
-  return $dayjs(actualDate).format('DD/MMM')
-}
-
 const formatJobStatus = (status) => {
   const statusLabels = {
     pending: 'Pendiente',
@@ -1140,6 +907,42 @@ const getMovementTypeLabel = (type) => {
 
 const getMovementTypeColor = (type) => {
   return type === 'income' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+}
+
+const getClientJobInfo = (entry) => {
+  // For job income entries, extract client name and service type from notes
+  if (entry.isJobIncome) {
+    // Notes format: "ClientName - ServiceType"
+    const parts = entry.notes?.split(' - ')
+    return {
+      client: parts?.[0] || null,
+      job: parts?.[1] || null
+    }
+  }
+
+  // For wallet entries with job association
+  if (entry.jobId) {
+    const job = effectiveJobs.value.find(j => j.id === entry.jobId)
+    if (job) {
+      return {
+        client: job.clientName,
+        job: job.serviceType
+      }
+    }
+  }
+
+  // For wallet entries with client association (but no job)
+  if (entry.clientId) {
+    const client = clientsStore.clients?.find(c => c.id === entry.clientId)
+    if (client) {
+      return {
+        client: client.name,
+        job: null
+      }
+    }
+  }
+
+  return { client: null, job: null }
 }
 
 // ==========================================
@@ -1242,68 +1045,33 @@ const updateChart = () => {
 // ==========================================
 
 const openAddExpenseModal = () => {
-  addExpenseModal.value?.showModal()
+  selectedExpense.value = null
+  expenseModal.value?.showModal()
 }
 
-const closeModal = () => {
-  addExpenseModal.value?.closeModal()
+const openEditExpenseModal = (expense) => {
+  selectedExpense.value = expense
+  expenseModal.value?.loadExpense(expense)
+  expenseModal.value?.showModal()
 }
 
-const resetForm = () => {
-  form.value.associationType = 'none'
-  form.value.selectedJobId = ''
-  form.value.selectedClientId = ''
-  form.value.amount = null
-  form.value.date = $dayjs().format('YYYY-MM-DD')
-  form.value.category = ''
-  form.value.notes = ''
-}
-
-const onJobSelected = () => {
-  if (form.value.selectedJobId) {
-    const job = recentJobs.value.find(j => j.id === form.value.selectedJobId)
-    if (job) {
-      form.value.selectedClientId = job.clientId || ''
-    }
+const confirmDeleteExpense = async (expense) => {
+  if (!confirm('¿Está seguro de que desea eliminar este gasto?')) {
+    return
   }
-}
 
-const handleSubmit = async () => {
   try {
-    submitting.value = true
-
-    // Prepare wallet data based on association type
-    let clientId = null
-    let jobId = null
-
-    if (form.value.associationType === 'job') {
-      const job = recentJobs.value.find(j => j.id === form.value.selectedJobId)
-      jobId = form.value.selectedJobId
-      clientId = job?.clientId || null
-    } else if (form.value.associationType === 'client') {
-      clientId = form.value.selectedClientId
-    }
-
-    const walletData = {
-      amount: form.value.amount,
-      date: $dayjs(form.value.date).toDate(), // Convert string to Date object
-      category: form.value.category,
-      notes: form.value.notes || '',
-      ...(clientId && { clientId }),
-      ...(jobId && { jobId })
-    }
-
-    await walletsStore.createWallet(walletData)
-
-    toast.success('Gasto registrado exitosamente')
-    closeModal()
-    resetForm()
+    await walletsStore.deleteWallet(expense.id)
+    toast.success('Gasto eliminado exitosamente')
   } catch (error) {
-    console.error('Error creating wallet entry:', error)
-    toast.error(error.message || 'Error al registrar el gasto')
-  } finally {
-    submitting.value = false
+    console.error('Error deleting expense:', error)
+    toast.error(error.message || 'Error al eliminar el gasto')
   }
+}
+
+const onExpenseSaved = () => {
+  selectedExpense.value = null
+  updateChart()
 }
 
 // ==========================================
@@ -1311,9 +1079,6 @@ const handleSubmit = async () => {
 // ==========================================
 
 onMounted(async () => {
-  // Set default date to today
-  form.value.date = $dayjs().format('YYYY-MM-DD')
-
   // Load required data
   await Promise.all([
     clientsStore.initialize(),

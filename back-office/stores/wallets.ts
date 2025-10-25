@@ -154,7 +154,17 @@ export const useWalletsStore = defineStore('wallets', () => {
       const result: CreateResult = await walletSchema.create(dataWithDefaults)
 
       if (result.success && result.data) {
-        const newWallet = result.data as Wallet
+        const rawWallet: any = result.data
+
+        // Convert Firestore Timestamps to Date objects
+        const newWallet: Wallet = {
+          ...rawWallet,
+          date: rawWallet.date.toDate ? rawWallet.date.toDate() : rawWallet.date,
+          createdAt: rawWallet.createdAt.toDate ? rawWallet.createdAt.toDate() : rawWallet.createdAt,
+          updatedAt: rawWallet.updatedAt.toDate ? rawWallet.updatedAt.toDate() : rawWallet.updatedAt,
+          deletedAt: rawWallet.deletedAt ? (rawWallet.deletedAt.toDate ? rawWallet.deletedAt.toDate() : rawWallet.deletedAt) : undefined
+        }
+
         wallets.value.push(newWallet)
         updateCache(newWallet)
         return newWallet
