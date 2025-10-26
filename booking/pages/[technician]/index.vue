@@ -414,7 +414,7 @@
       class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
       @click.self="closeSuccessModal"
     >
-      <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
+      <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[75vh] overflow-y-auto">
         <!-- Success Icon -->
         <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <IconCheckCircle class="w-12 h-12 text-green-600" />
@@ -446,14 +446,6 @@
           <div>
             <p class="text-xs text-gray-500 mb-1">Técnico</p>
             <p class="font-semibold text-gray-800">{{ techniciansStore.technician?.businessName || techniciansStore.technician?.name }}</p>
-            <a
-              :href="whatsappUrlWithBooking"
-              target="_blank"
-              class="text-sm text-green-600 hover:text-green-700 flex items-center gap-1 mt-1"
-            >
-              <IconWhatsapp class="w-4 h-4" />
-              Contactar por WhatsApp
-            </a>
           </div>
         </div>
 
