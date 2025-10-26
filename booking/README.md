@@ -1,4 +1,4 @@
-# InstalarPro - Client Booking Interface
+# InstalaPro - Client Booking Interface
 
 **🌐 Live Demo**: [https://instalapro-back-office.web.app/](https://instalapro-back-office.web.app/)
 

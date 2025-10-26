@@ -1,4 +1,4 @@
-# InstalarPro - Technician Landing Page
+# InstalaPro - Technician Landing Page
 
 ## Overview
 Static landing page for air conditioner technicians to showcase their services and build their online presence.

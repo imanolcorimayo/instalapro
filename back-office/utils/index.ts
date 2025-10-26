@@ -1,5 +1,5 @@
 /**
- * Utility functions for InstalarPro Back Office
+ * Utility functions for InstalaPro Back Office
  */
 
 // Timezone utilities

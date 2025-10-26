@@ -273,7 +273,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Dashboard - InstalarPro',
+  title: 'Dashboard - InstalaPro',
   description: 'Vista general de tu negocio de aire acondicionado',
   robots: 'noindex, nofollow'
 })

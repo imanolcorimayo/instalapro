@@ -1,4 +1,4 @@
-// Core business entity interfaces for InstalarPro back-office
+// Core business entity interfaces for InstalaPro back-office
 // All interfaces designed for both LocalStorage and Firestore compatibility
 
 // ==========================================

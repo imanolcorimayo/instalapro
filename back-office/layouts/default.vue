@@ -23,7 +23,7 @@
         <div class="flex items-center">
           <IconAirConditioner class="w-8 h-8 text-blue-600" />
           <h1 class="ml-2 text-xl font-bold text-gray-800">
-            InstalarPro
+            InstalaPro
           </h1>
         </div>
         <button
@@ -178,7 +178,7 @@ const pageTitle = computed(() => {
     '/settings': 'Configuración'
   }
 
-  return titles[route.path] || 'InstalarPro'
+  return titles[route.path] || 'InstalaPro'
 })
 
 const navigationItems = computed(() => [

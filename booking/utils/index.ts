@@ -1,5 +1,5 @@
 /**
- * Utility functions for InstalarPro Booking
+ * Utility functions for InstalaPro Booking
  */
 
 /**

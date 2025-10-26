@@ -24,7 +24,7 @@
         href="https://instalapro.com" 
         class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
       >
-        Ir a InstalarPro.com
+        Ir a InstalaPro.com
       </a>
     </div>
   </div>
@@ -33,7 +33,7 @@
 <script setup>
 // SEO Meta for booking index
 useSeoMeta({
-  title: 'Reservar Cita - InstalarPro',
+  title: 'Reservar Cita - InstalaPro',
   description: 'Sistema de reservas para técnicos de aire acondicionado. Agenda tu cita de manera fácil y rápida.',
   robots: 'noindex, nofollow' // Don't index the generic booking page
 })

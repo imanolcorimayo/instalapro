@@ -445,7 +445,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Reportes - InstalarPro Back Office',
+  title: 'Reportes - InstalaPro Back Office',
   description: 'Análisis de ingresos y gastos de su negocio.',
   robots: 'noindex, nofollow'
 })

@@ -90,7 +90,7 @@
       <div class="container mx-auto px-4 text-center">
         <h2 class="text-3xl font-bold mb-6">¿Listo para hacer crecer tu negocio?</h2>
         <p class="text-xl text-gray-600 mb-8">
-          Únete a cientos de técnicos que ya están usando InstalarPro para gestionar su negocio
+          Únete a cientos de técnicos que ya están usando InstalaPro para gestionar su negocio
         </p>
         <button class="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors">
           <span class="inline-block mr-2 text-xl">🚀</span>
@@ -104,9 +104,9 @@
 <script setup lang="ts">
 // SEO Meta
 useSeoMeta({
-  title: 'InstalarPro - Software de Gestión para Técnicos de Aire Acondicionado',
+  title: 'InstalaPro - Software de Gestión para Técnicos de Aire Acondicionado',
   description: 'Plataforma completa para técnicos de aire acondicionado. Gestiona clientes, agenda trabajos y genera presupuestos profesionales. Prueba gratis 30 días.',
-  ogTitle: 'InstalarPro - Gestión Digital para Técnicos',
+  ogTitle: 'InstalaPro - Gestión Digital para Técnicos',
   ogDescription: 'Herramientas profesionales para hacer crecer tu negocio de aire acondicionado. Agenda, clientes, presupuestos y página de reservas.',
   ogImage: '/og-image.jpg',
   twitterCard: 'summary_large_image'

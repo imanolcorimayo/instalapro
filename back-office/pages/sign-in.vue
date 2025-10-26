@@ -6,7 +6,7 @@
         <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
           <IconAirConditioner class="w-8 h-8 text-white" />
         </div>
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">InstalarPro</h1>
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">InstalaPro</h1>
         <p class="text-gray-600">Panel de administración para técnicos</p>
       </div>
 
@@ -29,7 +29,7 @@
       <!-- Footer -->
       <div class="mt-8 text-center">
         <p class="text-sm text-gray-500">
-          Solo para técnicos registrados en InstalarPro
+          Solo para técnicos registrados en InstalaPro
         </p>
       </div>
     </div>

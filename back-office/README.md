@@ -1,4 +1,4 @@
-# InstalarPro - Back Office
+# InstalaPro - Back Office
 
 **🌐 Live Demo**: [https://instalapro-booking.web.app/](https://instalapro-booking.web.app/)
 

@@ -44,7 +44,7 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'es' },
       meta: [
         { name: 'robots', content: 'noindex, nofollow' }, // Back office should not be indexed
-        { name: 'author', content: 'InstalarPro' },
+        { name: 'author', content: 'InstalaPro' },
         { name: 'description', content: 'Panel de administración para técnicos de aire acondicionado. Gestión de clientes, agenda y presupuestos.' }
       ]
     }

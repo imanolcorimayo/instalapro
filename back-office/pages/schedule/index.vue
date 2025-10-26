@@ -1124,7 +1124,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Agenda - InstalarPro Back Office',
+  title: 'Agenda - InstalaPro Back Office',
   description: 'Gestione su agenda de trabajos y citas programadas.',
   robots: 'noindex, nofollow'
 })

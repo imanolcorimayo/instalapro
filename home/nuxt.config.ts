@@ -29,7 +29,7 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'es' },
       meta: [
         { name: 'robots', content: 'index, follow' },
-        { name: 'author', content: 'InstalarPro' },
+        { name: 'author', content: 'InstalaPro' },
         { name: 'description', content: 'Técnicos especializados en aire acondicionado. Instalación, mantenimiento y reparación. Servicio rápido y confiable en toda Argentina.' }
       ]
     }

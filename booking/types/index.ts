@@ -1,4 +1,4 @@
-// Core business entity interfaces for InstalarPro booking page
+// Core business entity interfaces for InstalaPro booking page
 // Subset of back-office types needed for public booking functionality
 
 // ==========================================

@@ -1,4 +1,4 @@
-# InstalarPro Booking - Client Appointment Interface
+# InstalaPro Booking - Client Appointment Interface
 
 ## Domain Overview
 **URL**: https://agenda.instalapro.com/{technician}  

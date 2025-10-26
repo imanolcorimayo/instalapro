@@ -1,8 +1,8 @@
-# InstalarPro ODM (Object Document Mapper) Architecture
+# InstalaPro ODM (Object Document Mapper) Architecture
 
 ## Overview
 
-The InstalarPro ODM system provides a robust, type-safe layer between the Pinia stores and Firestore database. It handles validation, user isolation, caching, and provides a consistent API for data operations across all entities.
+The InstalaPro ODM system provides a robust, type-safe layer between the Pinia stores and Firestore database. It handles validation, user isolation, caching, and provides a consistent API for data operations across all entities.
 
 ### Key Design Principles
 
@@ -111,7 +111,7 @@ sequenceDiagram
 
 ## Database Structure
 
-InstalarPro uses a flat Firestore collection structure with user isolation through `userUid` field. All collections are multi-tenant, with each document scoped to the authenticated technician.
+InstalaPro uses a flat Firestore collection structure with user isolation through `userUid` field. All collections are multi-tenant, with each document scoped to the authenticated technician.
 
 ```
 // ----------- TECHNICIANS -------------

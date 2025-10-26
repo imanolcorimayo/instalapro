@@ -1,4 +1,4 @@
-# InstalarPro Home - Technician Acquisition Landing Page
+# InstalaPro Home - Technician Acquisition Landing Page
 
 ## Domain Overview
 **URL**: https://instalapro.com  

@@ -1,7 +1,7 @@
-# InstalarPro - Air Conditioner Technician Platform
+# InstalaPro - Air Conditioner Technician Platform
 
 ## Project Overview
-InstalarPro is a comprehensive platform connecting air conditioner technicians with clients in Argentina/LATAM. The platform consists of three interconnected domains serving different users and purposes.
+InstalaPro is a comprehensive platform connecting air conditioner technicians with clients in Argentina/LATAM. The platform consists of three interconnected domains serving different users and purposes.
 
 ## Architecture
 

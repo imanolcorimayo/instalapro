@@ -42,7 +42,7 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'es' },
       meta: [
         { name: 'robots', content: 'index, follow' },
-        { name: 'author', content: 'InstalarPro' },
+        { name: 'author', content: 'InstalaPro' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' }
       ]
     }

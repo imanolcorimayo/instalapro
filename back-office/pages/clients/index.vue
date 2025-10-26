@@ -155,7 +155,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Clientes - InstalarPro Back Office',
+  title: 'Clientes - InstalaPro Back Office',
   description: 'Administre su base de datos de clientes e historial de servicios.',
   robots: 'noindex, nofollow'
 })

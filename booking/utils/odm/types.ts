@@ -1,4 +1,4 @@
-// ODM Types and Interfaces for InstalarPro Booking
+// ODM Types and Interfaces for InstalaPro Booking
 
 export type FieldType = 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object' | 'reference';
 

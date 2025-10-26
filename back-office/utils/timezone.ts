@@ -1,5 +1,5 @@
 /**
- * Timezone utilities for InstalarPro Back Office
+ * Timezone utilities for InstalaPro Back Office
  * Configured for Argentina/Buenos Aires timezone
  */
 

@@ -1,7 +1,7 @@
-# InstalarPro - Global Project Instructions
+# InstalaPro - Global Project Instructions
 
 ## Project Overview
-InstalarPro is a comprehensive platform for Air Conditioner Technicians in Argentina/LATAM, consisting of three interconnected domains serving different users and purposes.
+InstalaPro is a comprehensive platform for Air Conditioner Technicians in Argentina/LATAM, consisting of three interconnected domains serving different users and purposes.
 
 ### Architecture Overview
 ```

@@ -806,9 +806,9 @@ onMounted(async () => {
 // SEO Meta
 useSeoMeta({
   title: () => {
-    if (!techniciansStore.technician) return 'Reservar Cita - InstalarPro'
+    if (!techniciansStore.technician) return 'Reservar Cita - InstalaPro'
     const displayName = techniciansStore.technician.businessName || techniciansStore.technician.name
-    return `Reservar con ${displayName} - InstalarPro`
+    return `Reservar con ${displayName} - InstalaPro`
   },
   description: () => {
     if (!techniciansStore.technician) return 'Agenda tu cita de aire acondicionado'

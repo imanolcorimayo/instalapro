@@ -45,7 +45,7 @@
           <IconInformationOutline class="w-7 h-7 text-blue-600 mt-1" />
           <div class="ml-4 flex-1">
             <h3 class="text-lg font-semibold text-blue-900 mb-2">
-              ¡Bienvenido a InstalarPro!
+              ¡Bienvenido a InstalaPro!
             </h3>
             <p class="text-blue-800 mb-4">
               Para comenzar a usar la plataforma, necesitas completar tu perfil profesional.

@@ -1,7 +1,7 @@
-# InstalarPro - Air Conditioner Technician Job Management MVP
+# InstalaPro - Air Conditioner Technician Job Management MVP
 
 ## Overview
-InstalarPro is an MVP back-office application for **self-employed** Air Conditioner Technicians in Argentina/LATAM. **Primary focus: technician account setup, service configuration, and complete business management**. The system provides essential tools for managing appointments, clients, quotes, and basic cash flow.
+InstalaPro is an MVP back-office application for **self-employed** Air Conditioner Technicians in Argentina/LATAM. **Primary focus: technician account setup, service configuration, and complete business management**. The system provides essential tools for managing appointments, clients, quotes, and basic cash flow.
 
 **Target Users**: Self-employed technicians who sign up via our marketing site, set up their services, and get their individual booking pages.
 
@@ -422,4 +422,4 @@ service cloud.firestore {
 
 ---
 
-This documentation serves as the foundation for developing InstalarPro MVP, ensuring consistency with established patterns while meeting the specific needs of air conditioner technicians in the Argentina/LATAM market.
+This documentation serves as the foundation for developing InstalaPro MVP, ensuring consistency with established patterns while meeting the specific needs of air conditioner technicians in the Argentina/LATAM market.

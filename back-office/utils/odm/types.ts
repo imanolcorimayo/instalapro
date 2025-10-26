@@ -1,4 +1,4 @@
-// ODM Types and Interfaces for InstalarPro
+// ODM Types and Interfaces for InstalaPro
 
 export type FieldType = 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object' | 'reference';
 
