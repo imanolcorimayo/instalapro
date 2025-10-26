@@ -867,78 +867,92 @@
       </div>
       
       <form @submit.prevent="saveJob" class="space-y-4">
-        <!-- Client Name with Auto-complete -->
+        <!-- Client Selection -->
         <div class="relative">
           <label class="block text-sm font-medium text-gray-700 mb-1">
             Cliente *
           </label>
-          <input
-            :value="clientSearchQuery"
-            @input="handleClientNameInput"
-            @focus="clientSearchQuery.trim() && (showClientDropdown = true)"
-            @blur="handleClientNameBlur"
-            @keydown="handleClientInputKeydown"
-            type="text"
-            required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Buscar cliente o escribir nombre nuevo"
-            autocomplete="off"
-          />
-          
-          <!-- Auto-complete Dropdown -->
-          <div
-            v-if="showClientDropdown && (filteredClients.length > 0 || !hasExactClientMatch)"
-            class="absolute z-50 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto mt-1 sm:max-h-48"
-          >
-            <!-- Existing clients -->
-            <div
-              v-for="(client, index) in filteredClients"
-              :key="client.id"
-              @click="selectClient(client)"
-              :class="[
-                'p-3 sm:p-2 cursor-pointer border-b border-gray-100 last:border-b-0 touch-manipulation',
-                index === highlightedClientIndex 
-                  ? 'bg-blue-100 border-blue-200' 
-                  : 'hover:bg-blue-50 active:bg-blue-100'
-              ]"
-            >
-              <div class="font-medium text-gray-900">{{ client.name }}</div>
-              <div class="text-sm text-gray-600">{{ client.phone }}</div>
-              <div class="text-xs text-gray-500 truncate">{{ client.address }}</div>
-            </div>
-            
-            <!-- Create new client option -->
-            <div
-              v-if="clientSearchQuery.trim() && !hasExactClientMatch"
-              @click="createNewClient"
-              :class="[
-                'p-3 sm:p-2 cursor-pointer border-t border-gray-200 bg-green-25 touch-manipulation',
-                highlightedClientIndex === filteredClients.length 
-                  ? 'bg-green-100 border-green-200' 
-                  : 'hover:bg-green-50 active:bg-green-100'
-              ]"
-            >
-              <div class="flex items-center gap-2 font-medium text-green-700">
-                <IconPlus class="w-4 h-4" />
-                Crear cliente "{{ clientSearchQuery.trim() }}"
+
+          <!-- Client selected: Show read-only info -->
+          <div v-if="selectedClient" class="space-y-3">
+            <!-- Selected client display -->
+            <div class="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <div class="flex-1">
+                <div class="font-medium text-gray-900">{{ selectedClient.name }}</div>
+                <div class="text-sm text-gray-600">{{ selectedClient.phone }}</div>
+                <div class="text-xs text-gray-500 truncate">{{ selectedClient.address }}</div>
               </div>
-              <div class="text-sm text-green-600">Click para agregar como nuevo cliente</div>
+              <button
+                type="button"
+                @click="clearClientSelection"
+                class="ml-2 p-2 text-red-600 hover:bg-red-100 rounded-md transition-colors"
+                title="Cambiar cliente"
+              >
+                <IconCancel class="w-5 h-5" />
+              </button>
             </div>
           </div>
-        </div>
 
-        <!-- Phone -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Teléfono *
-          </label>
-          <input
-            v-model="jobForm.clientPhone"
-            type="tel"
-            required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="+54 11 1234-5678"
-          />
+          <!-- No client selected: Show search -->
+          <div v-else class="space-y-2">
+            <input
+              :value="clientSearchQuery"
+              @input="handleClientNameInput"
+              @focus="showClientDropdown = true"
+              @blur="handleClientNameBlur"
+              @keydown="handleClientInputKeydown"
+              type="text"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Buscar cliente..."
+              autocomplete="off"
+            />
+
+            <!-- Client Dropdown -->
+            <div
+              v-if="showClientDropdown && clientSearchQuery.trim()"
+              class="absolute z-50 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto mt-1"
+            >
+              <!-- Existing clients -->
+              <div
+                v-for="(client, index) in filteredClients"
+                :key="client.id"
+                @click="selectClient(client)"
+                :class="[
+                  'p-3 cursor-pointer border-b border-gray-100 last:border-b-0 touch-manipulation',
+                  index === highlightedClientIndex
+                    ? 'bg-blue-100 border-blue-200'
+                    : 'hover:bg-blue-50 active:bg-blue-100'
+                ]"
+              >
+                <div class="font-medium text-gray-900">{{ client.name }}</div>
+                <div class="text-sm text-gray-600">{{ client.phone }}</div>
+                <div class="text-xs text-gray-500 truncate">{{ client.address }}</div>
+              </div>
+
+              <!-- No results -->
+              <div v-if="filteredClients.length === 0" class="p-3 text-center text-gray-500">
+                No se encontraron clientes
+              </div>
+
+              <!-- Create new client option -->
+              <div
+                @click="createNewClient"
+                :class="[
+                  'p-3 cursor-pointer border-t-2 border-gray-200 bg-green-50 touch-manipulation',
+                  highlightedClientIndex === filteredClients.length
+                    ? 'bg-green-100 border-green-200'
+                    : 'hover:bg-green-100 active:bg-green-200'
+                ]"
+              >
+                <div class="flex items-center gap-2 font-medium text-green-700">
+                  <IconPlus class="w-4 h-4" />
+                  Crear nuevo cliente
+                </div>
+                <div class="text-sm text-green-600">Click para agregar cliente a la base de datos</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Service Type -->
@@ -953,9 +967,10 @@
             @change="onServiceTypeChange"
           >
             <option value="">Seleccionar servicio</option>
-            <option 
-              v-for="service in serviceTypesStore.activeServiceTypes" 
-              :key="service.id" 
+            <option value="__custom__">Personalizado</option>
+            <option
+              v-for="service in serviceTypesStore.activeServiceTypes"
+              :key="service.id"
               :value="service.name"
             >
               {{ service.name }} - ${{ formatPrice(service.basePrice) }}
@@ -963,6 +978,22 @@
           </select>
           <p v-if="selectedServiceType" class="text-xs text-gray-500 mt-1">
             Duración estimada: {{ Math.round(selectedServiceType.estimatedDuration / 60) }}h {{ selectedServiceType.estimatedDuration % 60 }}min
+          </p>
+        </div>
+
+        <!-- Custom Service Name (only shown when Personalizado is selected) -->
+        <div v-if="jobForm.serviceType === '__custom__'">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Nombre del Servicio (opcional)
+          </label>
+          <input
+            v-model="customServiceName"
+            type="text"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Personalizado"
+          />
+          <p class="text-xs text-gray-500 mt-1">
+            Si no se especifica, se guardará como "Personalizado"
           </p>
         </div>
 
@@ -1010,20 +1041,6 @@
           <p class="text-xs text-gray-500 mt-1">
             Entre 15 minutos y 8 horas ({{ Math.round((jobForm.duration || 0) / 60) }}h {{ (jobForm.duration || 0) % 60 }}min)
           </p>
-        </div>
-
-        <!-- Address -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Dirección *
-          </label>
-          <textarea
-            v-model="jobForm.address"
-            required
-            rows="2"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Dirección completa del trabajo"
-          />
         </div>
 
         <!-- Price -->
@@ -1159,6 +1176,9 @@ const clientSearchQuery = ref('')
 const selectedClient = ref(null)
 const highlightedClientIndex = ref(-1)
 
+// Custom service state
+const customServiceName = ref('')
+
 // Modal refs
 const jobModal = ref()
 const clientModalRef = ref()
@@ -1256,15 +1276,6 @@ const filteredClients = computed(() => {
     client.name.toLowerCase().includes(query) ||
     client.phone.includes(query)
   ).slice(0, 5) // Limit to 5 results for better UX
-})
-
-const hasExactClientMatch = computed(() => {
-  if (!clientSearchQuery.value.trim()) return false
-  
-  const query = clientSearchQuery.value.toLowerCase().trim()
-  return clientsStore.activeClients.some(client =>
-    client.name.toLowerCase() === query
-  )
 })
 
 const selectedServiceType = computed(() => {
@@ -1413,45 +1424,55 @@ const openNewJobModal = () => {
   clientSearchQuery.value = ''
   showClientDropdown.value = false
   highlightedClientIndex.value = -1
+  customServiceName.value = ''
   jobForm.value = {
-    clientName: '',
-    clientPhone: '',
     serviceType: '',
     date: nowInBuenosAires().format('YYYY-MM-DD'),
     time: '09:00',
     duration: '120',
-    address: '',
     price: '',
     notes: '',
-    status: 'pending'
+    status: 'confirmed'
   }
   jobModal.value?.showModal()
 }
 
 const editJob = (job) => {
   editingJob.value = job
-  
-  // Find matching client for auto-complete
-  const matchingClient = clientsStore.activeClients.find(client => 
+
+  // Find matching client by clientId first, then by name/phone
+  const matchingClient = clientsStore.activeClients.find(client =>
+    client.id === job.clientId ||
     client.name.toLowerCase() === job.clientName.toLowerCase() ||
     client.phone === job.clientPhone
   )
-  
+
   selectedClient.value = matchingClient || null
-  clientSearchQuery.value = job.clientName
+  clientSearchQuery.value = ''
   showClientDropdown.value = false
   highlightedClientIndex.value = -1
-  
+
+  // Check if service type is configured or custom
+  const isConfiguredService = serviceTypesStore.activeServiceTypes.some(
+    service => service.name === job.serviceType
+  )
+
+  // If service type is not in configured services, treat it as custom
+  let serviceTypeValue = job.serviceType
+  customServiceName.value = ''
+
+  if (!isConfiguredService) {
+    customServiceName.value = job.serviceType
+    serviceTypeValue = '__custom__'
+  }
+
   const actualDate = job.scheduledDate.toDate ? job.scheduledDate.toDate() : job.scheduledDate
   const jobDate = toBuenosAires(actualDate)
   jobForm.value = {
-    clientName: job.clientName,
-    clientPhone: job.clientPhone,
-    serviceType: job.serviceType,
+    serviceType: serviceTypeValue,
     date: jobDate.format('YYYY-MM-DD'),
     time: jobDate.format('HH:mm'),
     duration: job.estimatedDuration.toString(),
-    address: job.address,
     price: job.price?.toString() || '',
     notes: job.notes || '',
     status: job.status
@@ -1465,17 +1486,15 @@ const createJobAtTime = (date, hour) => {
   clientSearchQuery.value = ''
   showClientDropdown.value = false
   highlightedClientIndex.value = -1
+  customServiceName.value = ''
   jobForm.value = {
-    clientName: '',
-    clientPhone: '',
     serviceType: '',
     date: date,
     time: `${hour.toString().padStart(2, '0')}:00`,
     duration: '120',
-    address: '',
     price: '',
     notes: '',
-    status: 'pending'
+    status: 'confirmed'
   }
   jobModal.value?.showModal()
 }
@@ -1559,17 +1578,15 @@ const resetJobForm = () => {
   clientSearchQuery.value = ''
   showClientDropdown.value = false
   highlightedClientIndex.value = -1
+  customServiceName.value = ''
   jobForm.value = {
-    clientName: '',
-    clientPhone: '',
     serviceType: '',
     date: '',
     time: '',
     duration: '120',
-    address: '',
     price: '',
     notes: '',
-    status: 'pending'
+    status: 'confirmed'
   }
 }
 
@@ -1581,34 +1598,29 @@ const closeJobModal = () => {
 const handleClientNameInput = (event) => {
   const value = event.target.value
   clientSearchQuery.value = value
-  jobForm.value.clientName = value
-  
+
   // Reset highlighted index when typing
   highlightedClientIndex.value = -1
-  
+
   if (value.trim().length > 0) {
     showClientDropdown.value = true
   } else {
     showClientDropdown.value = false
-    selectedClient.value = null
-    // Clear auto-filled fields when name is cleared
-    if (!editingJob.value) {
-      jobForm.value.clientPhone = ''
-      jobForm.value.address = ''
-    }
   }
+}
+
+const clearClientSelection = () => {
+  selectedClient.value = null
+  clientSearchQuery.value = ''
+  showClientDropdown.value = false
+  highlightedClientIndex.value = -1
 }
 
 const selectClient = (client) => {
   selectedClient.value = client
-  clientSearchQuery.value = client.name
+  clientSearchQuery.value = ''
   showClientDropdown.value = false
   highlightedClientIndex.value = -1
-  
-  // Auto-fill form fields
-  jobForm.value.clientName = client.name
-  jobForm.value.clientPhone = client.phone
-  jobForm.value.address = client.address
 }
 
 const createNewClient = () => {
@@ -1631,24 +1643,25 @@ const handleClientNameBlur = () => {
 // Handle keyboard navigation in client dropdown
 const handleClientInputKeydown = (event) => {
   if (!showClientDropdown.value) return
-  
-  const totalOptions = filteredClients.value.length + (clientSearchQuery.value.trim() && !hasExactClientMatch.value ? 1 : 0)
-  
+
+  // Total options: existing clients + create new option (always shown)
+  const totalOptions = filteredClients.value.length + 1
+
   switch (event.key) {
     case 'ArrowDown':
       event.preventDefault()
-      highlightedClientIndex.value = highlightedClientIndex.value < totalOptions - 1 
-        ? highlightedClientIndex.value + 1 
+      highlightedClientIndex.value = highlightedClientIndex.value < totalOptions - 1
+        ? highlightedClientIndex.value + 1
         : 0
       break
-      
+
     case 'ArrowUp':
       event.preventDefault()
-      highlightedClientIndex.value = highlightedClientIndex.value > 0 
-        ? highlightedClientIndex.value - 1 
+      highlightedClientIndex.value = highlightedClientIndex.value > 0
+        ? highlightedClientIndex.value - 1
         : totalOptions - 1
       break
-      
+
     case 'Enter':
       event.preventDefault()
       if (highlightedClientIndex.value >= 0) {
@@ -1661,7 +1674,7 @@ const handleClientInputKeydown = (event) => {
         }
       }
       break
-      
+
     case 'Escape':
       event.preventDefault()
       showClientDropdown.value = false
@@ -1677,17 +1690,22 @@ const closeClientModal = () => {
 const handleClientCreated = (newClient) => {
   // Auto-select the newly created client (modal closes automatically)
   selectedClient.value = newClient
-  clientSearchQuery.value = newClient.name
-  
-  // Auto-fill form fields
-  jobForm.value.clientName = newClient.name
-  jobForm.value.clientPhone = newClient.phone
-  jobForm.value.address = newClient.address
-  
+  clientSearchQuery.value = ''
+  showClientDropdown.value = false
+  highlightedClientIndex.value = -1
+
   // Note: No need to reload clients as the store is automatically updated
 }
 
 const onServiceTypeChange = () => {
+  // Don't auto-fill if custom service is selected
+  if (jobForm.value.serviceType === '__custom__') {
+    // Reset to default values for custom service
+    jobForm.value.price = ''
+    jobForm.value.duration = '120'
+    return
+  }
+
   const service = selectedServiceType.value
   if (service) {
     // Auto-fill price and duration based on selected service
@@ -1704,7 +1722,14 @@ const checkTimeOverlap = (newJobStart, newJobDuration, excludeJobId = null) => {
 const saveJob = async () => {
   try {
     savingJob.value = true
-    
+
+    // Validate client selection
+    if (!selectedClient.value) {
+      useToast().error('Debe seleccionar un cliente antes de crear el trabajo')
+      savingJob.value = false
+      return
+    }
+
     // Prevent marking future jobs as completed
     if (jobForm.value.status === 'completed' && isJobInFuture.value) {
       useToast().error('No se puede marcar como completado un trabajo programado para el futuro')
@@ -1727,14 +1752,14 @@ const saveJob = async () => {
         return
       }
     }
-    
+
     // Check for time overlap
     const overlapCheck = checkTimeOverlap(
-      scheduledDateTime.toDate(), 
-      durationMinutes, 
+      scheduledDateTime.toDate(),
+      durationMinutes,
       editingJob.value?.id
     )
-    
+
     if (overlapCheck.hasOverlap) {
       useToast().error(
         `Conflicto de horario con "${overlapCheck.conflictJob.clientName}" (${overlapCheck.conflictTime})`
@@ -1742,18 +1767,31 @@ const saveJob = async () => {
       savingJob.value = false
       return
     }
-    
+
+    // Determine final service type name and metadata
+    const isCustom = jobForm.value.serviceType === '__custom__'
+    const finalServiceType = isCustom
+      ? (customServiceName.value.trim() || 'Personalizado')
+      : jobForm.value.serviceType
+
+    // Get service type ID for configured services
+    const configuredService = isCustom
+      ? null
+      : serviceTypesStore.activeServiceTypes.find(s => s.name === jobForm.value.serviceType)
+
     const jobData = {
-      clientName: jobForm.value.clientName.trim(),
-      clientPhone: jobForm.value.clientPhone.trim(),
-      serviceType: jobForm.value.serviceType,
+      clientName: selectedClient.value.name,
+      clientPhone: selectedClient.value.phone,
+      serviceType: finalServiceType,
+      serviceTypeId: configuredService?.id || null,
+      isCustomService: isCustom,
       scheduledDate: scheduledDateTime.toDate(),
       estimatedDuration: durationMinutes,
-      address: jobForm.value.address.trim(),
+      address: selectedClient.value.address,
       price: jobForm.value.price ? parseFloat(jobForm.value.price) : 0,
       notes: jobForm.value.notes.trim(),
       status: jobForm.value.status,
-      clientId: selectedClient.value?.id || ''
+      clientId: selectedClient.value.id
     }
 
     if (editingJob.value) {

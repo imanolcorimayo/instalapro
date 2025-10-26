@@ -672,16 +672,23 @@ const incomeByService = computed(() => {
       return jobDate >= start && jobDate <= end
     })
     .forEach(job => {
-      const serviceType = job.serviceType || 'Sin especificar'
-      const existing = serviceMap.get(serviceType) || 0
-      serviceMap.set(serviceType, existing + (job.price || 0))
+      // Group by serviceTypeId for configured services, or by unique identifier for custom services
+      // This ensures stable reporting even if service names change
+      const groupKey = job.serviceTypeId
+        ? job.serviceTypeId
+        : (job.isCustomService ? `custom-${job.id}` : job.serviceType || 'Sin especificar')
+
+      const displayName = job.serviceType || 'Sin especificar'
+
+      const existing = serviceMap.get(groupKey) || { name: displayName, total: 0 }
+      serviceMap.set(groupKey, { name: displayName, total: existing.total + (job.price || 0) })
     })
 
   const total = currentWeekIncome.value || 1 // Avoid division by zero
 
-  return Array.from(serviceMap.entries())
-    .map(([serviceType, amount]) => ({
-      serviceType,
+  return Array.from(serviceMap.values())
+    .map(({ name, total: amount }) => ({
+      serviceType: name,
       total: amount,
       percentage: (amount / total) * 100
     }))

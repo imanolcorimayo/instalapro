@@ -447,7 +447,7 @@
             <p class="text-xs text-gray-500 mb-1">Técnico</p>
             <p class="font-semibold text-gray-800">{{ techniciansStore.technician?.businessName || techniciansStore.technician?.name }}</p>
             <a
-              :href="whatsappUrl"
+              :href="whatsappUrlWithBooking"
               target="_blank"
               class="text-sm text-green-600 hover:text-green-700 flex items-center gap-1 mt-1"
             >
@@ -460,7 +460,7 @@
         <!-- Important Note -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <p class="text-sm text-blue-800">
-            <strong>Importante:</strong> Recibirás un correo de confirmación. El técnico se comunicará contigo para confirmar la cita.
+            <strong>Importante:</strong> El técnico se comunicará contigo para confirmar la cita.
           </p>
         </div>
 
@@ -474,7 +474,7 @@
           </button>
 
           <a
-            :href="whatsappUrl"
+            :href="whatsappUrlWithBooking"
             target="_blank"
             class="w-full h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
           >
@@ -778,12 +778,36 @@ const formatBookingDateTime = computed(() => {
   return `${formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)} - ${displayHour}:00 ${period}`
 })
 
-// WhatsApp URL
+// WhatsApp URL (generic - for floating button during booking)
 const whatsappUrl = computed(() => {
   if (!techniciansStore.technician?.phone) return '#'
   const phone = techniciansStore.technician.phone.replace(/[^0-9]/g, '')
   const displayName = techniciansStore.technician.businessName || techniciansStore.technician.name
   const message = encodeURIComponent(`Hola ${displayName}, me gustaría solicitar información sobre tus servicios.`)
+  return `https://wa.me/${phone}?text=${message}`
+})
+
+// WhatsApp URL with booking details (for success modal)
+const whatsappUrlWithBooking = computed(() => {
+  if (!techniciansStore.technician?.phone) return '#'
+  const phone = techniciansStore.technician.phone.replace(/[^0-9]/g, '')
+  const displayName = techniciansStore.technician.businessName || techniciansStore.technician.name
+
+  // Build message with booking details
+  const serviceName = bookingStore.selectedService?.name || ''
+  const dateTime = formatBookingDateTime.value
+  const address = bookingStore.clientInfo.address
+  const clientName = bookingStore.clientInfo.name
+
+  const message = encodeURIComponent(
+    `Hola ${displayName}, acabo de confirmar mi reserva:\n\n` +
+    `👤 ${clientName}\n` +
+    `🔧 ${serviceName}\n` +
+    `📅 ${dateTime}\n` +
+    `📍 ${address}\n\n` +
+    `Quedo atento a tu confirmación.`
+  )
+
   return `https://wa.me/${phone}?text=${message}`
 })
 
