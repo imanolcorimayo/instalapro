@@ -148,6 +148,7 @@
 
         <!-- Service List -->
         <div v-else class="space-y-3">
+          <!-- Regular Services -->
           <button
             v-for="service in serviceTypesStore.activeServiceTypes"
             :key="service.id"
@@ -204,6 +205,25 @@
                     <span>{{ formatDuration(service.estimatedDuration) }}</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </button>
+
+          <!-- Consulta General Option -->
+          <button
+            @click="openConsultationModal"
+            class="w-full text-left p-5 rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 hover:border-purple-300 hover:shadow-sm transition-all duration-200"
+          >
+            <div class="flex items-start gap-4">
+              <div class="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 bg-purple-600 text-white">
+                <IconHelpCircle class="w-5 h-5" />
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-gray-900 text-base mb-1">Consulta General</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                  ¿No encontrás lo que buscás? Describí tu necesidad y te ayudamos a encontrar la mejor solución.
+                </p>
               </div>
             </div>
           </button>
@@ -421,24 +441,29 @@
         </div>
 
         <!-- Success Message -->
-        <h2 class="text-2xl font-bold text-gray-800 text-center mb-3">¡Reserva confirmada!</h2>
+        <h2 class="text-2xl font-bold text-gray-800 text-center mb-3">
+          {{ isConsultationSuccess ? '¡Consulta enviada!' : '¡Reserva confirmada!' }}
+        </h2>
         <p class="text-gray-600 text-center mb-6">
-          Tu cita ha sido agendada exitosamente. El técnico recibirá la notificación y confirmará tu reserva pronto.
+          {{ isConsultationSuccess
+            ? 'Tu consulta ha sido enviada exitosamente. El técnico la revisará y se comunicará contigo pronto para coordinar.'
+            : 'Tu cita ha sido agendada exitosamente. El técnico recibirá la notificación y confirmará tu reserva pronto.'
+          }}
         </p>
 
         <!-- Booking Summary -->
         <div class="bg-gray-50 rounded-lg p-4 mb-6 space-y-3">
-          <div>
+          <div v-if="!isConsultationSuccess">
             <p class="text-xs text-gray-500 mb-1">Servicio</p>
             <p class="font-semibold text-gray-800">{{ bookingStore.selectedService?.name }}</p>
           </div>
 
-          <div>
+          <div v-if="!isConsultationSuccess">
             <p class="text-xs text-gray-500 mb-1">Fecha y hora</p>
             <p class="font-semibold text-gray-800">{{ formatBookingDateTime }}</p>
           </div>
 
-          <div>
+          <div v-if="!isConsultationSuccess">
             <p class="text-xs text-gray-500 mb-1">Dirección</p>
             <p class="font-semibold text-gray-800">{{ bookingStore.clientInfo.address }}</p>
           </div>
@@ -452,7 +477,10 @@
         <!-- Important Note -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <p class="text-sm text-blue-800">
-            <strong>Importante:</strong> El técnico se comunicará contigo para confirmar la cita.
+            <strong>Importante:</strong> {{ isConsultationSuccess
+              ? 'El técnico revisará tu consulta y se comunicará contigo a la brevedad.'
+              : 'El técnico se comunicará contigo para confirmar la cita.'
+            }}
           </p>
         </div>
 
@@ -462,11 +490,11 @@
             @click="closeSuccessModal"
             class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
           >
-            Agendar otra cita
+            {{ isConsultationSuccess ? 'Enviar otra consulta' : 'Agendar otra cita' }}
           </button>
 
           <a
-            :href="whatsappUrlWithBooking"
+            :href="isConsultationSuccess ? whatsappUrlConsultation : whatsappUrlWithBooking"
             target="_blank"
             class="w-full h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
           >
@@ -476,6 +504,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Consultation Modal -->
+    <ConsultationModal
+      :show="showConsultationModal"
+      :technician-user-uid="techniciansStore.technician?.userUid || ''"
+      @close="closeConsultationModal"
+      @submitted="handleConsultationSubmitted"
+    />
   </div>
 </template>
 
@@ -495,6 +531,7 @@ import IconCheck from '~icons/mdi/check'
 import IconCheckCircle from '~icons/mdi/check-circle'
 import IconChevronLeft from '~icons/mdi/chevron-left'
 import IconChevronRight from '~icons/mdi/chevron-right'
+import IconHelpCircle from '~icons/mdi/help-circle-outline'
 
 // Utils
 import { formatPrice } from '@/utils'
@@ -520,6 +557,10 @@ const emailError = ref(null)
 // Booking submission state
 const showSuccessModal = ref(false)
 const submittingBooking = ref(false)
+const isConsultationSuccess = ref(false)
+
+// Consultation modal state
+const showConsultationModal = ref(false)
 
 // Handle email blur - lookup client
 const handleEmailBlur = async () => {
@@ -729,6 +770,7 @@ const handleSubmitBooking = async () => {
     await jobsStore.createJob(jobData)
 
     // Success - show confirmation
+    isConsultationSuccess.value = false
     showSuccessModal.value = true
   } catch (err) {
     console.error('Error submitting booking:', err)
@@ -741,8 +783,25 @@ const handleSubmitBooking = async () => {
 // Close success modal and reset booking
 const closeSuccessModal = () => {
   showSuccessModal.value = false
+  isConsultationSuccess.value = false
   bookingStore.resetBooking()
   clientsStore.clearClient()
+}
+
+// Open consultation modal
+const openConsultationModal = () => {
+  showConsultationModal.value = true
+}
+
+// Close consultation modal
+const closeConsultationModal = () => {
+  showConsultationModal.value = false
+}
+
+// Handle consultation submission success
+const handleConsultationSubmitted = () => {
+  isConsultationSuccess.value = true
+  showSuccessModal.value = true
 }
 
 // Format booking date and time for display
@@ -798,6 +857,19 @@ const whatsappUrlWithBooking = computed(() => {
     `📅 ${dateTime}\n` +
     `📍 ${address}\n\n` +
     `Quedo atento a tu confirmación.`
+  )
+
+  return `https://wa.me/${phone}?text=${message}`
+})
+
+// WhatsApp URL for consultation follow-up (for success modal after consultation)
+const whatsappUrlConsultation = computed(() => {
+  if (!techniciansStore.technician?.phone) return '#'
+  const phone = techniciansStore.technician.phone.replace(/[^0-9]/g, '')
+  const displayName = techniciansStore.technician.businessName || techniciansStore.technician.name
+
+  const message = encodeURIComponent(
+    `Hola ${displayName}, acabo de enviarte una consulta desde tu página de reservas. Quedo atento a tu respuesta.`
   )
 
   return `https://wa.me/${phone}?text=${message}`

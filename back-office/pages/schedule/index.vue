@@ -866,6 +866,17 @@
         </div>
       </div>
       
+      <!-- Consultation Info Display (if consultation job) -->
+      <div v-if="isConsultationJob" class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex items-center gap-2 mb-3">
+          <IconClipboardText class="w-5 h-5 text-blue-600" />
+          <h3 class="text-sm font-semibold text-blue-900">Consulta del Cliente</h3>
+        </div>
+        <div class="bg-white rounded-lg p-3 border border-blue-100">
+          <pre class="text-sm text-gray-900 whitespace-pre-wrap font-sans">{{ jobForm.notes }}</pre>
+        </div>
+      </div>
+
       <form @submit.prevent="saveJob" class="space-y-4">
         <!-- Client Selection -->
         <div class="relative">
@@ -1065,7 +1076,7 @@
           </label>
           <textarea
             v-model="jobForm.notes"
-            rows="2"
+            rows="4"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Notas adicionales..."
           />
@@ -1124,6 +1135,7 @@ import IconProgressClock from '~icons/mdi/progress-clock'
 import IconCheckCircle from '~icons/mdi/check-circle'
 import IconCancel from '~icons/mdi/cancel'
 import IconAlertCircle from '~icons/mdi/alert-circle'
+import IconClipboardText from '~icons/mdi/clipboard-text-outline'
 import {
   nowInBuenosAires,
   toBuenosAires,
@@ -1281,6 +1293,11 @@ const filteredClients = computed(() => {
 const selectedServiceType = computed(() => {
   if (!jobForm.value.serviceType) return null
   return serviceTypesStore.getServiceByName(jobForm.value.serviceType)
+})
+
+// Detect if current job is a consultation job
+const isConsultationJob = computed(() => {
+  return jobForm.value.notes?.includes('=== CONSULTA GENERAL ===')
 })
 
 // Helper to check if a status is valid for future jobs

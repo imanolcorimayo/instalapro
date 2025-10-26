@@ -3,7 +3,7 @@ import type { SchemaDefinition } from '../types';
 
 export class JobSchema extends Schema {
   protected collectionName = 'jobs';
-
+  
   protected schema: SchemaDefinition = {
     userUid: {
       type: 'string',
@@ -11,7 +11,7 @@ export class JobSchema extends Schema {
     },
     clientId: {
       type: 'string',
-      required: false, // Optional reference to client document
+      required: true, // Required reference to client document
       maxLength: 50
     },
     clientName: {
@@ -36,6 +36,16 @@ export class JobSchema extends Schema {
       required: true,
       maxLength: 100,
       minLength: 1
+    },
+    serviceTypeId: {
+      type: 'string',
+      required: false, // null for custom services
+      maxLength: 50
+    },
+    isCustomService: {
+      type: 'boolean',
+      required: false,
+      default: false
     },
     description: {
       type: 'string',
@@ -74,7 +84,7 @@ export class JobSchema extends Schema {
     notes: {
       type: 'string',
       required: false,
-      maxLength: 1000,
+      maxLength: 5000,
       default: ''
     },
     source: {

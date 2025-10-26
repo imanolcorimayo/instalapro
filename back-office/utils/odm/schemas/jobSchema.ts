@@ -84,7 +84,7 @@ export class JobSchema extends Schema {
     notes: {
       type: 'string',
       required: false,
-      maxLength: 1000,
+      maxLength: 5000,
       default: ''
     },
     source: {
