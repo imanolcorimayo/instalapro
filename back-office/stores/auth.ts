@@ -8,6 +8,7 @@ interface AuthState {
   loading: boolean
   initialized: boolean
   error: string | null
+  isTestUser: boolean
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -15,14 +16,15 @@ export const useAuthStore = defineStore('auth', {
     user: null,
     loading: false, // Start with loading false to avoid hydration mismatch
     initialized: false, // Track if auth state has been initialized
-    error: null
+    error: null,
+    isTestUser: false
   }),
 
   getters: {
     isAuthenticated: (state) => !!state.user,
     userEmail: (state) => state.user?.email || null,
     userName: (state) => state.user?.displayName || state.user?.email || null,
-    userPhoto: (state) => state.user?.photoURL || null,
+    userPhoto: (state) => state.user?.photoURL || null
   },
 
   actions: {
@@ -93,8 +95,21 @@ export const useAuthStore = defineStore('auth', {
 
     initializeAuthListener() {
       if (process.client) {
-        return onAuthStateChange((user) => {
+        return onAuthStateChange(async (user) => {
           this.user = user
+
+          if (user) {
+            try {
+              const tokenResult = await user.getIdTokenResult()
+              this.isTestUser = Boolean(tokenResult?.claims?.isTestAccess)
+            } catch (error) {
+              console.error('Failed to read custom claims for auth user:', error)
+              this.isTestUser = false
+            }
+          } else {
+            this.isTestUser = false
+          }
+
           this.initialized = true // Mark as initialized once we get the first auth state
         })
       }

@@ -37,7 +37,7 @@
       </div>
 
       <!-- Navigation Menu -->
-      <nav class="mt-4 px-4 pb-24">
+      <nav class="mt-4 px-4 pb-24" data-tour-id="sidebar-navigation">
         <ul class="space-y-2">
           <li
             v-for="item in navigationItems"
@@ -99,7 +99,10 @@
     <!-- Main content -->
     <div class="lg:ml-64">
       <!-- Top bar -->
-      <div class="sticky top-0 z-10 flex items-center justify-between h-16 px-4 bg-white border-b border-gray-200 lg:px-6 cursor-default">
+      <div
+        class="sticky top-0 z-10 flex items-center justify-between h-16 px-4 bg-white border-b border-gray-200 lg:px-6 cursor-default"
+        data-tour-id="topbar"
+      >
         <!-- Mobile menu button -->
         <button
           type="button"
@@ -130,6 +133,8 @@
     <Teleport to="body">
       <div id="toast-container" />
     </Teleport>
+
+    <OnboardingTestUserTour />
   </div>
 </template>
 

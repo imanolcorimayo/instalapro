@@ -8,7 +8,7 @@
     <!-- Dashboard Content -->
     <div v-else class="space-y-6">
       <!-- Today's Priority -->
-      <section>
+      <section data-tour-id="dashboard-today">
         <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Hoy</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <!-- Jobs Today -->
@@ -58,7 +58,7 @@
       </section>
 
       <!-- This Week -->
-      <section>
+      <section data-tour-id="dashboard-week">
         <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Esta Semana</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <!-- Jobs This Week -->
@@ -103,7 +103,7 @@
       </section>
 
       <!-- Financial Overview & Business Insights -->
-      <section>
+      <section data-tour-id="dashboard-quick-actions">
         <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Este Mes</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <!-- Revenue This Month -->
@@ -155,7 +155,7 @@
       </section>
 
       <!-- Quick Actions -->
-      <section>
+      <section data-tour-id="dashboard-quick-actions">
         <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Acciones Rápidas</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <button
@@ -206,7 +206,7 @@
       </section>
 
       <!-- Recent Activity -->
-      <section>
+      <section data-tour-id="dashboard-recent-activity">
         <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Actividad Reciente</h2>
         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div v-if="dashboardStore.recentActivity.length === 0" class="p-8 text-center">

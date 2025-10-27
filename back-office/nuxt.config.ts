@@ -43,7 +43,10 @@ export default defineNuxtConfig({
   build: {
     transpile: ['@iconify/vue']
   },
-  css: ['~/assets/css/main.css'],
+  css: [
+    '~/assets/css/main.css',
+    'driver.js/dist/driver.css'
+  ],
   app: {
     head: {
       htmlAttrs: { lang: 'es' },
