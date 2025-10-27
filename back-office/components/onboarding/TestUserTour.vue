@@ -12,7 +12,7 @@
   </ClientOnly>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import IconHelpCircleOutline from '~icons/mdi/help-circle-outline'
 
@@ -21,7 +21,7 @@ const route = useRoute()
 
 const STORAGE_KEY = 'instalapro_backoffice_test_tour_seen'
 
-const driverInstance = shallowRef<any>(null)
+const driverInstance = shallowRef(null)
 const isLaunching = ref(false)
 const autoLaunchAttempted = ref(false)
 
@@ -32,12 +32,12 @@ const ensureDriver = async () => {
   return module.driver
 }
 
-const waitForElements = (selectors: string[], timeout = 4000, interval = 120) => {
+const waitForElements = (selectors, timeout = 4000, interval = 120) => {
   if (!process.client) {
     return Promise.resolve(false)
   }
 
-  return new Promise<boolean>((resolve) => {
+  return new Promise((resolve) => {
     const start = performance.now()
 
     const check = () => {
@@ -84,6 +84,18 @@ const buildSteps = () => {
       side: 'top'
     },
     {
+      selector: '[data-tour-id="dashboard-week"]',
+      title: 'Resumen de la semana',
+      description: 'Compará tus trabajos confirmados, ingresos y horas disponibles para los próximos días.',
+      side: 'top'
+    },
+    {
+      selector: '[data-tour-id="dashboard-month"]',
+      title: 'Resumen del mes',
+      description: 'Controlá la evolución mensual de tus ingresos, trabajos realizados y nuevos clientes.',
+      side: 'top'
+    },
+    {
       selector: '[data-tour-id="dashboard-quick-actions"]',
       title: 'Acciones rápidas',
       description: 'Creá un nuevo trabajo, abrí la agenda o cargá un cliente en un solo click.',
@@ -97,7 +109,7 @@ const buildSteps = () => {
     }
   ]
 
-  return definitions.reduce<any[]>((steps, item) => {
+  return definitions.reduce((steps, item) => {
     const element = document.querySelector(item.selector)
     if (element) {
       steps.push({
@@ -114,7 +126,7 @@ const buildSteps = () => {
   }, [])
 }
 
-const startTour = async (force = false): Promise<boolean> => {
+const startTour = async (force = false) => {
   if (!process.client) return false
   if (isLaunching.value) return false
   if (!force && localStorage.getItem(STORAGE_KEY) === '1') return false
@@ -130,6 +142,8 @@ const startTour = async (force = false): Promise<boolean> => {
     if (route.path === '/') {
       selectors.push(
         '[data-tour-id="dashboard-today"]',
+        '[data-tour-id="dashboard-week"]',
+        '[data-tour-id="dashboard-month"]',
         '[data-tour-id="dashboard-quick-actions"]',
         '[data-tour-id="dashboard-recent-activity"]'
       )

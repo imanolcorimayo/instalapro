@@ -103,7 +103,7 @@
       </section>
 
       <!-- Financial Overview & Business Insights -->
-      <section data-tour-id="dashboard-quick-actions">
+      <section data-tour-id="dashboard-month">
         <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Este Mes</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <!-- Revenue This Month -->
@@ -155,9 +155,12 @@
       </section>
 
       <!-- Quick Actions -->
-      <section data-tour-id="dashboard-quick-actions">
+      <section>
         <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Acciones Rápidas</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div
+          class="grid grid-cols-1 md:grid-cols-3 gap-3"
+          data-tour-id="dashboard-quick-actions"
+        >
           <button
             @click="navigateTo('/schedule')"
             class="group bg-gray-100 rounded-lg border border-gray-200 p-4 hover:border-gray-900 hover:bg-gray-900 transition-all duration-200 text-left"
