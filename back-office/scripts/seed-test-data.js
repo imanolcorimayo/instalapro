@@ -10,6 +10,7 @@ const __dirname = dirname(__filename)
 const {
   TEST_USER_UID = 'instalapro-demo-user',
   TEST_USER_EMAIL = 'demo.tech@instalapro.com',
+  TEST_USER_PASSWORD = 'demotech271025',
   TEST_USER_NAME = 'InstalaPro Demo',
   TEST_TECHNICIAN_SLUG = 'instalapro-demo',
   TEST_TECHNICIAN_DOC_ID = TEST_TECHNICIAN_SLUG || 'instalapro-demo'
@@ -120,17 +121,27 @@ const upsertDocument = async (collection, docId, data) => {
 
 const ensureTestUser = async () => {
   try {
+    // Check if user exists
     await admin.auth().getUser(TEST_USER_UID)
-    console.log(`✅ Test user ${TEST_USER_UID} already exists`)
+
+    // Update password to ensure it matches env variable
+    await admin.auth().updateUser(TEST_USER_UID, {
+      password: TEST_USER_PASSWORD,
+      displayName: TEST_USER_NAME,
+      emailVerified: true
+    })
+    console.log(`✅ Test user ${TEST_USER_UID} already exists (password updated)`)
   } catch {
+    // User doesn't exist, create new one
     await admin.auth().createUser({
       uid: TEST_USER_UID,
       email: TEST_USER_EMAIL,
+      password: TEST_USER_PASSWORD,
       displayName: TEST_USER_NAME,
       emailVerified: true,
       photoURL: 'https://avatars.githubusercontent.com/u/000000?v=4'
     })
-    console.log(`✨ Created Firebase Auth user ${TEST_USER_UID}`)
+    console.log(`✨ Created Firebase Auth user ${TEST_USER_UID} with email/password`)
   }
 }
 
@@ -358,7 +369,10 @@ const main = async () => {
 
     console.log('\n🎉 Test dataset ready!')
     console.log('   • UID:', TEST_USER_UID)
+    console.log('   • Email:', TEST_USER_EMAIL)
+    console.log('   • Password:', TEST_USER_PASSWORD)
     console.log('   • Booking URL slug:', TEST_TECHNICIAN_SLUG)
+    console.log('\n💡 Make sure your .env has the same TEST_USER_EMAIL and TEST_USER_PASSWORD values!')
   } catch (error) {
     console.error('❌ Failed to seed test data:', error)
     process.exitCode = 1

@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { type User } from 'firebase/auth'
-import { ofetch } from 'ofetch'
-import { signInWithGoogle, signOutUser, onAuthStateChange, signInWithCustomFirebaseToken } from '@/utils/firebase'
+import { signInWithGoogle, signOutUser, onAuthStateChange, signInWithEmailPassword } from '@/utils/firebase'
 
 interface AuthState {
   user: User | null
@@ -50,24 +49,33 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
 
       try {
-        const response = await ofetch<{ token?: string }>('/api/test-access', {
-          method: 'POST',
-          body: { code }
-        })
+        const config = useRuntimeConfig()
+        const expectedCode = config.public.testAccessCode as string | undefined
 
-        if (!response?.token) {
-          throw new Error('No recibimos el token de acceso de prueba')
+        if (!expectedCode) {
+          throw new Error('El acceso de prueba no está configurado')
         }
 
-        await signInWithCustomFirebaseToken(response.token)
+        if (code.trim() !== expectedCode.trim()) {
+          throw new Error('El código ingresado no es válido')
+        }
+
+        const testUserEmail = config.public.testUserEmail as string | undefined
+        const testUserPassword = config.public.testUserPassword as string | undefined
+
+        if (!testUserEmail || !testUserPassword) {
+          throw new Error('Las credenciales de prueba no están configuradas')
+        }
+
+        await signInWithEmailPassword(testUserEmail, testUserPassword)
+
+        // Store test user flag in localStorage
+        if (process.client) {
+          localStorage.setItem('instalapro_isTestUser', 'true')
+        }
       } catch (error: any) {
         console.error('Test access sign in error:', error)
-        const message =
-          error?.data?.message ||
-          error?.statusMessage ||
-          error?.message ||
-          'Error al validar el código de acceso'
-
+        const message = error?.message || 'Error al validar el código de acceso'
         this.error = message
         throw error
       } finally {
@@ -81,7 +89,12 @@ export const useAuthStore = defineStore('auth', {
       try {
         await signOutUser()
         // Don't set this.user to null here - let the auth listener handle it
-        
+
+        // Clear test user flag from localStorage
+        if (process.client) {
+          localStorage.removeItem('instalapro_isTestUser')
+        }
+
         // Navigate to sign-in page after sign out
         if (process.client) {
           await navigateTo('/sign-in')
@@ -95,17 +108,12 @@ export const useAuthStore = defineStore('auth', {
 
     initializeAuthListener() {
       if (process.client) {
-        return onAuthStateChange(async (user) => {
+        return onAuthStateChange((user) => {
           this.user = user
 
           if (user) {
-            try {
-              const tokenResult = await user.getIdTokenResult()
-              this.isTestUser = Boolean(tokenResult?.claims?.isTestAccess)
-            } catch (error) {
-              console.error('Failed to read custom claims for auth user:', error)
-              this.isTestUser = false
-            }
+            // Check localStorage for test user flag instead of custom claims
+            this.isTestUser = localStorage.getItem('instalapro_isTestUser') === 'true'
           } else {
             this.isTestUser = false
           }

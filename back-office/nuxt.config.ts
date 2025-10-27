@@ -9,10 +9,11 @@ export default defineNuxtConfig({
     '@pinia/nuxt'
   ],
   runtimeConfig: {
-    testAccessCode: process.env.NUXT_TEST_ACCESS_CODE,
     testUserUid: process.env.NUXT_TEST_USER_UID,
-    firebaseServiceAccount: process.env.NUXT_FIREBASE_SERVICE_ACCOUNT,
     public: {
+      testAccessCode: process.env.NUXT_PUBLIC_TEST_ACCESS_CODE,
+      testUserEmail: process.env.NUXT_PUBLIC_TEST_USER_EMAIL,
+      testUserPassword: process.env.NUXT_PUBLIC_TEST_USER_PASSWORD,
       firebaseApiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY,
       firebaseAuthDomain: process.env.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
       firebaseProjectId: process.env.NUXT_PUBLIC_FIREBASE_PROJECT_ID,

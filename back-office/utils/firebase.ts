@@ -1,6 +1,6 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
 import { getFirestore, type Firestore } from 'firebase/firestore'
-import { getAuth, type Auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User, setPersistence, browserLocalPersistence, signInWithCustomToken } from 'firebase/auth'
+import { getAuth, type Auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User, setPersistence, browserLocalPersistence, signInWithEmailAndPassword } from 'firebase/auth'
 
 // Firebase configuration interface
 interface FirebaseConfig {
@@ -111,13 +111,14 @@ export const signOutUser = async (): Promise<void> => {
   }
 }
 
-export const signInWithCustomFirebaseToken = async (token: string): Promise<User> => {
+// Sign in with email and password
+export const signInWithEmailPassword = async (email: string, password: string): Promise<User> => {
   try {
     const auth = getAuthInstance()
-    const credential = await signInWithCustomToken(auth, token)
+    const credential = await signInWithEmailAndPassword(auth, email, password)
     return credential.user
   } catch (error) {
-    console.error('Error signing in with custom token:', error)
+    console.error('Error signing in with email and password:', error)
     throw error
   }
 }
