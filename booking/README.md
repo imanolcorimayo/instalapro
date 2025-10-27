@@ -34,3 +34,10 @@ yarn dev
 # Build for production
 yarn build
 ```
+
+## Demo Technician Link
+When the back-office demo mode is configured, set `NUXT_PUBLIC_TEST_TECHNICIAN_SLUG` in `.env` and share the booking URL:
+```bash
+https://your-booking-host/${NUXT_PUBLIC_TEST_TECHNICIAN_SLUG}
+```
+That slug is seeded by `back-office/scripts/seed-test-data.js`, so both apps read the same sample technician profile.

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { type User } from 'firebase/auth'
-import { signInWithGoogle, signOutUser, onAuthStateChange } from '@/utils/firebase'
+import { ofetch } from 'ofetch'
+import { signInWithGoogle, signOutUser, onAuthStateChange, signInWithCustomFirebaseToken } from '@/utils/firebase'
 
 interface AuthState {
   user: User | null
@@ -27,16 +28,48 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async signInWithGoogle() {
       this.error = null
+      this.loading = true
 
       try {
         const user = await signInWithGoogle()
         // Don't set this.user here - let the auth listener handle it
-        // Don't set loading to false - let the auth listener handle it
         return user
       } catch (error: any) {
         console.error('Sign in error:', error)
         this.error = error.message || 'Error al iniciar sesión con Google'
         throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async signInWithAccessCode(code: string) {
+      this.error = null
+      this.loading = true
+
+      try {
+        const response = await ofetch<{ token?: string }>('/api/test-access', {
+          method: 'POST',
+          body: { code }
+        })
+
+        if (!response?.token) {
+          throw new Error('No recibimos el token de acceso de prueba')
+        }
+
+        await signInWithCustomFirebaseToken(response.token)
+      } catch (error: any) {
+        console.error('Test access sign in error:', error)
+        const message =
+          error?.data?.message ||
+          error?.statusMessage ||
+          error?.message ||
+          'Error al validar el código de acceso'
+
+        this.error = message
+        throw error
+      } finally {
+        this.loading = false
       }
     },
 

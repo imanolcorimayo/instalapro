@@ -26,6 +26,41 @@
         <span>{{ authStore.loading ? 'Iniciando sesión...' : 'Continuar con Google' }}</span>
       </button>
 
+      <!-- Test Access Code -->
+      <div v-if="testAccessEnabled" class="mt-8 border-t border-gray-100 pt-6">
+        <p class="text-sm font-medium text-gray-700 mb-3">
+          ¿Recibiste un código de acceso para pruebas?
+        </p>
+        <div class="space-y-3">
+          <div>
+            <input
+              v-model="testCode"
+              type="text"
+              inputmode="text"
+              autocomplete="one-time-code"
+              placeholder="Ingresa tu código de prueba"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              :disabled="isSubmittingAccessCode || authStore.loading"
+            />
+            <p v-if="codeError" class="mt-2 text-sm text-red-600">
+              {{ codeError }}
+            </p>
+          </div>
+
+          <button
+            @click="handleAccessCodeSignIn"
+            :disabled="isSubmittingAccessCode || authStore.loading"
+            class="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg text-base font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div v-if="isSubmittingAccessCode" class="w-5 h-5 border-2 border-blue-200 border-t-white rounded-full animate-spin"></div>
+            <span>{{ isSubmittingAccessCode ? 'Verificando...' : 'Usar código de prueba' }}</span>
+          </button>
+        </div>
+        <p class="mt-3 text-xs text-gray-500">
+          Esto habilita datos de demostración para explorar el panel y el flujo de reservas.
+        </p>
+      </div>
+
       <!-- Footer -->
       <div class="mt-8 text-center">
         <p class="text-sm text-gray-500">
@@ -37,6 +72,7 @@
 </template>
 
 <script setup>
+import { computed, ref, watch } from 'vue'
 // Icons
 import IconAirConditioner from '~icons/mdi/air-conditioner'
 import IconGoogle from '~icons/logos/google-icon'
@@ -48,6 +84,18 @@ definePageMeta({
 
 const authStore = useAuthStore()
 const { $toast } = useNuxtApp()
+const runtimeConfig = useRuntimeConfig()
+
+const testAccessEnabled = computed(() => runtimeConfig.public.testAccessEnabled)
+const testCode = ref('')
+const codeError = ref('')
+const isSubmittingAccessCode = ref(false)
+
+watch(testCode, () => {
+  if (codeError.value) {
+    codeError.value = ''
+  }
+})
 
 const handleGoogleSignIn = async () => {
   try {
@@ -61,6 +109,39 @@ const handleGoogleSignIn = async () => {
   } catch (error) {
     console.error('Sign in failed:', error)
     $toast.error('Error al iniciar sesión. Por favor, intenta de nuevo.')
+  }
+}
+
+const handleAccessCodeSignIn = async () => {
+  if (!testAccessEnabled.value) {
+    return
+  }
+
+  const trimmedCode = testCode.value.trim()
+
+  if (!trimmedCode) {
+    codeError.value = 'Ingresa el código que te compartimos para acceder.'
+    return
+  }
+
+  codeError.value = ''
+  authStore.clearError()
+  isSubmittingAccessCode.value = true
+
+  try {
+    await authStore.signInWithAccessCode(trimmedCode)
+    $toast.success('Modo demo activado correctamente')
+    testCode.value = ''
+    await navigateTo('/')
+  } catch (error) {
+    console.error('Test access sign in failed:', error)
+    if (authStore.error) {
+      $toast.error(authStore.error)
+    } else {
+      $toast.error('No pudimos validar el código. Intenta nuevamente.')
+    }
+  } finally {
+    isSubmittingAccessCode.value = false
   }
 }
 

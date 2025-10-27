@@ -1,6 +1,6 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
 import { getFirestore, type Firestore } from 'firebase/firestore'
-import { getAuth, type Auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User, setPersistence, browserLocalPersistence } from 'firebase/auth'
+import { getAuth, type Auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User, setPersistence, browserLocalPersistence, signInWithCustomToken } from 'firebase/auth'
 
 // Firebase configuration interface
 interface FirebaseConfig {
@@ -107,6 +107,17 @@ export const signOutUser = async (): Promise<void> => {
     await signOut(auth)
   } catch (error) {
     console.error('Error signing out:', error)
+    throw error
+  }
+}
+
+export const signInWithCustomFirebaseToken = async (token: string): Promise<User> => {
+  try {
+    const auth = getAuthInstance()
+    const credential = await signInWithCustomToken(auth, token)
+    return credential.user
+  } catch (error) {
+    console.error('Error signing in with custom token:', error)
     throw error
   }
 }

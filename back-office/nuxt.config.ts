@@ -9,6 +9,9 @@ export default defineNuxtConfig({
     '@pinia/nuxt'
   ],
   runtimeConfig: {
+    testAccessCode: process.env.NUXT_TEST_ACCESS_CODE,
+    testUserUid: process.env.NUXT_TEST_USER_UID,
+    firebaseServiceAccount: process.env.NUXT_FIREBASE_SERVICE_ACCOUNT,
     public: {
       firebaseApiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY,
       firebaseAuthDomain: process.env.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -16,7 +19,9 @@ export default defineNuxtConfig({
       firebaseStorageBucket: process.env.NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
       firebaseMessagingSenderId: process.env.NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
       firebaseAppId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID,
-      environment: process.env.NUXT_PUBLIC_ENVIRONMENT || 'development'
+      environment: process.env.NUXT_PUBLIC_ENVIRONMENT || 'development',
+      testAccessEnabled: process.env.NUXT_PUBLIC_TEST_ACCESS_ENABLED === 'true',
+      testTechnicianSlug: process.env.NUXT_PUBLIC_TEST_TECHNICIAN_SLUG || ''
     }
   },
   dayjs: {
