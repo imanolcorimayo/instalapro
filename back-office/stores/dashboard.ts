@@ -246,7 +246,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
   const getJobIcon = (status: string): string => {
     const icons = {
-      pending: 'mdi:clock-outline',
+      pending: 'mdi:alert-circle-outline',
       confirmed: 'mdi:check-circle',
       in_progress: 'mdi:progress-clock',
       completed: 'mdi:check-all',
