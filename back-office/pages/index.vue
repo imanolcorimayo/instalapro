@@ -8,7 +8,7 @@
     <!-- Dashboard Content -->
     <div v-else class="mx-auto max-w-7xl">
       <!-- HOY Section -->
-      <div class="mb-8">
+      <div class="mb-8" data-tour-id="dashboard-today">
         <div class="mb-4 flex items-center gap-2">
           <div class="flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1">
             <IconCalendar class="h-4 w-4 text-blue-600" />
@@ -57,6 +57,8 @@
         </div>
       </div>
 
+      <!-- ESTA SEMANA + ESTE MES Combined -->
+      <div data-tour-id="dashboard-week-month">
       <!-- ESTA SEMANA Section -->
       <div class="mb-8">
         <div class="mb-4 flex items-center gap-2">
@@ -150,7 +152,10 @@
           </div>
         </div>
       </div>
+      </div>
 
+      <!-- ACCIONES RÁPIDAS + ACTIVIDAD RECIENTE Combined -->
+      <div data-tour-id="dashboard-actions-activity">
       <!-- ACCIONES RÁPIDAS Section -->
       <div class="mb-8">
         <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Acciones Rápidas</h2>
@@ -242,6 +247,7 @@
             <span class="text-sm text-gray-500">{{ formatRelativeTime(activity.timestamp) }}</span>
           </div>
         </div>
+      </div>
       </div>
     </div>
   </div>
