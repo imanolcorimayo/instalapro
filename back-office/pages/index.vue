@@ -164,7 +164,7 @@
           <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <div class="mb-4 flex items-center gap-2">
               <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100">
-                <IconTrendingUp class="h-4 w-4 text-indigo-600" />
+                <IconCalendarMonth class="h-4 w-4 text-indigo-600" />
               </div>
               <h3 class="font-semibold text-slate-900">Este Mes</h3>
             </div>
@@ -257,7 +257,6 @@ import IconCalendarMonth from '~icons/mdi/calendar-month'
 import IconClockOutline from '~icons/mdi/clock-outline'
 import IconAlertCircle from '~icons/mdi/alert-circle-outline'
 import IconCurrencyDollar from '~icons/mdi/currency-usd'
-import IconTrendingUp from '~icons/mdi/trending-up'
 import IconUserPlus from '~icons/mdi/account-plus-outline'
 import IconPlus from '~icons/mdi/plus'
 import IconInbox from '~icons/mdi/inbox'
