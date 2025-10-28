@@ -210,38 +210,59 @@
 
       <!-- Activity Feed - Compact -->
       <div>
-          <h2 class="mb-4 text-lg font-semibold text-slate-900">Actividad Reciente</h2>
-          <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200" data-tour-id="dashboard-actions-activity">
-          <div v-if="dashboardStore.recentActivity.length === 0" class="p-8 text-center">
-            <IconInbox class="w-10 h-10 text-slate-300 mx-auto mb-2" />
-            <p class="text-sm text-slate-500">No hay actividad reciente</p>
-          </div>
-          <div v-else class="space-y-3">
-            <div
-              v-for="activity in dashboardStore.recentActivity"
-              :key="activity.id"
-              class="flex items-start gap-3 rounded-lg bg-slate-50 p-3 transition-all hover:bg-slate-100"
-            >
+        <h2 class="mb-4 text-lg font-semibold text-slate-900">Actividad Reciente</h2>
+
+        <div v-if="dashboardStore.recentActivity.length === 0" class="p-8 text-center">
+          <IconInbox class="w-10 h-10 text-slate-300 mx-auto mb-2" />
+          <p class="text-sm text-slate-500">No hay actividad reciente</p>
+        </div>
+
+        <div v-else class="space-y-2">
+          <div
+            v-for="activity in dashboardStore.recentActivity"
+            :key="activity.id"
+            :class="[
+              'flex items-center justify-between rounded-lg p-4 transition-all hover:shadow-sm',
+              activity.color === 'yellow' && 'border border-amber-200 bg-amber-50',
+              activity.color === 'orange' && 'border border-amber-200 bg-amber-50',
+              activity.color === 'green' && 'border border-green-200 bg-green-50',
+              activity.color === 'blue' && 'border border-blue-200 bg-blue-50',
+              activity.color === 'red' && 'border border-red-200 bg-red-50',
+              activity.color === 'gray' && 'border border-slate-200 bg-white'
+            ]"
+          >
+            <div class="flex items-center gap-3">
               <div :class="[
-                'mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full',
-                activity.color === 'yellow' && 'bg-amber-500',
-                activity.color === 'orange' && 'bg-amber-500',
-                activity.color === 'green' && 'bg-emerald-500',
-                activity.color === 'blue' && 'bg-blue-500',
-                activity.color === 'red' && 'bg-red-500',
-                activity.color === 'gray' && 'bg-slate-500'
+                'flex h-8 w-8 items-center justify-center rounded-lg',
+                activity.color === 'yellow' && 'bg-amber-100',
+                activity.color === 'orange' && 'bg-amber-100',
+                activity.color === 'green' && 'bg-green-100',
+                activity.color === 'blue' && 'bg-blue-100',
+                activity.color === 'red' && 'bg-red-100',
+                activity.color === 'gray' && 'bg-slate-100'
               ]">
-                <component :is="getIcon(activity.icon)" class="h-3.5 w-3.5 text-white" />
+                <component
+                  :is="getIcon(activity.icon)"
+                  :class="[
+                    'h-4 w-4',
+                    activity.color === 'yellow' && 'text-amber-600',
+                    activity.color === 'orange' && 'text-amber-600',
+                    activity.color === 'green' && 'text-green-600',
+                    activity.color === 'blue' && 'text-blue-600',
+                    activity.color === 'red' && 'text-red-600',
+                    activity.color === 'gray' && 'text-slate-600'
+                  ]"
+                />
               </div>
-              <div class="min-w-0 flex-1">
-                <p class="text-sm font-medium text-slate-900">{{ activity.action }}</p>
-                <p class="text-xs text-slate-600">{{ activity.description }}</p>
+              <div>
+                <p class="font-medium text-slate-900">{{ activity.action }}</p>
+                <p class="text-sm text-slate-600">{{ activity.description }}</p>
               </div>
-              <span class="text-xs text-slate-500">{{ formatRelativeTime(activity.timestamp) }}</span>
             </div>
-          </div>
+            <span class="text-sm text-slate-500">{{ formatRelativeTime(activity.timestamp) }}</span>
           </div>
         </div>
+      </div>
     </div>
   </div>
 </template>
