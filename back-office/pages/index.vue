@@ -113,65 +113,103 @@
         </div>
       </div>
 
-      <!-- Stats + Activity (Stacked) -->
-      <div class="space-y-6" data-tour-id="dashboard-week-month">
-        <!-- Weekly & Monthly Stats - Combined -->
-        <div>
-          <h2 class="mb-4 text-lg font-semibold text-slate-900">Resumen Semanal y Mensual</h2>
-          <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <!-- This Week -->
-          <div class="mb-6 border-b border-slate-100 pb-4">
-            <div class="mb-3 flex items-center gap-2">
-              <div class="flex h-6 w-6 items-center justify-center rounded bg-purple-100">
-                <IconCalendarWeek class="h-3.5 w-3.5 text-purple-600" />
+      <!-- Resumen Semanal y Mensual -->
+      <div class="mb-8" data-tour-id="dashboard-week-month">
+        <h2 class="mb-4 text-lg font-semibold text-slate-900">Resumen Semanal y Mensual</h2>
+
+        <div class="grid gap-6 lg:grid-cols-2">
+          <!-- Esta Semana -->
+          <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="mb-4 flex items-center gap-2">
+              <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-100">
+                <IconCalendarWeek class="h-4 w-4 text-purple-600" />
               </div>
-              <span class="text-sm font-medium text-slate-700">Esta Semana</span>
+              <h3 class="font-semibold text-slate-900">Esta Semana</h3>
             </div>
-            <div class="grid grid-cols-3 gap-4">
-              <div>
-                <p class="text-xs text-slate-600">Trabajos</p>
-                <p class="text-2xl font-bold text-slate-900">{{ dashboardStore.jobsThisWeek }}</p>
+
+            <div class="space-y-3">
+              <div class="flex items-center justify-between rounded-lg bg-slate-50 p-3">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100">
+                    <IconCurrencyDollar class="h-4 w-4 text-green-600" />
+                  </div>
+                  <span class="text-sm font-medium text-slate-700">Ingresos</span>
+                </div>
+                <span class="text-lg font-bold text-slate-900">{{ formatCurrency(dashboardStore.revenueThisWeek) }}</span>
               </div>
-              <div>
-                <p class="text-xs text-slate-600">Ingresos</p>
-                <p class="text-2xl font-bold text-slate-900">{{ formatCurrency(dashboardStore.revenueThisWeek) }}</p>
+
+              <div class="flex items-center justify-between rounded-lg bg-slate-50 p-3">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100">
+                    <IconBriefcase class="h-4 w-4 text-slate-600" />
+                  </div>
+                  <span class="text-sm font-medium text-slate-700">Trabajos</span>
+                </div>
+                <span class="text-lg font-bold text-slate-900">{{ dashboardStore.jobsThisWeek }}</span>
               </div>
-              <div>
-                <p class="text-xs text-slate-600">Horas</p>
-                <p class="text-2xl font-bold text-slate-900">{{ dashboardStore.availableHoursThisWeek }}</p>
+
+              <div class="flex items-center justify-between rounded-lg bg-slate-50 p-3">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
+                    <IconClock class="h-4 w-4 text-blue-600" />
+                  </div>
+                  <span class="text-sm font-medium text-slate-700">Horas Disponibles</span>
+                </div>
+                <span class="text-lg font-bold text-slate-900">{{ dashboardStore.availableHoursThisWeek }}</span>
               </div>
             </div>
           </div>
 
-          <!-- This Month -->
-          <div>
-            <div class="mb-3 flex items-center gap-2">
-              <div class="flex h-6 w-6 items-center justify-center rounded bg-indigo-100">
-                <IconCalendarMonth class="h-3.5 w-3.5 text-indigo-600" />
+          <!-- Este Mes -->
+          <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="mb-4 flex items-center gap-2">
+              <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100">
+                <IconTrendingUp class="h-4 w-4 text-indigo-600" />
               </div>
-              <span class="text-sm font-medium text-slate-700">Este Mes</span>
+              <h3 class="font-semibold text-slate-900">Este Mes</h3>
             </div>
-            <div class="grid grid-cols-3 gap-4">
-              <div>
-                <p class="text-xs text-slate-600">Ingresos</p>
-                <p class="text-2xl font-bold text-slate-900">{{ formatCurrency(dashboardStore.revenueThisMonth) }}</p>
+
+            <div class="space-y-3">
+              <div class="flex items-center justify-between rounded-lg bg-slate-50 p-3">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100">
+                    <IconCurrencyDollar class="h-4 w-4 text-green-600" />
+                  </div>
+                  <span class="text-sm font-medium text-slate-700">Ingresos</span>
+                </div>
+                <span class="text-lg font-bold text-slate-900">{{ formatCurrency(dashboardStore.revenueThisMonth) }}</span>
               </div>
-              <div>
-                <p class="text-xs text-slate-600">Trabajos</p>
-                <p class="text-2xl font-bold text-slate-900">{{ dashboardStore.jobsThisMonth }}<span class="text-sm text-slate-500"> / {{ dashboardStore.jobsLastMonth }}</span></p>
-                <p class="text-xs text-slate-500">vs. mes anterior</p>
+
+              <div class="flex items-center justify-between rounded-lg bg-slate-50 p-3">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100">
+                    <IconBriefcase class="h-4 w-4 text-slate-600" />
+                  </div>
+                  <span class="text-sm font-medium text-slate-700">Trabajos</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-lg font-bold text-slate-900">{{ dashboardStore.jobsThisMonth }}</span>
+                  <span class="ml-1 text-sm text-slate-500">/ {{ dashboardStore.jobsLastMonth }}</span>
+                  <p class="text-xs text-slate-500">vs. mes anterior</p>
+                </div>
               </div>
-              <div>
-                <p class="text-xs text-slate-600">Clientes</p>
-                <p class="text-2xl font-bold text-slate-900">{{ dashboardStore.newClientsThisMonth }}</p>
+
+              <div class="flex items-center justify-between rounded-lg bg-slate-50 p-3">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
+                    <IconUsers class="h-4 w-4 text-blue-600" />
+                  </div>
+                  <span class="text-sm font-medium text-slate-700">Nuevos Clientes</span>
+                </div>
+                <span class="text-lg font-bold text-slate-900">{{ dashboardStore.newClientsThisMonth }}</span>
               </div>
             </div>
-          </div>
           </div>
         </div>
+      </div>
 
-        <!-- Activity Feed - Compact -->
-        <div>
+      <!-- Activity Feed - Compact -->
+      <div>
           <h2 class="mb-4 text-lg font-semibold text-slate-900">Actividad Reciente</h2>
           <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200" data-tour-id="dashboard-actions-activity">
           <div v-if="dashboardStore.recentActivity.length === 0" class="p-8 text-center">
@@ -204,7 +242,6 @@
           </div>
           </div>
         </div>
-      </div>
     </div>
   </div>
 </template>
@@ -229,6 +266,8 @@ import IconProgressClock from '~icons/mdi/progress-clock'
 import IconCloseCircleOutline from '~icons/mdi/close-circle-outline'
 import IconAccount from '~icons/mdi/account-outline'
 import IconBriefcase from '~icons/mdi/briefcase-outline'
+import IconUsers from '~icons/mdi/account-group-outline'
+import IconClock from '~icons/mdi/clock-outline'
 
 // ==========================================
 // PAGE METADATA
