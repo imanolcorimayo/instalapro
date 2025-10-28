@@ -28,6 +28,14 @@ const autoLaunchAttempts = ref(0)
 // Retry auto-launch a few times to cover slower dashboard renders after SPA navigation
 const MAX_AUTO_LAUNCH_ATTEMPTS = 6
 const AUTO_LAUNCH_RETRY_DELAY = 1400
+const MOBILE_BREAKPOINT_QUERY = '(max-width: 1023px)'
+const SIDEBAR_ANIMATION_DELAY = 340
+
+const isMobileScreen = ref(false)
+let mobileMediaQuery = null
+let shouldCloseSidebarAfterTour = false
+let shouldReopenSidebarAfterTour = false
+let initialSidebarOpen = false
 
 let autoLaunchRetryId = null
 
@@ -66,6 +74,145 @@ const waitForElements = (selectors, timeout = 8000, interval = 120) => {
   })
 }
 
+const wait = (ms) =>
+  new Promise((resolve) => {
+    window.setTimeout(resolve, ms)
+  })
+
+const handleMobileMediaChange = (event) => {
+  if (!event || typeof event.matches !== 'boolean') {
+    return
+  }
+
+  isMobileScreen.value = event.matches
+}
+
+const setupMobileDetection = () => {
+  if (!process.client) {
+    return
+  }
+
+  mobileMediaQuery = window.matchMedia(MOBILE_BREAKPOINT_QUERY)
+  handleMobileMediaChange(mobileMediaQuery)
+
+  if (typeof mobileMediaQuery.addEventListener === 'function') {
+    mobileMediaQuery.addEventListener('change', handleMobileMediaChange)
+  } else if (typeof mobileMediaQuery.addListener === 'function') {
+    mobileMediaQuery.addListener(handleMobileMediaChange)
+  }
+}
+
+const teardownMobileDetection = () => {
+  if (!mobileMediaQuery) {
+    return
+  }
+
+  if (typeof mobileMediaQuery.removeEventListener === 'function') {
+    mobileMediaQuery.removeEventListener('change', handleMobileMediaChange)
+  } else if (typeof mobileMediaQuery.removeListener === 'function') {
+    mobileMediaQuery.removeListener(handleMobileMediaChange)
+  }
+
+  mobileMediaQuery = null
+}
+
+const getSidebarWrapper = () => {
+  if (!process.client) {
+    return null
+  }
+
+  return document.querySelector('.fixed.inset-y-0.left-0')
+}
+
+const isSidebarOpen = () => {
+  const sidebar = getSidebarWrapper()
+
+  if (!sidebar) {
+    return false
+  }
+
+  return !sidebar.classList.contains('-translate-x-full')
+}
+
+const isElementInsideSidebar = (element) => {
+  if (!element) {
+    return false
+  }
+
+  return Boolean(element.closest('[data-tour-id="sidebar-navigation"]'))
+}
+
+const openSidebarMenu = async () => {
+  if (!process.client) {
+    return false
+  }
+
+  const openButton = document.querySelector('[data-tour-id="topbar"] button.lg\\:hidden')
+
+  if (!openButton) {
+    return false
+  }
+
+  openButton.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+  await wait(SIDEBAR_ANIMATION_DELAY)
+
+  return true
+}
+
+const closeSidebarMenu = async () => {
+  if (!process.client) {
+    return
+  }
+
+  if (!isSidebarOpen()) {
+    return
+  }
+
+  const sidebar = getSidebarWrapper()
+  const closeButton = sidebar?.querySelector('button.lg\\:hidden')
+
+  if (closeButton) {
+    closeButton.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+  } else {
+    const overlay = document.querySelector('.fixed.inset-0.z-40.lg\\:hidden .bg-black.bg-opacity-50')
+    overlay?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+  }
+
+  await wait(SIDEBAR_ANIMATION_DELAY)
+}
+
+const ensureSidebarVisibleForTour = async () => {
+  if (!process.client || !isMobileScreen.value) {
+    return false
+  }
+
+  if (isSidebarOpen()) {
+    return false
+  }
+
+  const opened = await openSidebarMenu()
+  return opened && isSidebarOpen()
+}
+
+const restoreSidebarState = async () => {
+  if (!process.client) {
+    return
+  }
+
+  if (shouldReopenSidebarAfterTour && !isSidebarOpen()) {
+    await openSidebarMenu()
+  } else if (shouldCloseSidebarAfterTour && isSidebarOpen()) {
+    await closeSidebarMenu()
+  }
+
+  shouldCloseSidebarAfterTour = false
+  shouldReopenSidebarAfterTour = false
+}
+
+if (process.client) {
+  setupMobileDetection()
+}
+
 const buildSteps = () => {
   if (!process.client) {
     return []
@@ -76,55 +223,73 @@ const buildSteps = () => {
       selector: '[data-tour-id="sidebar-navigation"]',
       title: 'Menú principal',
       description: 'Desde aquí podés navegar por todas las secciones de tu back office.',
-      side: 'right'
+      side: 'right',
+      mobileSide: 'bottom',
+      mobileAlign: 'center'
     },
     {
       selector: '[data-tour-id="menu-panel-principal"]',
       title: 'Panel Principal',
       description: 'Tu vista general con métricas del día, semana y mes en un solo lugar.',
-      side: 'right'
+      side: 'right',
+      mobileSide: 'bottom',
+      mobileAlign: 'center'
     },
     {
       selector: '[data-tour-id="menu-configuracion"]',
       title: 'Configuración',
       description: 'Configurá tu perfil, servicios, horarios disponibles y preferencias.',
-      side: 'right'
+      side: 'right',
+      mobileSide: 'bottom',
+      mobileAlign: 'center'
     },
     {
       selector: '[data-tour-id="menu-agenda"]',
       title: 'Agenda',
       description: 'Gestioná tus turnos, citas y trabajos programados día a día.',
-      side: 'right'
+      side: 'right',
+      mobileSide: 'bottom',
+      mobileAlign: 'center'
     },
     {
       selector: '[data-tour-id="menu-clientes"]',
       title: 'Clientes',
       description: 'Tu base de datos de clientes con historial de servicios y contactos.',
-      side: 'right'
+      side: 'right',
+      mobileSide: 'bottom',
+      mobileAlign: 'center'
     },
     {
       selector: '[data-tour-id="menu-reportes"]',
       title: 'Reportes',
       description: 'Visualizá tus ingresos, trabajos completados y estadísticas del negocio.',
-      side: 'right'
+      side: 'right',
+      mobileSide: 'bottom',
+      mobileAlign: 'center'
     },
     {
       selector: '[data-tour-id="dashboard-today"]',
       title: 'Resumen del día',
       description: 'Controlá tus trabajos, pendientes y próximos turnos de hoy.',
-      side: 'top'
+      side: 'top',
+      mobileSide: 'bottom',
+      mobileAlign: 'center'
     },
     {
       selector: '[data-tour-id="dashboard-week-month"]',
       title: 'Resumen semanal y mensual',
       description: 'Compará tus trabajos confirmados, ingresos y evolución a corto y largo plazo.',
-      side: 'top'
+      side: 'top',
+      mobileSide: 'bottom',
+      mobileAlign: 'center'
     },
     {
       selector: '[data-tour-id="dashboard-actions-activity"]',
       title: 'Acciones y actividad',
       description: 'Creá trabajos rápidamente y seguí la actividad reciente con tus clientes.',
-      side: 'top'
+      side: 'top',
+      mobileSide: 'bottom',
+      mobileAlign: 'center'
     }
   ]
 
@@ -136,8 +301,8 @@ const buildSteps = () => {
         popover: {
           title: item.title,
           description: item.description,
-          side: item.side || 'right',
-          align: 'start'
+          side: isMobileScreen.value ? item.mobileSide || item.side || 'bottom' : item.side || 'right',
+          align: isMobileScreen.value ? item.mobileAlign || 'center' : 'start'
         }
       })
     }
@@ -153,6 +318,10 @@ const startTour = async (force = false) => {
   isLaunching.value = true
 
   try {
+    initialSidebarOpen = isSidebarOpen()
+    shouldCloseSidebarAfterTour = false
+    shouldReopenSidebarAfterTour = false
+
     const selectors = [
       '[data-tour-id="sidebar-navigation"]',
       '[data-tour-id="menu-panel-principal"]',
@@ -177,14 +346,19 @@ const startTour = async (force = false) => {
     }
 
     if (driverInstance.value) {
+      await restoreSidebarState()
       driverInstance.value.destroy()
       driverInstance.value = null
     }
+
+    const forcedSidebarOpen = await ensureSidebarVisibleForTour()
+    shouldCloseSidebarAfterTour = forcedSidebarOpen
 
     const createDriver = await ensureDriver()
     const steps = buildSteps()
 
     if (!steps.length) {
+      await restoreSidebarState()
       return false
     }
 
@@ -197,7 +371,30 @@ const startTour = async (force = false) => {
       prevBtnText: 'Anterior',
       doneBtnText: 'Listo',
       closeBtnText: 'Cerrar',
-      steps
+      steps,
+      onHighlighted: async (element) => {
+        if (isMobileScreen.value) {
+          const insideSidebar = isElementInsideSidebar(element)
+
+          if (insideSidebar && !isSidebarOpen()) {
+            shouldCloseSidebarAfterTour = shouldCloseSidebarAfterTour || !initialSidebarOpen
+            shouldReopenSidebarAfterTour = shouldReopenSidebarAfterTour || initialSidebarOpen
+            await openSidebarMenu()
+          } else if (!insideSidebar && isSidebarOpen()) {
+            shouldReopenSidebarAfterTour = shouldReopenSidebarAfterTour || initialSidebarOpen
+            await closeSidebarMenu()
+          }
+        }
+
+        element?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'center'
+        })
+      },
+      onReset: () => {
+        void restoreSidebarState()
+      }
     })
 
     driverInstance.value.drive()
@@ -260,7 +457,7 @@ watch(
     void tryAutoLaunch()
   },
   { immediate: true }
-)
+  )
 
 onBeforeUnmount(() => {
   if (driverInstance.value) {
@@ -273,6 +470,10 @@ onBeforeUnmount(() => {
       window.clearTimeout(autoLaunchRetryId)
       autoLaunchRetryId = null
     }
+
+    void restoreSidebarState()
   }
+
+  teardownMobileDetection()
 })
 </script>
