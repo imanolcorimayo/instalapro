@@ -276,6 +276,14 @@ const buildSteps = () => {
       mobileAlign: 'center'
     },
     {
+      selector: '[data-tour-id="dashboard-quick-actions"]',
+      title: 'Acciones Rápidas',
+      description: 'Creá nuevos trabajos, gestioná tu agenda y agregá clientes con un solo click.',
+      side: 'top',
+      mobileSide: 'bottom',
+      mobileAlign: 'center'
+    },
+    {
       selector: '[data-tour-id="dashboard-week-month"]',
       title: 'Resumen semanal y mensual',
       description: 'Compará tus trabajos confirmados, ingresos y evolución a corto y largo plazo.',
@@ -284,9 +292,9 @@ const buildSteps = () => {
       mobileAlign: 'center'
     },
     {
-      selector: '[data-tour-id="dashboard-actions-activity"]',
-      title: 'Acciones y actividad',
-      description: 'Creá trabajos rápidamente y seguí la actividad reciente con tus clientes.',
+      selector: '[data-tour-id="dashboard-activity"]',
+      title: 'Actividad Reciente',
+      description: 'Seguí en tiempo real todas las actualizaciones y cambios con tus clientes y trabajos.',
       side: 'top',
       mobileSide: 'bottom',
       mobileAlign: 'center'
@@ -335,7 +343,8 @@ const startTour = async (force = false) => {
       selectors.push(
         '[data-tour-id="dashboard-today"]',
         '[data-tour-id="dashboard-week-month"]',
-        '[data-tour-id="dashboard-actions-activity"]'
+        '[data-tour-id="dashboard-quick-actions"]',
+        '[data-tour-id="dashboard-activity"]'
       )
     }
 

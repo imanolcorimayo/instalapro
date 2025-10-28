@@ -52,21 +52,23 @@
           </div>
 
           <!-- Pendientes -->
-          <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-            <div class="mb-2 flex items-center justify-between">
-              <span class="text-sm text-slate-600">Pendientes</span>
-              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100">
-                <IconAlertCircle class="h-4 w-4 text-amber-700" />
+          <div class="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 shadow-sm transition-all hover:shadow-md">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-amber-900">Pendientes</p>
+                <p class="mt-1 text-3xl font-bold text-amber-900">{{ dashboardStore.pendingJobs }}</p>
+              </div>
+              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
+                <IconAlertCircle class="h-6 w-6 text-amber-600" />
               </div>
             </div>
-            <p class="text-3xl font-bold text-slate-900">{{ dashboardStore.pendingJobs }}</p>
           </div>
         </div>
         </div>
       </div>
 
       <!-- Quick Actions -->
-      <div class="mb-8">
+      <div class="mb-8" data-tour-id="dashboard-quick-actions">
         <h2 class="mb-4 text-lg font-semibold text-slate-900">Acciones Rápidas</h2>
         <div class="grid gap-3 md:grid-cols-3">
           <!-- Nuevo Trabajo -->
@@ -209,7 +211,7 @@
       </div>
 
       <!-- Activity Feed - Compact -->
-      <div>
+      <div data-tour-id="dashboard-activity">
         <h2 class="mb-4 text-lg font-semibold text-slate-900">Actividad Reciente</h2>
 
         <div v-if="dashboardStore.recentActivity.length === 0" class="p-8 text-center">
