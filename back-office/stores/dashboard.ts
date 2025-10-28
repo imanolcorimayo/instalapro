@@ -213,8 +213,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
           action: 'Cliente actualizado',
           description: client.name,
           timestamp: client.updatedAt,
-          icon: 'mdi:account',
-          color: 'blue'
+          icon: 'mdi:account-outline',
+          color: 'gray'
         })
       }
     })
@@ -247,10 +247,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const getJobIcon = (status: string): string => {
     const icons = {
       pending: 'mdi:alert-circle-outline',
-      confirmed: 'mdi:check-circle',
+      confirmed: 'mdi:check-circle-outline',
       in_progress: 'mdi:progress-clock',
-      completed: 'mdi:check-all',
-      cancelled: 'mdi:close-circle'
+      completed: 'mdi:check-circle-outline',
+      cancelled: 'mdi:close-circle-outline'
     }
     return icons[status] || 'mdi:file-document'
   }

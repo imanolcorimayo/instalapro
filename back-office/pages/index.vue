@@ -259,14 +259,13 @@ import IconClockOutline from '~icons/mdi/clock-outline'
 import IconAlertCircle from '~icons/mdi/alert-circle-outline'
 import IconCurrencyDollar from '~icons/mdi/currency-usd'
 import IconTrendingUp from '~icons/mdi/trending-up'
-import IconUserPlus from '~icons/mdi/account-plus'
+import IconUserPlus from '~icons/mdi/account-plus-outline'
 import IconPlus from '~icons/mdi/plus'
 import IconInbox from '~icons/mdi/inbox'
-import IconCheckCircle from '~icons/mdi/check-circle'
+import IconCheckCircleOutline from '~icons/mdi/check-circle-outline'
 import IconProgressClock from '~icons/mdi/progress-clock'
-import IconCheckAll from '~icons/mdi/check-all'
-import IconCloseCircle from '~icons/mdi/close-circle'
-import IconAccount from '~icons/mdi/account'
+import IconCloseCircleOutline from '~icons/mdi/close-circle-outline'
+import IconAccount from '~icons/mdi/account-outline'
 import IconBriefcase from '~icons/mdi/briefcase-outline'
 
 // ==========================================
@@ -296,11 +295,11 @@ const dashboardStore = useDashboardStore()
 
 const iconComponents = {
   'mdi:clock-outline': IconClockOutline,
-  'mdi:check-circle': IconCheckCircle,
+  'mdi:check-circle-outline': IconCheckCircleOutline,
   'mdi:progress-clock': IconProgressClock,
-  'mdi:check-all': IconCheckAll,
-  'mdi:close-circle': IconCloseCircle,
+  'mdi:close-circle-outline': IconCloseCircleOutline,
   'mdi:account': IconAccount,
+  'mdi:account-outline': IconAccount,
   'mdi:alert-circle-outline': IconAlertCircle,
 }
 
