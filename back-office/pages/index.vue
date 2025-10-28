@@ -10,10 +10,10 @@
       <!-- Hero Section - Today's Overview -->
       <div class="mb-8" data-tour-id="dashboard-today">
         <div class="mb-4 flex items-center gap-2">
-          <div class="flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1">
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
             <IconCalendar class="h-4 w-4 text-blue-600" />
-            <span class="text-sm font-semibold text-blue-900">Resumen de tu día</span>
           </div>
+          <h2 class="text-lg font-semibold text-slate-900">Hoy</h2>
         </div>
 
         <div class="grid gap-6 md:grid-cols-3">
@@ -67,7 +67,7 @@
 
       <!-- Quick Actions -->
       <div class="mb-8">
-        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Acciones Rápidas</h2>
+        <h2 class="mb-4 text-lg font-semibold text-slate-900">Acciones Rápidas</h2>
         <div class="grid gap-3 md:grid-cols-3">
           <!-- Nuevo Trabajo -->
           <button
@@ -113,12 +113,12 @@
         </div>
       </div>
 
-      <!-- Two Column Layout: Stats + Activity -->
-      <div class="grid gap-6 lg:grid-cols-2" data-tour-id="dashboard-week-month">
+      <!-- Stats + Activity (Stacked) -->
+      <div class="space-y-6" data-tour-id="dashboard-week-month">
         <!-- Weekly & Monthly Stats - Combined -->
-        <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <div>
           <h2 class="mb-4 text-lg font-semibold text-slate-900">Resumen Semanal y Mensual</h2>
-
+          <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <!-- This Week -->
           <div class="mb-6 border-b border-slate-100 pb-4">
             <div class="mb-3 flex items-center gap-2">
@@ -167,12 +167,13 @@
               </div>
             </div>
           </div>
+          </div>
         </div>
 
         <!-- Activity Feed - Compact -->
-        <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200" data-tour-id="dashboard-actions-activity">
+        <div>
           <h2 class="mb-4 text-lg font-semibold text-slate-900">Actividad Reciente</h2>
-
+          <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200" data-tour-id="dashboard-actions-activity">
           <div v-if="dashboardStore.recentActivity.length === 0" class="p-8 text-center">
             <IconInbox class="w-10 h-10 text-slate-300 mx-auto mb-2" />
             <p class="text-sm text-slate-500">No hay actividad reciente</p>
@@ -200,6 +201,7 @@
               </div>
               <span class="text-xs text-slate-500">{{ formatRelativeTime(activity.timestamp) }}</span>
             </div>
+          </div>
           </div>
         </div>
       </div>
