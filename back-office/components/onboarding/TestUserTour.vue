@@ -23,7 +23,13 @@ const STORAGE_KEY = 'instalapro_backoffice_test_tour_seen'
 
 const driverInstance = shallowRef(null)
 const isLaunching = ref(false)
-const autoLaunchAttempted = ref(false)
+const autoLaunchAttempts = ref(0)
+
+// Retry auto-launch a few times to cover slower dashboard renders after SPA navigation
+const MAX_AUTO_LAUNCH_ATTEMPTS = 6
+const AUTO_LAUNCH_RETRY_DELAY = 1400
+
+let autoLaunchRetryId = null
 
 const shouldShowLauncher = computed(() => process.client && authStore.isTestUser)
 
@@ -32,7 +38,7 @@ const ensureDriver = async () => {
   return module.driver
 }
 
-const waitForElements = (selectors, timeout = 4000, interval = 120) => {
+const waitForElements = (selectors, timeout = 8000, interval = 120) => {
   if (!process.client) {
     return Promise.resolve(false)
   }
@@ -192,24 +198,44 @@ const startTour = async (force = false) => {
   }
 }
 
+const scheduleAutoLaunchRetry = () => {
+  if (!process.client) return
+
+  if (autoLaunchRetryId !== null) {
+    window.clearTimeout(autoLaunchRetryId)
+  }
+  autoLaunchRetryId = window.setTimeout(() => {
+    void tryAutoLaunch()
+  }, AUTO_LAUNCH_RETRY_DELAY)
+}
+
 const tryAutoLaunch = async () => {
   if (!process.client) return
-  if (!authStore.initialized) return
-  if (!authStore.isTestUser) return
-  if (route.path !== '/') return
-  if (localStorage.getItem(STORAGE_KEY) === '1') return
-  if (autoLaunchAttempted.value) return
 
-  autoLaunchAttempted.value = true
+  const hasSeenTour = localStorage.getItem(STORAGE_KEY) === '1'
+
+  if (!authStore.initialized || !authStore.isTestUser || route.path !== '/' || hasSeenTour) {
+    autoLaunchAttempts.value = 0
+    return
+  }
+
+  if (isLaunching.value) return
+  if (autoLaunchAttempts.value >= MAX_AUTO_LAUNCH_ATTEMPTS) return
+
+  autoLaunchAttempts.value += 1
 
   const launched = await startTour(false)
 
-  if (!launched) {
-    // Allow a second attempt shortly after in case the DOM wasn't ready yet
-    window.setTimeout(async () => {
-      await startTour(false)
-    }, 1200)
+  if (launched) {
+    autoLaunchAttempts.value = 0
+    if (process.client && autoLaunchRetryId !== null) {
+      window.clearTimeout(autoLaunchRetryId)
+      autoLaunchRetryId = null
+    }
+    return
   }
+
+  scheduleAutoLaunchRetry()
 }
 
 watch(
@@ -225,6 +251,13 @@ onBeforeUnmount(() => {
   if (driverInstance.value) {
     driverInstance.value.destroy()
     driverInstance.value = null
+  }
+
+  if (process.client) {
+    if (autoLaunchRetryId !== null) {
+      window.clearTimeout(autoLaunchRetryId)
+      autoLaunchRetryId = null
+    }
   }
 })
 </script>
