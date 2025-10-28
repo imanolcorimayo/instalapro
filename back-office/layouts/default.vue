@@ -45,6 +45,7 @@
           >
             <NuxtLink
               :to="item.href"
+              :data-tour-id="item.tourId"
               :class="[
                 'flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                 $route.path === item.href
@@ -191,31 +192,36 @@ const navigationItems = computed(() => [
     name: 'Panel Principal',
     href: '/',
     icon: 'mdi:view-dashboard-outline',
-    component: IconViewDashboardOutline
+    component: IconViewDashboardOutline,
+    tourId: 'menu-panel-principal'
   },
   {
     name: 'Configuración',
     href: '/settings',
     icon: 'mdi:cog-outline',
-    component: IconCogOutline
+    component: IconCogOutline,
+    tourId: 'menu-configuracion'
   },
   {
     name: 'Agenda',
     href: '/schedule',
     icon: 'mdi:calendar-outline',
-    component: IconCalendarOutline
+    component: IconCalendarOutline,
+    tourId: 'menu-agenda'
   },
   {
     name: 'Clientes',
     href: '/clients',
     icon: 'mdi:account-group-outline',
-    component: IconAccountGroupOutline
+    component: IconAccountGroupOutline,
+    tourId: 'menu-clientes'
   },
   {
     name: 'Reportes',
     href: '/reportes',
     icon: 'mdi:file-document-outline',
-    component: IconFileDocumentOutline
+    component: IconFileDocumentOutline,
+    tourId: 'menu-reportes'
   }
 ])
 

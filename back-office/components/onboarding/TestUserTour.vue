@@ -75,42 +75,55 @@ const buildSteps = () => {
     {
       selector: '[data-tour-id="sidebar-navigation"]',
       title: 'Menú principal',
-      description: 'Desde aquí podés navegar el panel principal, agenda, clientes, reportes y configuración.'
+      description: 'Desde aquí podés navegar por todas las secciones de tu back office.',
+      side: 'right'
     },
     {
-      selector: '[data-tour-id="topbar"]',
-      title: 'Barra superior',
-      description: 'Siempre vas a ver el título de la sección actual y, en móvil, podés abrir el menú desde acá.',
-      side: 'bottom'
+      selector: '[data-tour-id="menu-panel-principal"]',
+      title: 'Panel Principal',
+      description: 'Tu vista general con métricas del día, semana y mes en un solo lugar.',
+      side: 'right'
+    },
+    {
+      selector: '[data-tour-id="menu-configuracion"]',
+      title: 'Configuración',
+      description: 'Configurá tu perfil, servicios, horarios disponibles y preferencias.',
+      side: 'right'
+    },
+    {
+      selector: '[data-tour-id="menu-agenda"]',
+      title: 'Agenda',
+      description: 'Gestioná tus turnos, citas y trabajos programados día a día.',
+      side: 'right'
+    },
+    {
+      selector: '[data-tour-id="menu-clientes"]',
+      title: 'Clientes',
+      description: 'Tu base de datos de clientes con historial de servicios y contactos.',
+      side: 'right'
+    },
+    {
+      selector: '[data-tour-id="menu-reportes"]',
+      title: 'Reportes',
+      description: 'Visualizá tus ingresos, trabajos completados y estadísticas del negocio.',
+      side: 'right'
     },
     {
       selector: '[data-tour-id="dashboard-today"]',
       title: 'Resumen del día',
-      description: 'Controlá tus trabajos, pendientes y próximos turnos con estos indicadores rápidos.',
+      description: 'Controlá tus trabajos, pendientes y próximos turnos de hoy.',
       side: 'top'
     },
     {
-      selector: '[data-tour-id="dashboard-week"]',
-      title: 'Resumen de la semana',
-      description: 'Compará tus trabajos confirmados, ingresos y horas disponibles para los próximos días.',
+      selector: '[data-tour-id="dashboard-week-month"]',
+      title: 'Resumen semanal y mensual',
+      description: 'Compará tus trabajos confirmados, ingresos y evolución a corto y largo plazo.',
       side: 'top'
     },
     {
-      selector: '[data-tour-id="dashboard-month"]',
-      title: 'Resumen del mes',
-      description: 'Controlá la evolución mensual de tus ingresos, trabajos realizados y nuevos clientes.',
-      side: 'top'
-    },
-    {
-      selector: '[data-tour-id="dashboard-quick-actions"]',
-      title: 'Acciones rápidas',
-      description: 'Creá un nuevo trabajo, abrí la agenda o cargá un cliente en un solo click.',
-      side: 'top'
-    },
-    {
-      selector: '[data-tour-id="dashboard-recent-activity"]',
-      title: 'Actividad en vivo',
-      description: 'Seguimiento cronológico de lo último que sucedió con tus clientes y servicios.',
+      selector: '[data-tour-id="dashboard-actions-activity"]',
+      title: 'Acciones y actividad',
+      description: 'Creá trabajos rápidamente y seguí la actividad reciente con tus clientes.',
       side: 'top'
     }
   ]
@@ -142,16 +155,18 @@ const startTour = async (force = false) => {
   try {
     const selectors = [
       '[data-tour-id="sidebar-navigation"]',
-      '[data-tour-id="topbar"]'
+      '[data-tour-id="menu-panel-principal"]',
+      '[data-tour-id="menu-configuracion"]',
+      '[data-tour-id="menu-agenda"]',
+      '[data-tour-id="menu-clientes"]',
+      '[data-tour-id="menu-reportes"]'
     ]
 
     if (route.path === '/') {
       selectors.push(
         '[data-tour-id="dashboard-today"]',
-        '[data-tour-id="dashboard-week"]',
-        '[data-tour-id="dashboard-month"]',
-        '[data-tour-id="dashboard-quick-actions"]',
-        '[data-tour-id="dashboard-recent-activity"]'
+        '[data-tour-id="dashboard-week-month"]',
+        '[data-tour-id="dashboard-actions-activity"]'
       )
     }
 
