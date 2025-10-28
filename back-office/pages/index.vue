@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+  <div class="p-4 lg:p-6">
     <!-- Loading State -->
     <div v-if="dashboardStore.loading" class="flex items-center justify-center py-24">
       <div class="w-8 h-8 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin"></div>
