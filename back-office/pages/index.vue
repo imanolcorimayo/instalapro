@@ -1,253 +1,207 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-8">
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
     <!-- Loading State -->
     <div v-if="dashboardStore.loading" class="flex items-center justify-center py-24">
-      <div class="w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin"></div>
+      <div class="w-8 h-8 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin"></div>
     </div>
 
     <!-- Dashboard Content -->
     <div v-else class="mx-auto max-w-7xl">
-      <!-- HOY Section -->
+      <!-- Hero Section - Today's Overview -->
       <div class="mb-8" data-tour-id="dashboard-today">
         <div class="mb-4 flex items-center gap-2">
           <div class="flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1">
             <IconCalendar class="h-4 w-4 text-blue-600" />
-            <span class="text-sm font-semibold text-blue-900">HOY</span>
+            <span class="text-sm font-semibold text-blue-900">Resumen de tu día</span>
           </div>
         </div>
 
-        <div class="grid gap-4 md:grid-cols-3">
-          <!-- Trabajos Card -->
-          <div class="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-            <div class="absolute right-0 top-0 h-1 w-full bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-            <div class="mb-3 flex items-center gap-3">
-              <div class="rounded-lg bg-blue-100 p-2">
-                <IconBriefcase class="h-5 w-5 text-blue-600" />
-              </div>
-              <span class="text-sm font-medium text-gray-600">Trabajos</span>
+        <div class="grid gap-6 md:grid-cols-3">
+        <!-- Próximo Trabajo - Featured Card (2 columns) -->
+        <div class="md:col-span-2 rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-6 shadow-sm">
+          <div class="mb-4 flex items-center gap-2">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500">
+              <IconClockOutline class="h-5 w-5 text-white" />
             </div>
-            <p class="text-4xl font-bold text-gray-900">{{ dashboardStore.jobsToday }}</p>
+            <span class="text-sm font-medium text-slate-600">Próximo Trabajo</span>
+          </div>
+          <div v-if="dashboardStore.nextJob">
+            <h3 class="mb-1 text-xl font-bold text-slate-900">{{ dashboardStore.nextJob.clientName }}</h3>
+            <p class="mb-2 text-slate-700">{{ dashboardStore.nextJob.serviceType }}</p>
+            <div class="flex items-center gap-2 text-sm text-slate-600">
+              <IconCalendar class="h-4 w-4" />
+              <span>{{ formatJobTime(dashboardStore.nextJob) }}</span>
+            </div>
+          </div>
+          <div v-else>
+            <p class="text-slate-500">Sin trabajos programados</p>
+          </div>
+        </div>
+
+        <!-- Today's Quick Stats (stacked column) -->
+        <div class="space-y-4">
+          <!-- Trabajos Hoy -->
+          <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <div class="mb-2 flex items-center justify-between">
+              <span class="text-sm text-slate-600">Trabajos Hoy</span>
+              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100">
+                <IconBriefcase class="h-4 w-4 text-slate-700" />
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-slate-900">{{ dashboardStore.jobsToday }}</p>
           </div>
 
-          <!-- Próximo Trabajo Card -->
-          <div class="group relative overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-blue-50 to-cyan-50 p-6 shadow-sm transition-all hover:shadow-md">
-            <div class="mb-2 flex items-center gap-2">
-              <IconClockOutline class="h-5 w-5 text-blue-600" />
-              <span class="text-sm font-semibold text-gray-700">Próximo Trabajo</span>
-            </div>
-            <div v-if="dashboardStore.nextJob">
-              <p class="mb-1 font-semibold text-gray-900">{{ dashboardStore.nextJob.clientName }}</p>
-              <p class="mb-2 text-sm text-gray-600">{{ dashboardStore.nextJob.serviceType }}</p>
-              <p class="text-xs text-gray-500">{{ formatJobTime(dashboardStore.nextJob) }}</p>
-            </div>
-            <p v-else class="text-sm text-gray-400">Sin trabajos programados</p>
-          </div>
-
-          <!-- Pendientes Card -->
-          <div class="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-            <div class="absolute right-0 top-0 h-1 w-full bg-gradient-to-r from-amber-500 to-orange-500"></div>
-            <div class="mb-3 flex items-center gap-3">
-              <div class="rounded-lg bg-amber-100 p-2">
-                <IconAlertCircle class="h-5 w-5 text-amber-600" />
+          <!-- Pendientes -->
+          <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <div class="mb-2 flex items-center justify-between">
+              <span class="text-sm text-slate-600">Pendientes</span>
+              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100">
+                <IconAlertCircle class="h-4 w-4 text-amber-700" />
               </div>
-              <span class="text-sm font-medium text-gray-600">Pendientes</span>
             </div>
-            <p class="text-4xl font-bold text-gray-900">{{ dashboardStore.pendingJobs }}</p>
+            <p class="text-3xl font-bold text-slate-900">{{ dashboardStore.pendingJobs }}</p>
           </div>
+        </div>
         </div>
       </div>
 
-      <!-- ESTA SEMANA + ESTE MES Combined -->
-      <div data-tour-id="dashboard-week-month">
-      <!-- ESTA SEMANA Section -->
+      <!-- Quick Actions -->
       <div class="mb-8">
-        <div class="mb-4 flex items-center gap-2">
-          <div class="flex items-center gap-2 rounded-full bg-purple-100 px-3 py-1">
-            <IconCalendarWeek class="h-4 w-4 text-purple-600" />
-            <span class="text-sm font-semibold text-purple-900">ESTA SEMANA</span>
-          </div>
-        </div>
-
-        <div class="grid gap-4 md:grid-cols-3">
-          <!-- Trabajos Card -->
-          <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-            <div class="mb-3 flex items-center gap-3">
-              <div class="rounded-lg bg-purple-100 p-2">
-                <IconBriefcase class="h-5 w-5 text-purple-600" />
-              </div>
-              <span class="text-sm font-medium text-gray-600">Trabajos</span>
-            </div>
-            <p class="text-4xl font-bold text-gray-900">{{ dashboardStore.jobsThisWeek }}</p>
-          </div>
-
-          <!-- Ingresos Card -->
-          <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-            <div class="mb-3 flex items-center gap-3">
-              <div class="rounded-lg bg-green-100 p-2">
-                <IconCurrencyDollar class="h-5 w-5 text-green-600" />
-              </div>
-              <span class="text-sm font-medium text-gray-600">Ingresos</span>
-            </div>
-            <p class="text-4xl font-bold text-gray-900">{{ formatCurrency(dashboardStore.revenueThisWeek) }}</p>
-          </div>
-
-          <!-- Horas Disponibles Card -->
-          <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-            <div class="mb-3 flex items-center gap-3">
-              <div class="rounded-lg bg-indigo-100 p-2">
-                <IconClockOutline class="h-5 w-5 text-indigo-600" />
-              </div>
-              <span class="text-sm font-medium text-gray-600">Horas Disponibles</span>
-            </div>
-            <p class="text-4xl font-bold text-gray-900">{{ dashboardStore.availableHoursThisWeek }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- ESTE MES Section -->
-      <div class="mb-8">
-        <div class="mb-4 flex items-center gap-2">
-          <div class="flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1">
-            <IconCalendarMonth class="h-4 w-4 text-indigo-600" />
-            <span class="text-sm font-semibold text-indigo-900">ESTE MES</span>
-          </div>
-        </div>
-
-        <div class="grid gap-4 md:grid-cols-3">
-          <!-- Ingresos Card -->
-          <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-            <div class="mb-3 flex items-center gap-3">
-              <div class="rounded-lg bg-green-100 p-2">
-                <IconTrendingUp class="h-5 w-5 text-green-600" />
-              </div>
-              <span class="text-sm font-medium text-gray-600">Ingresos</span>
-            </div>
-            <p class="text-4xl font-bold text-gray-900">{{ formatCurrency(dashboardStore.revenueThisMonth) }}</p>
-          </div>
-
-          <!-- Trabajos Card -->
-          <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-            <div class="mb-3 flex items-center gap-3">
-              <div class="rounded-lg bg-indigo-100 p-2">
-                <IconTrendingUp class="h-5 w-5 text-indigo-600" />
-              </div>
-              <span class="text-sm font-medium text-gray-600">Trabajos</span>
-            </div>
-            <div class="flex items-baseline gap-2">
-              <p class="text-4xl font-bold text-gray-900">{{ dashboardStore.jobsThisMonth }}</p>
-              <span class="text-sm text-gray-500">/ {{ dashboardStore.jobsLastMonth }}</span>
-            </div>
-            <p class="mt-1 text-xs text-gray-500">vs. mes anterior</p>
-          </div>
-
-          <!-- Nuevos Clientes Card -->
-          <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-            <div class="mb-3 flex items-center gap-3">
-              <div class="rounded-lg bg-blue-100 p-2">
-                <IconUserPlus class="h-5 w-5 text-blue-600" />
-              </div>
-              <span class="text-sm font-medium text-gray-600">Nuevos Clientes</span>
-            </div>
-            <p class="text-4xl font-bold text-gray-900">{{ dashboardStore.newClientsThisMonth }}</p>
-          </div>
-        </div>
-      </div>
-      </div>
-
-      <!-- ACCIONES RÁPIDAS + ACTIVIDAD RECIENTE Combined -->
-      <div data-tour-id="dashboard-actions-activity">
-      <!-- ACCIONES RÁPIDAS Section -->
-      <div class="mb-8">
-        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Acciones Rápidas</h2>
-
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Acciones Rápidas</h2>
         <div class="grid gap-3 md:grid-cols-3">
-          <!-- Nuevo Trabajo Button -->
+          <!-- Nuevo Trabajo -->
           <button
             @click="navigateTo('/schedule')"
-            class="group flex items-center justify-between rounded-lg border-2 border-blue-200 bg-blue-50/50 px-5 py-4 text-left transition-all hover:border-blue-400 hover:bg-blue-100 hover:shadow-md active:scale-[0.98]"
+            class="group flex items-center gap-3 rounded-xl border-2 border-slate-200 bg-white px-5 py-4 text-left transition-all hover:border-blue-400 hover:bg-blue-50 hover:shadow-md active:scale-[0.98]"
           >
-            <div>
-              <p class="font-semibold text-gray-900">Nuevo Trabajo</p>
-              <p class="text-sm text-gray-600">Agendar una nueva cita</p>
-            </div>
-            <div class="rounded-full bg-blue-500 p-2 transition-transform group-hover:scale-110">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500 transition-transform group-hover:scale-110">
               <IconPlus class="h-5 w-5 text-white" />
             </div>
+            <div>
+              <p class="font-semibold text-slate-900">Nuevo Trabajo</p>
+              <p class="text-sm text-slate-600">Agendar una nueva cita</p>
+            </div>
           </button>
 
-          <!-- Ver Agenda Button -->
+          <!-- Ver Agenda -->
           <button
             @click="navigateTo('/schedule')"
-            class="group flex items-center justify-between rounded-lg border-2 border-purple-200 bg-purple-50/50 px-5 py-4 text-left transition-all hover:border-purple-400 hover:bg-purple-100 hover:shadow-md active:scale-[0.98]"
+            class="group flex items-center gap-3 rounded-xl border-2 border-slate-200 bg-white px-5 py-4 text-left transition-all hover:border-purple-400 hover:bg-purple-50 hover:shadow-md active:scale-[0.98]"
           >
-            <div>
-              <p class="font-semibold text-gray-900">Ver Agenda</p>
-              <p class="text-sm text-gray-600">Gestionar horarios</p>
-            </div>
-            <div class="rounded-full bg-purple-500 p-2 transition-transform group-hover:scale-110">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500 transition-transform group-hover:scale-110">
               <IconCalendarWeek class="h-5 w-5 text-white" />
             </div>
+            <div>
+              <p class="font-semibold text-slate-900">Ver Agenda</p>
+              <p class="text-sm text-slate-600">Gestionar horarios</p>
+            </div>
           </button>
 
-          <!-- Nuevo Cliente Button -->
+          <!-- Nuevo Cliente -->
           <button
             @click="navigateTo('/clients')"
-            class="group flex items-center justify-between rounded-lg border-2 border-green-200 bg-green-50/50 px-5 py-4 text-left transition-all hover:border-green-400 hover:bg-green-100 hover:shadow-md active:scale-[0.98]"
+            class="group flex items-center gap-3 rounded-xl border-2 border-slate-200 bg-white px-5 py-4 text-left transition-all hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-md active:scale-[0.98]"
           >
-            <div>
-              <p class="font-semibold text-gray-900">Nuevo Cliente</p>
-              <p class="text-sm text-gray-600">Agregar al registro</p>
-            </div>
-            <div class="rounded-full bg-green-500 p-2 transition-transform group-hover:scale-110">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500 transition-transform group-hover:scale-110">
               <IconUserPlus class="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p class="font-semibold text-slate-900">Nuevo Cliente</p>
+              <p class="text-sm text-slate-600">Agregar al registro</p>
             </div>
           </button>
         </div>
       </div>
 
-      <!-- ACTIVIDAD RECIENTE Section -->
-      <div>
-        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Actividad Reciente</h2>
+      <!-- Two Column Layout: Stats + Activity -->
+      <div class="grid gap-6 lg:grid-cols-2" data-tour-id="dashboard-week-month">
+        <!-- Weekly & Monthly Stats - Combined -->
+        <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <h2 class="mb-4 text-lg font-semibold text-slate-900">Resumen Semanal y Mensual</h2>
 
-        <div v-if="dashboardStore.recentActivity.length === 0" class="p-8 text-center bg-white rounded-xl border border-gray-200">
-          <IconInbox class="w-10 h-10 text-gray-300 mx-auto mb-2" />
-          <p class="text-sm text-gray-500">No hay actividad reciente</p>
-        </div>
-        <div v-else class="space-y-3">
-          <div
-            v-for="activity in dashboardStore.recentActivity"
-            :key="activity.id"
-            :class="[
-              'flex items-center justify-between rounded-lg border p-4 transition-all hover:shadow-sm',
-              activity.color === 'yellow' && 'border-amber-200 bg-amber-50',
-              activity.color === 'orange' && 'border-amber-200 bg-amber-50',
-              activity.color === 'green' && 'border-green-200 bg-green-50',
-              activity.color === 'blue' && 'border-blue-200 bg-blue-50',
-              activity.color === 'red' && 'border-red-200 bg-red-50',
-              activity.color === 'gray' && 'border-gray-200 bg-white'
-            ]"
-          >
-            <div class="flex items-center gap-4">
-              <div :class="[
-                'rounded-full p-2',
-                activity.color === 'yellow' && 'bg-amber-500',
-                activity.color === 'orange' && 'bg-amber-500',
-                activity.color === 'green' && 'bg-green-500',
-                activity.color === 'blue' && 'bg-blue-500',
-                activity.color === 'red' && 'bg-red-500',
-                activity.color === 'gray' && 'bg-gray-500'
-              ]">
-                <component :is="getIcon(activity.icon)" class="h-5 w-5 text-white" />
+          <!-- This Week -->
+          <div class="mb-6 border-b border-slate-100 pb-4">
+            <div class="mb-3 flex items-center gap-2">
+              <div class="flex h-6 w-6 items-center justify-center rounded bg-purple-100">
+                <IconCalendarWeek class="h-3.5 w-3.5 text-purple-600" />
+              </div>
+              <span class="text-sm font-medium text-slate-700">Esta Semana</span>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <p class="text-xs text-slate-600">Trabajos</p>
+                <p class="text-2xl font-bold text-slate-900">{{ dashboardStore.jobsThisWeek }}</p>
               </div>
               <div>
-                <p class="font-semibold text-gray-900">{{ activity.action }}</p>
-                <p class="text-sm text-gray-600">{{ activity.description }}</p>
+                <p class="text-xs text-slate-600">Ingresos</p>
+                <p class="text-2xl font-bold text-slate-900">{{ formatCurrency(dashboardStore.revenueThisWeek) }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-600">Horas</p>
+                <p class="text-2xl font-bold text-slate-900">{{ dashboardStore.availableHoursThisWeek }}</p>
               </div>
             </div>
-            <span class="text-sm text-gray-500">{{ formatRelativeTime(activity.timestamp) }}</span>
+          </div>
+
+          <!-- This Month -->
+          <div>
+            <div class="mb-3 flex items-center gap-2">
+              <div class="flex h-6 w-6 items-center justify-center rounded bg-indigo-100">
+                <IconCalendarMonth class="h-3.5 w-3.5 text-indigo-600" />
+              </div>
+              <span class="text-sm font-medium text-slate-700">Este Mes</span>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <p class="text-xs text-slate-600">Ingresos</p>
+                <p class="text-2xl font-bold text-slate-900">{{ formatCurrency(dashboardStore.revenueThisMonth) }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-600">Trabajos</p>
+                <p class="text-2xl font-bold text-slate-900">{{ dashboardStore.jobsThisMonth }}<span class="text-sm text-slate-500"> / {{ dashboardStore.jobsLastMonth }}</span></p>
+                <p class="text-xs text-slate-500">vs. mes anterior</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-600">Clientes</p>
+                <p class="text-2xl font-bold text-slate-900">{{ dashboardStore.newClientsThisMonth }}</p>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+
+        <!-- Activity Feed - Compact -->
+        <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200" data-tour-id="dashboard-actions-activity">
+          <h2 class="mb-4 text-lg font-semibold text-slate-900">Actividad Reciente</h2>
+
+          <div v-if="dashboardStore.recentActivity.length === 0" class="p-8 text-center">
+            <IconInbox class="w-10 h-10 text-slate-300 mx-auto mb-2" />
+            <p class="text-sm text-slate-500">No hay actividad reciente</p>
+          </div>
+          <div v-else class="space-y-3">
+            <div
+              v-for="activity in dashboardStore.recentActivity"
+              :key="activity.id"
+              class="flex items-start gap-3 rounded-lg bg-slate-50 p-3 transition-all hover:bg-slate-100"
+            >
+              <div :class="[
+                'mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full',
+                activity.color === 'yellow' && 'bg-amber-500',
+                activity.color === 'orange' && 'bg-amber-500',
+                activity.color === 'green' && 'bg-emerald-500',
+                activity.color === 'blue' && 'bg-blue-500',
+                activity.color === 'red' && 'bg-red-500',
+                activity.color === 'gray' && 'bg-slate-500'
+              ]">
+                <component :is="getIcon(activity.icon)" class="h-3.5 w-3.5 text-white" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-slate-900">{{ activity.action }}</p>
+                <p class="text-xs text-slate-600">{{ activity.description }}</p>
+              </div>
+              <span class="text-xs text-slate-500">{{ formatRelativeTime(activity.timestamp) }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
