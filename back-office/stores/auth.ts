@@ -73,6 +73,8 @@ export const useAuthStore = defineStore('auth', {
         if (process.client) {
           localStorage.setItem('instalapro_isTestUser', 'true')
         }
+
+        this.isTestUser = true
       } catch (error: any) {
         console.error('Test access sign in error:', error)
         const message = error?.message || 'Error al validar el código de acceso'
@@ -94,6 +96,8 @@ export const useAuthStore = defineStore('auth', {
         if (process.client) {
           localStorage.removeItem('instalapro_isTestUser')
         }
+
+        this.isTestUser = false
 
         // Navigate to sign-in page after sign out
         if (process.client) {
