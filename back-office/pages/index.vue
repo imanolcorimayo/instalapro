@@ -52,7 +52,7 @@
           </div>
 
           <!-- Pendientes -->
-          <div class="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 shadow-sm transition-all hover:shadow-md">
+          <div class="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 shadow-sm">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-amber-900">Pendientes</p>
