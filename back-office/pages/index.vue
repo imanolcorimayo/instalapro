@@ -41,14 +41,16 @@
         <!-- Today's Quick Stats (stacked column) -->
         <div class="space-y-4">
           <!-- Trabajos Hoy -->
-          <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-            <div class="mb-2 flex items-center justify-between">
-              <span class="text-sm text-slate-600">Trabajos Hoy</span>
-              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100">
-                <IconBriefcase class="h-4 w-4 text-slate-700" />
+          <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-slate-600">Trabajos Hoy</p>
+                <p class="mt-1 text-3xl font-bold text-slate-900">{{ dashboardStore.jobsToday }}</p>
+              </div>
+              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100">
+                <IconBriefcase class="h-6 w-6 text-slate-700" />
               </div>
             </div>
-            <p class="text-3xl font-bold text-slate-900">{{ dashboardStore.jobsToday }}</p>
           </div>
 
           <!-- Pendientes -->
