@@ -1,11 +1,6 @@
 #!/usr/bin/env node
 import admin from 'firebase-admin'
-import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+import serviceAccount from '../service-account.json' with { type: 'json' }
 
 const {
   TEST_USER_UID = 'instalapro-demo-user',
@@ -18,63 +13,10 @@ const {
 
 const now = new Date()
 
-const parseServiceAccount = () => {
-  const raw = process.env.FIREBASE_SERVICE_ACCOUNT
-
-  if (raw && raw.trim()) {
-    const trimmed = raw.trim()
-
-    const tryParse = (value) => {
-      try {
-        return JSON.parse(value)
-      } catch {
-        return null
-      }
-    }
-
-    const parsed = tryParse(trimmed)
-    if (parsed) {
-      return parsed
-    }
-
-    try {
-      const decoded = Buffer.from(trimmed, 'base64').toString('utf8')
-      const decodedParsed = tryParse(decoded)
-      if (decodedParsed) {
-        return decodedParsed
-      }
-    } catch (error) {
-      console.error('Failed to decode FIREBASE_SERVICE_ACCOUNT as base64:', error)
-    }
-
-    throw new Error('FIREBASE_SERVICE_ACCOUNT is not valid JSON or base64-encoded JSON')
-  }
-
-  const candidates = [
-    process.env.FIREBASE_SERVICE_ACCOUNT_PATH,
-    join(__dirname, 'service-account.json'),
-    join(process.cwd(), 'scripts', 'service-account.json'),
-    join(process.cwd(), 'service-account.json')
-  ].filter(Boolean)
-
-  for (const candidate of candidates) {
-    if (candidate && existsSync(candidate)) {
-      const fileContent = readFileSync(candidate, 'utf8')
-      return JSON.parse(fileContent)
-    }
-  }
-
-  throw new Error(
-    'Provide Firebase service account credentials via FIREBASE_SERVICE_ACCOUNT (JSON/base64) or FIREBASE_SERVICE_ACCOUNT_PATH'
-  )
-}
-
 const initializeFirebase = () => {
   if (admin.apps.length > 0) {
     return admin.app()
   }
-
-  const serviceAccount = parseServiceAccount()
 
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
