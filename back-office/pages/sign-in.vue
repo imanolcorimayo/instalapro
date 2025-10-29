@@ -18,12 +18,12 @@
       <!-- Sign in button -->
       <button
         @click="handleGoogleSignIn"
-        :disabled="authStore.loading"
+        :disabled="isGoogleSigningIn || isSubmittingAccessCode"
         class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg text-base font-medium hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <div v-if="authStore.loading" class="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+        <div v-if="isGoogleSigningIn" class="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
         <IconGoogle v-else class="w-5 h-5" />
-        <span>{{ authStore.loading ? 'Iniciando sesión...' : 'Continuar con Google' }}</span>
+        <span>{{ isGoogleSigningIn ? 'Iniciando sesión...' : 'Continuar con Google' }}</span>
       </button>
 
       <!-- Test Access Code -->
@@ -40,7 +40,7 @@
               autocomplete="one-time-code"
               placeholder="Ingresa tu código de prueba"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              :disabled="isSubmittingAccessCode || authStore.loading"
+              :disabled="isSubmittingAccessCode || isGoogleSigningIn"
             />
             <p v-if="codeError" class="mt-2 text-sm text-red-600">
               {{ codeError }}
@@ -49,7 +49,7 @@
 
           <button
             @click="handleAccessCodeSignIn"
-            :disabled="isSubmittingAccessCode || authStore.loading"
+            :disabled="isSubmittingAccessCode || isGoogleSigningIn"
             class="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg text-base font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div v-if="isSubmittingAccessCode" class="w-5 h-5 border-2 border-blue-200 border-t-white rounded-full animate-spin"></div>
@@ -90,6 +90,7 @@ const testAccessEnabled = computed(() => runtimeConfig.public.testAccessEnabled)
 const testCode = ref('')
 const codeError = ref('')
 const isSubmittingAccessCode = ref(false)
+const isGoogleSigningIn = ref(false)
 
 watch(testCode, () => {
   if (codeError.value) {
@@ -98,6 +99,12 @@ watch(testCode, () => {
 })
 
 const handleGoogleSignIn = async () => {
+  if (isGoogleSigningIn.value || isSubmittingAccessCode.value) {
+    return
+  }
+
+  isGoogleSigningIn.value = true
+
   try {
     authStore.clearError()
     await authStore.signInWithGoogle()
@@ -109,11 +116,13 @@ const handleGoogleSignIn = async () => {
   } catch (error) {
     console.error('Sign in failed:', error)
     $toast.error('Error al iniciar sesión. Por favor, intenta de nuevo.')
+  } finally {
+    isGoogleSigningIn.value = false
   }
 }
 
 const handleAccessCodeSignIn = async () => {
-  if (!testAccessEnabled.value) {
+  if (!testAccessEnabled.value || isGoogleSigningIn.value) {
     return
   }
 
