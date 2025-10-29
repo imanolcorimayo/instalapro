@@ -207,7 +207,15 @@
         <button
           type="submit"
           :disabled="submitting"
-          class="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          :class="[
+            'flex-1 px-4 py-2 text-white rounded-lg transition-colors font-medium',
+            submitting
+              ? 'bg-emerald-300 cursor-not-allowed opacity-60'
+              : isDemoUser
+                ? 'bg-emerald-600 hover:bg-emerald-600/90'
+                : 'bg-emerald-600 hover:bg-emerald-700'
+          ]"
+          :title="isDemoUser ? (isEditMode ? 'Ingresá con Google para editar gastos' : 'Ingresá con Google para registrar gastos') : undefined"
         >
           {{ submitting ? 'Guardando...' : (isEditMode ? 'Actualizar Gasto' : 'Guardar Gasto') }}
         </button>
@@ -231,6 +239,7 @@ const { $dayjs } = useNuxtApp()
 const walletsStore = useWalletsStore()
 const clientsStore = useClientsStore()
 const jobsStore = useJobsStore()
+const { requireFullAccount, isDemoUser } = useDemoAccessGuard()
 
 // Modal ref
 const modal = ref(null)
@@ -346,6 +355,10 @@ const onJobSelected = () => {
 }
 
 const handleSubmit = async () => {
+  if (requireFullAccount(isEditMode.value ? 'editar gastos' : 'registrar gastos')) {
+    return
+  }
+
   try {
     submitting.value = true
 

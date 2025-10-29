@@ -5,7 +5,11 @@
       <button
         data-tour-id="schedule-new-job-button"
         @click="openNewJobModal"
-        class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
+        :class="[
+          'bg-blue-500 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors',
+          isDemoUser ? 'hover:bg-blue-500/90' : 'hover:bg-blue-600'
+        ]"
+        :title="isDemoUser ? 'Ingresá con Google para crear trabajos' : 'Crear un nuevo trabajo'"
       >
         <IconPlus class="w-4 h-4" />
         <span class="hidden sm:inline">Nuevo Trabajo</span>
@@ -276,6 +280,7 @@
                         ? 'hover:bg-blue-50 cursor-pointer'
                         : 'bg-gray-100 cursor-not-allowed opacity-60'
                     ]"
+                    :title="slotAvailabilityStore.getSlotStatus(day.date, hour) === 'available' && isDemoUser ? 'Ingresá con Google para crear trabajos' : undefined"
                     @click="handleSlotClick(day.date, hour)"
                   >
                     <div v-if="slotAvailabilityStore.getSlotStatus(day.date, hour) === 'available'" class="flex items-center justify-center h-full">
@@ -311,6 +316,7 @@
                         getJobDisplayMode(job) === 'compact' ? 'p-0.5' : 'p-1'
                       ]"
                       :style="getWeeklyTimelineJobPosition(job)"
+                      :title="isDemoUser ? 'Ingresá con Google para editar trabajos' : 'Ver y editar este trabajo'"
                       @click="editJob(job)"
                     >
                       <!-- Compact mode: only name (< 45 min) -->
@@ -410,6 +416,7 @@
                       ? 'hover:bg-blue-50 cursor-pointer'
                       : 'bg-gray-100 cursor-not-allowed opacity-60'
                   ]"
+                  :title="slotAvailabilityStore.getSlotStatus(day.date, hour) === 'available' && isDemoUser ? 'Ingresá con Google para crear trabajos' : undefined"
                   @click="handleSlotClick(day.date, hour)"
                 >
                   <div v-if="slotAvailabilityStore.getSlotStatus(day.date, hour) === 'available'" class="flex items-center justify-center">
@@ -448,6 +455,7 @@
                       getJobDisplayMode(job) === 'compact' ? 'p-1' : 'p-2'
                     ]"
                     :style="getWeeklyTimelineJobPosition(job)"
+                    :title="isDemoUser ? 'Ingresá con Google para editar trabajos' : 'Ver y editar este trabajo'"
                     @click="editJob(job)"
                   >
                     <!-- Compact mode: only name (< 45 min) -->
@@ -519,6 +527,7 @@
                       ? 'hover:bg-blue-50 cursor-pointer'
                       : 'bg-gray-100 cursor-not-allowed opacity-60'
                   ]"
+                  :title="slotAvailabilityStore.getSlotStatus(currentDayView, hour) === 'available' && isDemoUser ? 'Ingresá con Google para crear trabajos' : undefined"
                   @click="handleSlotClick(currentDayView, hour)"
                 >
                   <div v-if="slotAvailabilityStore.getSlotStatus(currentDayView, hour) === 'available'" class="flex items-center gap-2">
@@ -548,6 +557,7 @@
                     getJobDisplayMode(job) === 'compact' ? 'p-0.5 sm:p-1' : 'p-1 sm:p-2'
                   ]"
                   :style="getDayViewJobPosition(job)"
+                  :title="isDemoUser ? 'Ingresá con Google para editar trabajos' : 'Ver y editar este trabajo'"
                   @click="editJob(job)"
                 >
                   <!-- Compact mode: only name (< 45 min) -->
@@ -658,7 +668,7 @@
                       ? 'bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white'
                       : 'bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white'
                   ]"
-                  :title="`${isDayFullyOpen(day.date) ? 'Cerrar' : 'Abrir'} todo el día ${day.dayName}`"
+                  :title="isDemoUser ? 'Ingresá con Google para configurar la disponibilidad' : `${isDayFullyOpen(day.date) ? 'Cerrar' : 'Abrir'} todo el día ${day.dayName}`"
                 >
                   {{ isDayFullyOpen(day.date) ? 'Cerrar' : 'Abrir' }} Todo
                 </button>
@@ -689,12 +699,15 @@
                 >
                   <div class="flex items-center justify-center h-full">
                     <!-- Toggle Switch for Slot Availability -->
-                    <label class="inline-flex items-center cursor-pointer">
+                    <label
+                      class="inline-flex items-center cursor-pointer"
+                      :title="isDemoUser ? 'Ingresá con Google para configurar la disponibilidad' : undefined"
+                    >
                       <input
                         type="checkbox"
                         :checked="slotAvailabilityStore.getSlotStatus(day.date, hour) === 'available'"
                         :disabled="slotAvailabilityStore.getSlotStatus(day.date, hour) === 'auto_closed' || slotAvailabilityStore.loading"
-                        @change="toggleSlot(day.date, hour)"
+                        @change="toggleSlot(day.date, hour, $event)"
                         class="sr-only"
                       />
                       <div 
@@ -1097,14 +1110,26 @@
             v-if="editingJob"
             type="button"
             @click="deleteJob"
-            class="px-4 py-2 text-red-700 bg-red-100 hover:bg-red-200 rounded-md transition-colors"
+            :class="[
+              'px-4 py-2 text-red-700 bg-red-100 rounded-md transition-colors',
+              isDemoUser ? 'hover:bg-red-100' : 'hover:bg-red-200'
+            ]"
+            :title="isDemoUser ? 'Ingresá con Google para eliminar trabajos' : 'Eliminar este trabajo'"
           >
             Eliminar
           </button>
           <button
             type="submit"
             :disabled="savingJob"
-            class="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center gap-2"
+            :class="[
+              'text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center gap-2',
+              savingJob
+                ? 'bg-blue-300 cursor-not-allowed'
+                : isDemoUser
+                  ? 'bg-blue-500 hover:bg-blue-500/90'
+                  : 'bg-blue-500 hover:bg-blue-600'
+            ]"
+            :title="isDemoUser ? (editingJob ? 'Ingresá con Google para editar trabajos' : 'Ingresá con Google para crear trabajos') : (editingJob ? 'Guardar cambios del trabajo' : 'Crear nuevo trabajo')"
           >
             <IconLoading 
               v-if="savingJob" 
@@ -1167,6 +1192,7 @@ useSeoMeta({
 const jobsStore = useJobsStore()
 const clientsStore = useClientsStore()
 const slotAvailabilityStore = useSlotAvailabilityStore()
+const { requireFullAccount, isDemoUser } = useDemoAccessGuard()
 
 // Service types store
 const serviceTypesStore = useServiceTypesStore()
@@ -1441,6 +1467,10 @@ const getJobDisplayMode = (job) => {
 // Modal actions
 
 const openNewJobModal = () => {
+  if (requireFullAccount('crear trabajos')) {
+    return
+  }
+
   editingJob.value = null
   selectedClient.value = null
   clientSearchQuery.value = ''
@@ -1460,6 +1490,10 @@ const openNewJobModal = () => {
 }
 
 const editJob = (job) => {
+  if (requireFullAccount('editar trabajos')) {
+    return
+  }
+
   editingJob.value = job
 
   // Find matching client by clientId first, then by name/phone
@@ -1503,6 +1537,10 @@ const editJob = (job) => {
 }
 
 const createJobAtTime = (date, hour) => {
+  if (requireFullAccount('crear trabajos')) {
+    return
+  }
+
   editingJob.value = null
   selectedClient.value = null
   clientSearchQuery.value = ''
@@ -1523,6 +1561,10 @@ const createJobAtTime = (date, hour) => {
 
 // Handle slot click in agenda mode (only allow if slot is available)
 const handleSlotClick = (date, hour) => {
+  if (requireFullAccount('crear trabajos')) {
+    return
+  }
+
   if (slotAvailabilityStore.getSlotStatus(date, hour) === 'available') {
     createJobAtTime(date, hour)
   } else {
@@ -1531,7 +1573,14 @@ const handleSlotClick = (date, hour) => {
 }
 
 // Toggle slot availability (for availability mode)
-const toggleSlot = async (date, hour) => {
+const toggleSlot = async (date, hour, event) => {
+  if (requireFullAccount('configurar disponibilidad')) {
+    if (event?.target) {
+      event.target.checked = !event.target.checked
+    }
+    return
+  }
+
   const status = slotAvailabilityStore.getSlotStatus(date, hour)
   
   // Prevent toggling auto-closed slots
@@ -1558,6 +1607,10 @@ const toggleSlot = async (date, hour) => {
 
 // Toggle all day slots (open or close)
 const openAllDay = async (date) => {
+  if (requireFullAccount('configurar disponibilidad')) {
+    return
+  }
+
   try {
     const isFullyOpen = isDayFullyOpen(date)
 
@@ -1646,6 +1699,10 @@ const selectClient = (client) => {
 }
 
 const createNewClient = () => {
+  if (requireFullAccount('crear clientes')) {
+    return
+  }
+
   showClientDropdown.value = false
   highlightedClientIndex.value = -1
   // Use nextTick to ensure modal is in DOM before showing
@@ -1742,6 +1799,10 @@ const checkTimeOverlap = (newJobStart, newJobDuration, excludeJobId = null) => {
 }
 
 const saveJob = async () => {
+  if (requireFullAccount(editingJob.value ? 'editar trabajos' : 'crear trabajos')) {
+    return
+  }
+
   try {
     savingJob.value = true
 
@@ -1873,6 +1934,10 @@ const saveJob = async () => {
 }
 
 const deleteJob = async () => {
+  if (requireFullAccount('eliminar trabajos')) {
+    return
+  }
+
   if (!confirm(`¿Está seguro de eliminar este trabajo?`)) {
     return
   }

@@ -54,7 +54,11 @@
             </p>
             <button
               @click="openSetupModal"
-              class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+              :class="[
+                'px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors',
+                isDemoUser ? 'bg-blue-600 hover:bg-blue-600/90' : 'bg-blue-600 hover:bg-blue-700'
+              ]"
+              :title="isDemoUser ? 'Ingresá con Google para completar tu perfil' : 'Completar perfil profesional'"
             >
               Completar Perfil
             </button>
@@ -83,7 +87,11 @@
           <button
             @click="handleReactivateAccount"
             :disabled="isReactivating"
-            class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+            :class="[
+              'px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50',
+              isDemoUser ? 'bg-green-600 hover:bg-green-600/90' : 'bg-green-600 hover:bg-green-700'
+            ]"
+            :title="isDemoUser ? 'Ingresá con Google para reactivar tu cuenta' : 'Reactivar cuenta profesional'"
           >
             {{ isReactivating ? 'Reactivando...' : 'Reactivar Cuenta' }}
           </button>
@@ -108,7 +116,11 @@
           </p>
           <button
             @click="openEditProfileModal"
-            class="bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition-colors"
+            :class="[
+              'px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors',
+              isDemoUser ? 'bg-yellow-600 hover:bg-yellow-600/90' : 'bg-yellow-600 hover:bg-yellow-700'
+            ]"
+            :title="isDemoUser ? 'Ingresá con Google para completar tu información' : 'Completar información requerida'"
           >
             Completar Ahora
           </button>
@@ -186,7 +198,11 @@
             <button
               type="button"
               @click="openEditProfileModal"
-              class="flex-1 h-10 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              :class="[
+                'flex-1 h-10 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
+                isDemoUser ? 'bg-blue-600 hover:bg-blue-600/90' : 'bg-blue-600 hover:bg-blue-700'
+              ]"
+              :title="isDemoUser ? 'Ingresá con Google para editar tu perfil' : 'Editar perfil profesional'"
             >
               <IconPencilOutline class="w-5 h-5" />
               Editar Perfil
@@ -194,7 +210,13 @@
             <button
               type="button"
               @click="openCloseAccountModal"
-              class="text-red-600 border border-red-200 hover:bg-red-50 bg-transparent rounded-lg px-3 h-10 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              :class="[
+                'border bg-transparent rounded-lg px-3 h-10 text-sm font-medium transition-colors flex items-center justify-center gap-2',
+                isDemoUser
+                  ? 'text-red-600 border-red-200 hover:bg-red-50/80'
+                  : 'text-red-600 border-red-200 hover:bg-red-50'
+              ]"
+              :title="isDemoUser ? 'Ingresá con Google para desactivar tu cuenta' : 'Desactivar cuenta temporalmente'"
             >
               <IconAccountCancel class="w-5 h-5" />
               Desactivar cuenta
@@ -239,9 +261,12 @@
             </label>
             <input
               v-model="slugInput"
-              @input="handleSlugInput"
+              @input="handleSlugInput($event)"
+              @focus="guardSlugEditing"
               type="text"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              :readonly="isDemoUser"
+              :title="isDemoUser ? 'Ingresá con Google para personalizar tu URL' : 'Ingresa tu URL personalizada'"
               placeholder="ej: juan-perez-instalaciones"
             />
             <p class="text-xs text-gray-500 mt-1">
@@ -278,14 +303,24 @@
             <button
               @click="verifySlug"
               :disabled="!slugPreview || isVerifyingSlug"
-              class="flex-1 px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              :class="[
+                'flex-1 px-4 py-2 border rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+                isDemoUser
+                  ? 'border-blue-600 text-blue-600 hover:bg-blue-50/80'
+                  : 'border-blue-600 text-blue-600 hover:bg-blue-50'
+              ]"
+              :title="isDemoUser ? 'Ingresá con Google para verificar tu URL personalizada' : 'Verificar disponibilidad de URL'"
             >
               {{ isVerifyingSlug ? 'Verificando...' : 'Verificar URL' }}
             </button>
             <button
               @click="saveSlug"
               :disabled="!slugPreview || !slugValidationSuccess || isSavingSlug"
-              class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              :class="[
+                'flex-1 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+                isDemoUser ? 'bg-blue-600 hover:bg-blue-600/90' : 'bg-blue-600 hover:bg-blue-700'
+              ]"
+              :title="isDemoUser ? 'Ingresá con Google para guardar tu nueva URL' : 'Guardar URL personalizada'"
             >
               {{ isSavingSlug ? 'Guardando...' : 'Guardar' }}
             </button>
@@ -322,7 +357,11 @@
             </p>
             <button
               @click="openNewServiceModal"
-              class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+              :class="[
+                'px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors',
+                isDemoUser ? 'bg-blue-600 hover:bg-blue-600/90' : 'bg-blue-600 hover:bg-blue-700'
+              ]"
+              :title="isDemoUser ? 'Ingresá con Google para agregar servicios' : 'Agregar primer servicio'"
             >
               Agregar Primer Servicio
             </button>
@@ -350,15 +389,21 @@
                   <div class="flex gap-1">
                     <button
                       @click="editService(service)"
-                      class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                      title="Editar servicio"
+                      :class="[
+                        'p-1.5 rounded transition-colors',
+                        isDemoUser ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100/80' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                      ]"
+                      :title="isDemoUser ? 'Ingresá con Google para editar servicios' : 'Editar servicio'"
                     >
                       <IconPencilOutline class="w-5 h-5" />
                     </button>
                     <button
                       @click="deleteService(service)"
-                      class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                      title="Eliminar servicio"
+                      :class="[
+                        'p-1.5 rounded transition-colors',
+                        isDemoUser ? 'text-red-400 hover:text-red-600 hover:bg-red-50/80' : 'text-red-400 hover:text-red-600 hover:bg-red-50'
+                      ]"
+                      :title="isDemoUser ? 'Ingresá con Google para eliminar servicios' : 'Eliminar servicio'"
                     >
                       <IconDeleteOutline class="w-5 h-5" />
                     </button>
@@ -383,7 +428,13 @@
             <!-- Add Service Button (when services exist) -->
             <button
               @click="openNewServiceModal"
-              class="w-full h-12 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 bg-transparent transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600"
+              :class="[
+                'w-full h-12 border-2 border-dashed rounded-lg bg-transparent transition-colors flex items-center justify-center gap-2',
+                isDemoUser
+                  ? 'border-gray-300 text-gray-600 hover:border-blue-400 hover:bg-blue-50/80 hover:text-blue-600'
+                  : 'border-gray-300 text-gray-600 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600'
+              ]"
+              :title="isDemoUser ? 'Ingresá con Google para agregar servicios' : 'Agregar nuevo servicio'"
             >
               <IconPlus class="w-5 h-5" />
               Agregar Servicio
@@ -531,8 +582,16 @@
           </button>
           <button
             type="submit"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            :class="[
+              'px-4 py-2 text-white rounded-lg transition-colors',
+              isLoading
+                ? 'bg-blue-300 cursor-not-allowed'
+                : isDemoUser
+                  ? 'bg-blue-600 hover:bg-blue-600/90'
+                  : 'bg-blue-600 hover:bg-blue-700'
+            ]"
             :disabled="isLoading"
+            :title="isDemoUser ? (techniciansStore.technician ? 'Ingresá con Google para editar tu perfil' : 'Ingresá con Google para completar tu perfil') : undefined"
           >
             {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
           </button>
@@ -575,8 +634,16 @@
           <button
             type="button"
             @click="handleCloseAccount"
-            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            :class="[
+              'px-4 py-2 text-white rounded-lg transition-colors',
+              isClosingAccount
+                ? 'bg-red-300 cursor-not-allowed'
+                : isDemoUser
+                  ? 'bg-red-600 hover:bg-red-600/90'
+                  : 'bg-red-600 hover:bg-red-700'
+            ]"
             :disabled="isClosingAccount"
+            :title="isDemoUser ? 'Ingresá con Google para desactivar tu cuenta' : 'Desactivar cuenta profesional'"
           >
             {{ isClosingAccount ? 'Desactivando...' : 'Desactivar cuenta' }}
           </button>
@@ -706,8 +773,16 @@
           </button>
           <button
             type="submit"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            :class="[
+              'px-4 py-2 text-white rounded-lg transition-colors',
+              isSavingService
+                ? 'bg-blue-300 cursor-not-allowed'
+                : isDemoUser
+                  ? 'bg-blue-600 hover:bg-blue-600/90'
+                  : 'bg-blue-600 hover:bg-blue-700'
+            ]"
             :disabled="isSavingService"
+            :title="isDemoUser ? (editingService ? 'Ingresá con Google para editar servicios' : 'Ingresá con Google para agregar servicios') : undefined"
           >
             {{ isSavingService ? 'Guardando...' : editingService ? 'Actualizar' : 'Crear Servicio' }}
           </button>
@@ -763,6 +838,7 @@ const techniciansStore = useTechniciansStore()
 const serviceTypesStore = useServiceTypesStore()
 const slotAvailabilityStore = useSlotAvailabilityStore()
 const authStore = useAuthStore()
+const { requireFullAccount, isDemoUser } = useDemoAccessGuard()
 
 // ==========================================
 // REFS & REACTIVE DATA
@@ -839,6 +915,10 @@ const formatDeactivationDate = computed(() => {
 // ==========================================
 
 const openSetupModal = () => {
+  if (requireFullAccount('completar tu perfil')) {
+    return
+  }
+
   // Reset setup form
   setupForm.name = ''
   setupForm.phone = ''
@@ -851,6 +931,10 @@ const openSetupModal = () => {
 }
 
 const openEditProfileModal = () => {
+  if (requireFullAccount('editar tu perfil')) {
+    return
+  }
+
   if (techniciansStore.technician) {
     // Pre-fill form with current data
     editForm.name = techniciansStore.technician.name || ''
@@ -871,6 +955,10 @@ const closeEditProfileModal = () => {
 }
 
 const openCloseAccountModal = () => {
+  if (requireFullAccount('desactivar tu cuenta')) {
+    return
+  }
+
   if (closeAccountModalRef.value) {
     closeAccountModalRef.value.showModal()
   }
@@ -887,6 +975,10 @@ const closeCloseAccountModal = () => {
 // ==========================================
 
 const saveProfile = async () => {
+  if (requireFullAccount(techniciansStore.technician ? 'editar tu perfil' : 'completar tu perfil')) {
+    return
+  }
+
   try {
     isLoading.value = true
     
@@ -925,6 +1017,10 @@ const saveProfile = async () => {
 }
 
 const handleCloseAccount = async () => {
+  if (requireFullAccount('desactivar tu cuenta')) {
+    return
+  }
+
   try {
     isClosingAccount.value = true
     
@@ -944,6 +1040,10 @@ const handleCloseAccount = async () => {
 }
 
 const handleReactivateAccount = async () => {
+  if (requireFullAccount('reactivar tu cuenta')) {
+    return
+  }
+
   try {
     isReactivating.value = true
     
@@ -966,6 +1066,10 @@ const handleReactivateAccount = async () => {
 // ==========================================
 
 const openNewServiceModal = () => {
+  if (requireFullAccount('agregar servicios')) {
+    return
+  }
+
   editingService.value = null
   serviceForm.name = ''
   serviceForm.description = ''
@@ -980,6 +1084,10 @@ const openNewServiceModal = () => {
 }
 
 const editService = (service) => {
+  if (requireFullAccount('editar servicios')) {
+    return
+  }
+
   editingService.value = service
   serviceForm.name = service.name
   serviceForm.description = service.description || ''
@@ -1019,6 +1127,10 @@ const closeServiceModal = () => {
 }
 
 const saveService = async () => {
+  if (requireFullAccount(editingService.value ? 'editar servicios' : 'agregar servicios')) {
+    return
+  }
+
   try {
     isSavingService.value = true
     
@@ -1052,6 +1164,10 @@ const saveService = async () => {
 }
 
 const deleteService = async (service) => {
+  if (requireFullAccount('eliminar servicios')) {
+    return
+  }
+
   if (!confirm(`¿Estás seguro de eliminar el servicio "${service.name}"?`)) {
     return
   }
@@ -1083,13 +1199,37 @@ const slugify = (text) => {
     .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
 }
 
-const handleSlugInput = () => {
+const guardSlugEditing = (event) => {
+  if (requireFullAccount('configurar tu URL de reservas')) {
+    if (event?.preventDefault) {
+      event.preventDefault()
+    }
+    if (event?.target?.blur) {
+      event.target.blur()
+    }
+    return true
+  }
+
+  return false
+}
+
+const handleSlugInput = (event) => {
+  if (guardSlugEditing(event)) {
+    slugInput.value = techniciansStore.technician?.urlSlug || ''
+    slugPreview.value = slugInput.value
+    return
+  }
+
   slugPreview.value = slugify(slugInput.value)
   slugValidationMessage.value = ''
   slugValidationSuccess.value = false
 }
 
 const verifySlug = async () => {
+  if (requireFullAccount('configurar tu URL de reservas')) {
+    return
+  }
+
   if (!slugPreview.value) return
 
   isVerifyingSlug.value = true
@@ -1118,6 +1258,10 @@ const verifySlug = async () => {
 }
 
 const saveSlug = async () => {
+  if (requireFullAccount('configurar tu URL de reservas')) {
+    return
+  }
+
   if (!slugPreview.value || !slugValidationSuccess.value) return
 
   isSavingSlug.value = true

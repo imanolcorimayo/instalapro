@@ -101,7 +101,7 @@
     <div class="lg:ml-64">
       <!-- Top bar -->
       <div
-        class="sticky top-0 z-10 flex items-center justify-between h-16 px-4 bg-white border-b border-gray-200 lg:px-6 cursor-default"
+        class="sticky top-0 z-10 flex items-center justify-between gap-4 h-16 px-4 bg-white border-b border-gray-200 lg:px-6 cursor-default"
         data-tour-id="topbar"
       >
         <!-- Mobile menu button -->
@@ -120,6 +120,41 @@
           </h2>
         </div>
 
+        <div
+          v-if="isDemoUser"
+          class="flex items-center gap-2 sm:hidden"
+        >
+          <span class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-blue-600">
+            <IconDatabase class="h-3.5 w-3.5" />
+            Demo
+          </span>
+          <button
+            type="button"
+            class="inline-flex items-center gap-1 rounded-md border border-blue-200 px-2 py-1 text-xs font-medium text-blue-600 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+            @click="openUpgradeModal()"
+          >
+            <IconGoogle class="h-3.5 w-3.5" />
+            Iniciar sesión
+          </button>
+        </div>
+
+        <div
+          v-if="isDemoUser"
+          class="hidden sm:flex items-center gap-3"
+        >
+          <span class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-600">
+            <IconDatabase class="h-4 w-4" />
+            Datos demo
+          </span>
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 rounded-lg border border-blue-200 px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+            @click="openUpgradeModal()"
+          >
+            <IconGoogle class="h-4 w-4" />
+            Ingresar con Google
+          </button>
+        </div>
       </div>
 
       <!-- Page content -->
@@ -136,6 +171,7 @@
     </Teleport>
 
     <OnboardingTestUserTour />
+    <DemoUpgradeModal />
   </div>
 </template>
 
@@ -151,6 +187,8 @@ import IconCalendarOutline from '~icons/mdi/calendar-outline'
 import IconAccountGroupOutline from '~icons/mdi/account-group-outline'
 import IconFileDocumentOutline from '~icons/mdi/file-document-outline'
 import IconLogoutVariant from '~icons/mdi/logout-variant'
+import IconDatabase from '~icons/mdi/database'
+import IconGoogle from '~icons/logos/google-icon'
 
 // ==========================================
 // COMPOSABLES
@@ -160,6 +198,7 @@ const route = useRoute()
 const techniciansStore = useTechniciansStore()
 const authStore = useAuthStore()
 const { $toast } = useNuxtApp()
+const { isDemoUser, openUpgradeModal } = useDemoAccessGuard()
 
 // ==========================================
 // STATE

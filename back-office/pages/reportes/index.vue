@@ -29,7 +29,11 @@
         </button>
         <button
           @click="openAddExpenseModal"
-          class="flex items-center gap-2 px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors text-sm"
+          :class="[
+            'flex items-center gap-2 px-3 py-2 text-white rounded-lg transition-colors text-sm',
+            isDemoUser ? 'bg-gray-900 hover:bg-gray-900/90' : 'bg-gray-900 hover:bg-gray-800'
+          ]"
+          :title="isDemoUser ? 'Ingresá con Google para registrar gastos' : 'Agregar un nuevo gasto'"
         >
           <IconWallet class="w-4 h-4" />
           Agregar Gasto
@@ -386,15 +390,21 @@
                     <div v-if="entry.movementType === 'outcome' && !entry.isJobIncome" class="flex items-center justify-end gap-2">
                       <button
                         @click="openEditExpenseModal(entry)"
-                        class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Editar gasto"
+                        :class="[
+                          'p-1.5 rounded-lg transition-colors',
+                          isDemoUser ? 'text-blue-600 hover:bg-blue-50/80' : 'text-blue-600 hover:bg-blue-50'
+                        ]"
+                        :title="isDemoUser ? 'Ingresá con Google para editar gastos' : 'Editar gasto'"
                       >
                         <IconPencil class="w-4 h-4" />
                       </button>
                       <button
                         @click="confirmDeleteExpense(entry)"
-                        class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Eliminar gasto"
+                        :class="[
+                          'p-1.5 rounded-lg transition-colors',
+                          isDemoUser ? 'text-red-600 hover:bg-red-50/80' : 'text-red-600 hover:bg-red-50'
+                        ]"
+                        :title="isDemoUser ? 'Ingresá con Google para eliminar gastos' : 'Eliminar gasto'"
                       >
                         <IconDelete class="w-4 h-4" />
                       </button>
@@ -463,6 +473,7 @@ useSeoMeta({
 const walletsStore = useWalletsStore()
 const clientsStore = useClientsStore()
 const jobsStore = useJobsStore()
+const { requireFullAccount, isDemoUser } = useDemoAccessGuard()
 
 // Modal ref
 const expenseModal = ref(null)
@@ -1061,17 +1072,29 @@ const updateChart = () => {
 // ==========================================
 
 const openAddExpenseModal = () => {
+  if (requireFullAccount('registrar gastos')) {
+    return
+  }
+
   selectedExpense.value = null
   expenseModal.value?.showModal()
 }
 
 const openEditExpenseModal = (expense) => {
+  if (requireFullAccount('editar gastos')) {
+    return
+  }
+
   selectedExpense.value = expense
   expenseModal.value?.loadExpense(expense)
   expenseModal.value?.showModal()
 }
 
 const confirmDeleteExpense = async (expense) => {
+  if (requireFullAccount('eliminar gastos')) {
+    return
+  }
+
   if (!confirm('¿Está seguro de que desea eliminar este gasto?')) {
     return
   }

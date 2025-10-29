@@ -5,7 +5,11 @@
       <button
         data-tour-id="clients-add-button"
         @click="openAddClientModal"
-        class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
+        :class="[
+          'bg-blue-500 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors',
+          isDemoUser ? 'hover:bg-blue-500/90' : 'hover:bg-blue-600'
+        ]"
+        :title="isDemoUser ? 'Ingresá con Google para agregar tus clientes' : 'Agregar un nuevo cliente'"
       >
         <IconPlus class="w-4 h-4" />
         <span class="hidden sm:inline">Agregar Cliente</span>
@@ -54,7 +58,11 @@
       <p class="text-gray-600 mb-4">Comience agregando su primer cliente para gestionar su base de datos.</p>
       <button
         @click="openAddClientModal"
-        class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center gap-2"
+        :class="[
+          'bg-blue-500 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center gap-2 transition-colors',
+          isDemoUser ? 'hover:bg-blue-500/90' : 'hover:bg-blue-600'
+        ]"
+        :title="isDemoUser ? 'Ingresá con Google para agregar tus clientes' : 'Agregar un nuevo cliente'"
       >
         <IconPlus class="w-4 h-4" />
         Agregar Primer Cliente
@@ -86,22 +94,31 @@
             <button
               :data-tour-id="index === 0 ? 'clients-whatsapp-action' : undefined"
               @click="openWhatsApp(client.phone)"
-              class="p-1.5 text-green-500 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
-              :title="`WhatsApp: ${client.phone}`"
+              :class="[
+                'p-1.5 text-green-500 hover:text-green-700 hover:bg-green-50 rounded transition-colors',
+                isDemoUser ? 'opacity-60' : ''
+              ]"
+              :title="isDemoUser ? 'Ingresá con Google para contactar clientes' : `WhatsApp: ${client.phone}`"
             >
               <IconWhatsapp class="w-4 h-4" />
             </button>
             <button
               @click="editClient(client)"
-              class="p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
-              title="Editar cliente"
+              :class="[
+                'p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors',
+                isDemoUser ? 'opacity-60' : ''
+              ]"
+              :title="isDemoUser ? 'Iniciá sesión con Google para editar clientes' : 'Editar cliente'"
             >
               <IconEdit class="w-4 h-4" />
             </button>
             <button
               @click="deleteClient(client.id, client.name)"
-              class="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-              title="Eliminar cliente"
+              :class="[
+                'p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors',
+                isDemoUser ? 'opacity-60' : ''
+              ]"
+              :title="isDemoUser ? 'Iniciá sesión con Google para eliminar clientes' : 'Eliminar cliente'"
             >
               <IconDelete class="w-4 h-4" />
             </button>
@@ -170,6 +187,7 @@ useSeoMeta({
 // Store integration
 const clientsStore = useClientsStore()
 const { clients, loading, error } = storeToRefs(clientsStore)
+const { requireFullAccount, isDemoUser } = useDemoAccessGuard()
 
 // Component state
 const searchQuery = ref('')
@@ -201,6 +219,10 @@ const loadClients = async () => {
 }
 
 const openAddClientModal = () => {
+  if (requireFullAccount('agregar clientes')) {
+    return
+  }
+
   clientModal.value?.showModal()
 }
 
@@ -210,12 +232,20 @@ const onClientCreated = (newClient) => {
 }
 
 const editClient = (client) => {
+  if (requireFullAccount('editar clientes')) {
+    return
+  }
+
   // TODO: Implement edit functionality in ClientModal.vue
   // For now, we'll keep the current approach until ClientModal supports editing
   useToast().info('Funcionalidad de edición próximamente disponible')
 }
 
 const deleteClient = async (clientId, clientName) => {
+  if (requireFullAccount('eliminar clientes')) {
+    return
+  }
+
   if (!confirm(`¿Está seguro de eliminar al cliente "${clientName}"?`)) {
     return
   }
@@ -230,6 +260,10 @@ const deleteClient = async (clientId, clientName) => {
 }
 
 const openWhatsApp = (phone) => {
+  if (requireFullAccount('contactar clientes por WhatsApp')) {
+    return
+  }
+
   const cleanPhone = phone.replace(/[^\d+]/g, '')
   const whatsappUrl = `https://wa.me/${cleanPhone}`
   window.open(whatsappUrl, '_blank')
