@@ -226,7 +226,7 @@
             v-for="activity in dashboardStore.recentActivity"
             :key="activity.id"
             :class="[
-              'flex items-center justify-between rounded-lg p-4 transition-all hover:shadow-sm',
+              'flex items-center justify-between rounded-lg p-4',
               activity.color === 'yellow' && 'border border-amber-200 bg-amber-50',
               activity.color === 'orange' && 'border border-amber-200 bg-amber-50',
               activity.color === 'green' && 'border border-green-200 bg-green-50',
