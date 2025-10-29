@@ -3,6 +3,7 @@
     <!-- Header Actions -->
     <div class="flex justify-end mb-6">
       <button
+        data-tour-id="clients-add-button"
         @click="openAddClientModal"
         class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
       >
@@ -13,7 +14,7 @@
     </div>
 
     <!-- Search Bar -->
-    <div class="mb-6">
+    <div data-tour-id="clients-search-bar" class="mb-6">
       <div class="relative">
         <IconSearch class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
         <input
@@ -70,8 +71,9 @@
     <!-- Clients Grid -->
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
       <div
-        v-for="client in filteredClients"
+        v-for="(client, index) in filteredClients"
         :key="client.id"
+        :data-tour-id="index === 0 ? 'clients-card-example' : undefined"
         class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
       >
         <!-- Client Header -->
@@ -82,6 +84,7 @@
           </div>
           <div class="flex items-center gap-1 ml-2">
             <button
+              :data-tour-id="index === 0 ? 'clients-whatsapp-action' : undefined"
               @click="openWhatsApp(client.phone)"
               class="p-1.5 text-green-500 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
               :title="`WhatsApp: ${client.phone}`"
@@ -131,6 +134,9 @@
       ref="clientModal"
       @client-created="onClientCreated"
     />
+
+    <!-- Clients Tour -->
+    <ClientesTour />
   </div>
 </template>
 
@@ -146,6 +152,7 @@ import IconEdit from '~icons/mdi/pencil'
 import IconDelete from '~icons/mdi/delete'
 import IconPhone from '~icons/mdi/phone'
 import IconEmail from '~icons/mdi/email'
+import ClientesTour from '~/components/onboarding/ClientesTour.vue'
 import { formatPrice } from '@/utils'
 
 // Page meta

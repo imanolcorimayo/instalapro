@@ -39,7 +39,7 @@ let initialSidebarOpen = false
 
 let autoLaunchRetryId = null
 
-const shouldShowLauncher = computed(() => process.client && authStore.isTestUser)
+const shouldShowLauncher = computed(() => process.client && authStore.isTestUser && route.path === '/')
 
 const ensureDriver = async () => {
   const module = await import('driver.js')

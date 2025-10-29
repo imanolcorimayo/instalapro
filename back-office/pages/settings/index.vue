@@ -39,6 +39,7 @@
     <!-- Profile Setup Banner -->
     <div
       v-else-if="!techniciansStore.technician"
+      data-tour-id="settings-profile-banner"
       class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6"
     >
         <div class="flex items-start">
@@ -64,6 +65,7 @@
     <!-- Account Deactivated Banner -->
     <div
       v-else-if="techniciansStore.technician && techniciansStore.isAccountDeactivated"
+      data-tour-id="settings-account-deactivated"
       class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6"
     >
       <div class="flex items-start">
@@ -92,6 +94,7 @@
     <!-- Incomplete Profile Banner -->
     <div
       v-else-if="techniciansStore.technician && !techniciansStore.hasRequiredInfo"
+      data-tour-id="settings-profile-incomplete"
       class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6"
     >
       <div class="flex items-start">
@@ -119,7 +122,7 @@
       class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start"
     >
       <!-- Personal Information Card -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div data-tour-id="settings-profile-card" class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <IconAccountOutline class="w-6 h-6 text-blue-600" />
@@ -201,7 +204,7 @@
       </div>
 
       <!-- URL Slug Card -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div data-tour-id="settings-booking-url" class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <IconLink class="w-6 h-6 text-blue-600" />
@@ -291,7 +294,7 @@
       </div>
 
       <!-- Services Card -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div data-tour-id="settings-services-card" class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <IconToolboxOutline class="w-6 h-6 text-blue-600" />
@@ -390,7 +393,7 @@
       </div>
 
       <!-- Quick Access Card -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div data-tour-id="settings-quick-access" class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <IconClock class="w-6 h-6 text-blue-600" />
@@ -581,6 +584,9 @@
       </div>
     </ModalStructure>
 
+    <!-- Configuration Tour -->
+    <ConfiguracionTour />
+
     <!-- Service Type Modal -->
     <ModalStructure
       ref="serviceModalRef"
@@ -713,8 +719,9 @@
 </template>
 
 <script setup>
-// Utils
+// Utils & components
 import { formatPrice } from '@/utils'
+import ConfiguracionTour from '~/components/onboarding/ConfiguracionTour.vue'
 
 // Icons
 import IconAlertCircleOutline from '~icons/mdi/alert-circle-outline'

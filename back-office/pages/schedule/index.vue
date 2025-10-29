@@ -3,6 +3,7 @@
     <!-- Header Actions -->
     <div class="flex justify-end mb-6">
       <button
+        data-tour-id="schedule-new-job-button"
         @click="openNewJobModal"
         class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
       >
@@ -23,7 +24,7 @@
     <!-- Main Content (hidden while loading) -->
     <div v-else>
     <!-- Mode Toggle: Trabajos vs Disponibilidad -->
-    <div class="flex flex-col gap-4 mb-6">
+    <div data-tour-id="schedule-view-mode-toggle" class="flex flex-col gap-4 mb-6">
       <!-- Desktop Mode Toggle -->
       <div class="hidden sm:flex items-center justify-center">
         <div class="inline-flex bg-gray-100 rounded-xl p-1">
@@ -166,7 +167,7 @@
     </div>
 
     <!-- Weekly Timeline View (Agenda Mode) -->
-    <div v-if="viewMode === 'agenda' && currentView === 'weekly-timeline'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div data-tour-id="schedule-weekly-timeline" v-if="viewMode === 'agenda' && currentView === 'weekly-timeline'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <!-- Mobile: Enhanced horizontal scroll view -->
       <div class="block sm:hidden relative">
         <!-- Scroll indicator text -->
@@ -587,7 +588,7 @@
     </div>
 
     <!-- Availability Configuration View -->
-    <div v-if="viewMode === 'availability'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div data-tour-id="schedule-availability-grid" v-if="viewMode === 'availability'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <!-- Week Navigation -->
       <div class="bg-white rounded-lg border-b border-gray-200 p-4">
         <div class="flex items-center justify-between">
@@ -1121,6 +1122,9 @@
       :initial-name="clientSearchQuery"
       @client-created="handleClientCreated"
     />
+
+    <!-- Agenda Tour -->
+    <AgendaTour />
   </div>
 </template>
 
@@ -1144,6 +1148,7 @@ import {
   endOfWeekInBuenosAires
 } from '~/utils/timezone'
 import { formatPrice } from '@/utils'
+import AgendaTour from '~/components/onboarding/AgendaTour.vue'
 
 import { watch, nextTick, onBeforeUnmount } from 'vue'
 

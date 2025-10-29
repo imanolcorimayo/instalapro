@@ -14,6 +14,7 @@
 
       <div class="flex items-center gap-2">
         <button
+          data-tour-id="reports-demo-toggle"
           type="button"
           @click="toggleTestingData"
           :class="[
@@ -37,7 +38,7 @@
     </div>
 
     <!-- Week Selector -->
-    <div class="flex items-center justify-center gap-4 bg-white rounded-lg border border-gray-200 p-3">
+    <div data-tour-id="reports-week-selector" class="flex items-center justify-center gap-4 bg-white rounded-lg border border-gray-200 p-3">
       <button
         @click="goToPreviousWeek"
         class="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
@@ -68,7 +69,7 @@
     </div>
 
     <!-- Tab Navigation -->
-    <div class="flex items-center justify-center gap-1.5 bg-white rounded-lg border border-gray-200 p-1.5">
+    <div data-tour-id="reports-tab-navigation" class="flex items-center justify-center gap-1.5 bg-white rounded-lg border border-gray-200 p-1.5">
       <button
         @click="activeTab = 'resumen'"
         :class="[
@@ -112,7 +113,7 @@
     <!-- KPI Cards -->
     <section>
       <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Resumen Semanal</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div data-tour-id="reports-kpi-cards" class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <!-- Balance Card -->
         <div class="bg-white rounded-lg border border-gray-200 p-3 hover:border-gray-300 transition-colors">
           <div class="flex items-center gap-3">
@@ -174,6 +175,7 @@
     <section>
       <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Tendencia</h2>
       <div
+        data-tour-id="reports-trend-chart"
         :class="[
           'bg-white rounded-lg border border-gray-200 p-3 transition-all duration-300',
           isTestingMode ? 'ring-2 ring-purple-400 shadow-sm' : ''
@@ -410,6 +412,9 @@
       :expense="selectedExpense"
       @saved="onExpenseSaved"
     />
+
+    <!-- Reportes Tour -->
+    <ReportesTour />
   </div>
 </template>
 
@@ -433,6 +438,7 @@ import IconChartLine from '~icons/mdi/chart-line'
 import IconPencil from '~icons/mdi/pencil'
 import IconDelete from '~icons/mdi/delete'
 import testingReportesData from '@/utils/demo/reportes-demo-data.json'
+import ReportesTour from '~/components/onboarding/ReportesTour.vue'
 
 // Register Chart.js components
 Chart.register(...registerables)
