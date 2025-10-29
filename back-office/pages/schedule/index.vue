@@ -1149,7 +1149,7 @@
     />
 
     <!-- Agenda Tour -->
-    <AgendaTour />
+    <AgendaTour :ensure-default-view="ensureDefaultScheduleViewForTour" />
   </div>
 </template>
 
@@ -1958,6 +1958,28 @@ const deleteJob = async () => {
   } catch (err) {
     console.error('Error deleting job:', err)
     useToast().error('Error al eliminar trabajo')
+  }
+}
+
+const ensureDefaultScheduleViewForTour = async () => {
+  let shouldWaitForRender = false
+
+  if (viewMode.value !== 'agenda') {
+    viewMode.value = 'agenda'
+    shouldWaitForRender = true
+  }
+
+  if (currentView.value !== 'weekly-timeline') {
+    currentView.value = 'weekly-timeline'
+    shouldWaitForRender = true
+  }
+
+  if (shouldWaitForRender) {
+    await nextTick()
+
+    if (process.client) {
+      await new Promise(resolve => window.setTimeout(resolve, 0))
+    }
   }
 }
 

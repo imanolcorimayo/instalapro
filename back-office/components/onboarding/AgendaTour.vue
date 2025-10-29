@@ -16,6 +16,13 @@
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import IconHelpCircleOutline from '~icons/mdi/help-circle-outline'
 
+const props = defineProps({
+  ensureDefaultView: {
+    type: Function,
+    default: null
+  }
+})
+
 const authStore = useAuthStore()
 const route = useRoute()
 
@@ -105,6 +112,10 @@ const startTour = async (force = false) => {
   isLaunching.value = true
 
   try {
+    if (typeof props.ensureDefaultView === 'function') {
+      await props.ensureDefaultView()
+    }
+
     const selectors = [
       '[data-tour-id="schedule-new-job-button"]',
       '[data-tour-id="schedule-view-mode-toggle"]',
