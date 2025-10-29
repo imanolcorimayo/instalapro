@@ -210,10 +210,10 @@
           :class="[
             'flex-1 px-4 py-2 text-white rounded-lg transition-colors font-medium',
             submitting
-              ? 'bg-emerald-300 cursor-not-allowed opacity-60'
+              ? 'bg-indigo-300 cursor-not-allowed opacity-60'
               : isDemoUser
-                ? 'bg-emerald-600 hover:bg-emerald-600/90'
-                : 'bg-emerald-600 hover:bg-emerald-700'
+                ? 'bg-indigo-600 hover:bg-indigo-600/90'
+                : 'bg-indigo-600 hover:bg-indigo-700'
           ]"
           :title="isDemoUser ? (isEditMode ? 'Ingresá con Google para editar gastos' : 'Ingresá con Google para registrar gastos') : undefined"
         >
