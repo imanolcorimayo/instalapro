@@ -3,7 +3,7 @@
     <button
       v-if="shouldShowLauncher"
       type="button"
-      class="fixed bottom-5 right-5 z-[60] inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-blue-600/40 transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+      class="fixed bottom-5 right-5 z-[40] inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-blue-600/40 transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
       @click="startTour(true)"
     >
       <IconHelpCircleOutline class="h-5 w-5" />
