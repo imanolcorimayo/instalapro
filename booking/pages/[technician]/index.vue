@@ -27,6 +27,27 @@
 
     <!-- Booking Interface -->
     <div v-else-if="techniciansStore.technician">
+      <!-- Demo Banner -->
+      <div
+        v-if="isDemoUser"
+        class="bg-blue-50 border-b border-blue-100"
+      >
+        <div class="mx-auto flex max-w-lg flex-wrap items-center justify-between gap-2 px-4 py-3 sm:flex-nowrap">
+          <span class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-700">
+            <IconDatabase class="h-4 w-4" />
+            Datos demo
+          </span>
+          <button
+            type="button"
+            class="inline-flex flex-shrink-0 items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            @click="openUpgradeModal()"
+          >
+            <IconGoogle class="h-4 w-4" />
+            Ingresar con Google
+          </button>
+        </div>
+      </div>
+
       <!-- Technician Header -->
       <div class="bg-white shadow-sm border-b">
         <div class="max-w-lg mx-auto p-4">
@@ -418,11 +439,20 @@
       </transition>
 
       <!-- WhatsApp Button (Secondary FAB) - Bottom Right -->
+      <button
+        v-if="techniciansStore.technician.phone && isDemoUser"
+        type="button"
+        class="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-green-500 shadow-lg transition-all duration-200 hover:scale-105 hover:bg-green-600 hover:shadow-xl flex items-center justify-center z-50"
+        @click="handleWhatsAppClick"
+      >
+        <IconWhatsapp class="w-7 h-7 text-white" />
+      </button>
       <a
-        v-if="techniciansStore.technician.phone"
+        v-else-if="techniciansStore.technician.phone"
         :href="whatsappUrl"
         target="_blank"
-        class="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-green-500 hover:bg-green-600 hover:scale-105 flex items-center justify-center z-50"
+        rel="noopener"
+        class="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-green-500 shadow-lg transition-all duration-200 hover:scale-105 hover:bg-green-600 hover:shadow-xl flex items-center justify-center z-50"
       >
         <IconWhatsapp class="w-7 h-7 text-white" />
       </a>
@@ -512,6 +542,7 @@
       @close="closeConsultationModal"
       @submitted="handleConsultationSubmitted"
     />
+    <DemoUpgradeModal />
   </div>
 </template>
 
@@ -532,6 +563,8 @@ import IconCheckCircle from '~icons/mdi/check-circle'
 import IconChevronLeft from '~icons/mdi/chevron-left'
 import IconChevronRight from '~icons/mdi/chevron-right'
 import IconHelpCircle from '~icons/mdi/help-circle-outline'
+import IconDatabase from '~icons/mdi/database'
+import IconGoogle from '~icons/logos/google-icon'
 
 // Utils
 import { formatPrice } from '@/utils'
@@ -542,6 +575,7 @@ const serviceTypesStore = useServiceTypesStore()
 const bookingStore = useBookingStore()
 const clientsStore = useClientsStore()
 const jobsStore = useJobsStore()
+const { isDemoUser, requireFullAccount, openUpgradeModal } = useBookingDemoAccess()
 
 // Route
 const route = useRoute()
@@ -686,6 +720,9 @@ const handleContinue = () => {
   } else if (bookingStore.currentStep === 2) {
     bookingStore.nextStep()
   } else if (bookingStore.currentStep === 3) {
+    if (requireFullAccount('confirmar una reserva')) {
+      return
+    }
     handleSubmitBooking()
   }
 }
@@ -790,6 +827,9 @@ const closeSuccessModal = () => {
 
 // Open consultation modal
 const openConsultationModal = () => {
+  if (requireFullAccount('enviar una consulta general')) {
+    return
+  }
   showConsultationModal.value = true
 }
 
@@ -874,6 +914,23 @@ const whatsappUrlConsultation = computed(() => {
 
   return `https://wa.me/${phone}?text=${message}`
 })
+
+const handleWhatsAppClick = () => {
+  if (requireFullAccount('enviar un mensaje por WhatsApp')) {
+    return
+  }
+
+  if (!process.client) {
+    return
+  }
+
+  const url = whatsappUrl.value
+  if (!url || url === '#') {
+    return
+  }
+
+  window.open(url, '_blank', 'noopener')
+}
 
 // Load technician data
 onMounted(async () => {
