@@ -15,27 +15,63 @@ async function updateJobsStatus() {
     console.log('📅 Current datetime:', now.toISOString());
     console.log('🌍 Current datetime (UTC-3):', new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString());
 
-    // Query for pending jobs with scheduledDate before now
-    const jobsQuery = db.collection('jobs')
+    // Query for pending jobs with scheduledDate before now (to cancel)
+    const pendingJobsQuery = db.collection('jobs')
       .where('status', '==', 'pending')
       .where('scheduledDate', '<', now);
 
-    const snapshot = await jobsQuery.get();
+    // Query for confirmed jobs with scheduledDate before now (to complete)
+    const confirmedJobsQuery = db.collection('jobs')
+      .where('status', '==', 'confirmed')
+      .where('scheduledDate', '<', now);
 
-    if (snapshot.empty) {
-      console.log('✅ No pending jobs found that need status update');
+    const [pendingSnapshot, confirmedSnapshot] = await Promise.all([
+      pendingJobsQuery.get(),
+      confirmedJobsQuery.get()
+    ]);
+
+    const totalJobs = pendingSnapshot.size + confirmedSnapshot.size;
+
+    if (totalJobs === 0) {
+      console.log('✅ No jobs found that need status update');
       return;
     }
 
-    console.log(`📋 Found ${snapshot.size} pending job(s) to update`);
+    console.log(`📋 Found ${pendingSnapshot.size} pending job(s) to cancel`);
+    console.log(`📋 Found ${confirmedSnapshot.size} confirmed job(s) to complete`);
 
-    // Update each job to completed status
+    // Update each job based on current status
     const batch = db.batch();
     const updates = [];
 
-    snapshot.forEach(doc => {
+    // Cancel pending jobs
+    pendingSnapshot.forEach(doc => {
       const jobData = doc.data();
-      console.log(`  - Job ${doc.id}:`, {
+      console.log(`  - Job ${doc.id} (CANCELLING):`, {
+        clientName: jobData.clientName,
+        serviceType: jobData.serviceType,
+        scheduledDate: jobData.scheduledDate.toDate().toISOString(),
+        currentStatus: jobData.status
+      });
+
+      batch.update(doc.ref, {
+        status: 'cancelled',
+        updatedAt: now
+      });
+
+      updates.push({
+        id: doc.id,
+        clientName: jobData.clientName,
+        serviceType: jobData.serviceType,
+        scheduledDate: jobData.scheduledDate.toDate(),
+        newStatus: 'cancelled'
+      });
+    });
+
+    // Complete confirmed jobs
+    confirmedSnapshot.forEach(doc => {
+      const jobData = doc.data();
+      console.log(`  - Job ${doc.id} (COMPLETING):`, {
         clientName: jobData.clientName,
         serviceType: jobData.serviceType,
         scheduledDate: jobData.scheduledDate.toDate().toISOString(),
@@ -51,16 +87,18 @@ async function updateJobsStatus() {
         id: doc.id,
         clientName: jobData.clientName,
         serviceType: jobData.serviceType,
-        scheduledDate: jobData.scheduledDate.toDate()
+        scheduledDate: jobData.scheduledDate.toDate(),
+        newStatus: 'completed'
       });
     });
 
     // Commit the batch update
     await batch.commit();
 
-    console.log('✅ Successfully updated jobs to completed status:');
+    console.log('✅ Successfully updated job statuses:');
     updates.forEach(job => {
-      console.log(`  ✓ ${job.id} - ${job.clientName} (${job.serviceType}) - ${job.scheduledDate.toISOString()}`);
+      const emoji = job.newStatus === 'cancelled' ? '❌' : '✓';
+      console.log(`  ${emoji} ${job.id} - ${job.clientName} (${job.serviceType}) - ${job.scheduledDate.toISOString()} → ${job.newStatus}`);
     });
 
     console.log(`🎉 Cron job completed successfully. Updated ${updates.length} job(s)`);

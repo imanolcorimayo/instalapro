@@ -194,11 +194,71 @@ const seedClients = async () => {
   console.log(`👥 Seeded ${clients.length} clients`)
 }
 
+const addHoursToDate = (date, hours, minutes = 0) => {
+  const result = new Date(date)
+  result.setHours(hours, minutes, 0, 0)
+  return result
+}
+
 const seedJobs = async () => {
   const today = new Date()
   const jobs = [
+    // Today's jobs
     {
-      id: 'job-upcoming-install',
+      id: 'job-today-morning-maintenance',
+      clientId: 'client-matias-gomez',
+      clientName: 'Matías Gómez',
+      clientPhone: '+54 9 11 4222-8899',
+      clientEmail: 'matias.gomez@example.com',
+      serviceType: 'Mantenimiento preventivo',
+      serviceTypeId: 'svc-maintenance',
+      description: 'Chequeo de rutina y limpieza de filtros.',
+      address: 'Calle Los Pinos 450, San Isidro',
+      scheduledDate: toTimestamp(addHoursToDate(today, 9, 0)),
+      estimatedDuration: 90,
+      status: 'in_progress',
+      price: 45000,
+      notes: 'Cliente en casa desde las 8:30.',
+      source: 'booking'
+    },
+    {
+      id: 'job-today-afternoon-install',
+      clientId: 'client-lorena-alvarez',
+      clientName: 'Lorena Álvarez',
+      clientPhone: '+54 9 11 6011-2233',
+      clientEmail: 'lorena.alvarez@example.com',
+      serviceType: 'Instalación Split 3000 frigorías',
+      serviceTypeId: 'svc-standard-install',
+      description: 'Instalación de equipo nuevo en dormitorio principal.',
+      address: 'Av. Callao 123, CABA',
+      scheduledDate: toTimestamp(addHoursToDate(today, 14, 0)),
+      estimatedDuration: 120,
+      status: 'confirmed',
+      price: 85000,
+      notes: 'Llevar materiales de instalación.',
+      source: 'back_office'
+    },
+    {
+      id: 'job-today-evening-repair',
+      clientId: 'client-empresa-frio',
+      clientName: 'FríoMax S.R.L.',
+      clientPhone: '+54 11 4788-1122',
+      clientEmail: 'mantenimiento@friomax.com',
+      serviceType: 'Reparación urgente 24 hs',
+      serviceTypeId: 'svc-urgent-repair',
+      description: 'Revisión de equipo que no enfría correctamente.',
+      address: 'Parque Industrial Tigre, nave 5',
+      scheduledDate: toTimestamp(addHoursToDate(today, 18, 0)),
+      estimatedDuration: 120,
+      status: 'confirmed',
+      price: 125000,
+      notes: 'Verificar presión de gas refrigerante.',
+      source: 'booking'
+    },
+
+    // Tomorrow's jobs
+    {
+      id: 'job-tomorrow-morning-install',
       clientId: 'client-lorena-alvarez',
       clientName: 'Lorena Álvarez',
       clientPhone: '+54 9 11 6011-2233',
@@ -207,7 +267,7 @@ const seedJobs = async () => {
       serviceTypeId: 'svc-standard-install',
       description: 'Reemplazo de equipo existente. Requiere retiro del equipo viejo.',
       address: 'Av. Callao 123, CABA',
-      scheduledDate: toTimestamp(addDays(today, 2)),
+      scheduledDate: toTimestamp(addHoursToDate(addDays(today, 1), 10, 0)),
       estimatedDuration: 150,
       status: 'confirmed',
       price: 165000,
@@ -215,24 +275,26 @@ const seedJobs = async () => {
       source: 'booking'
     },
     {
-      id: 'job-completed-maintenance',
+      id: 'job-tomorrow-afternoon-maintenance',
       clientId: 'client-matias-gomez',
       clientName: 'Matías Gómez',
       clientPhone: '+54 9 11 4222-8899',
       clientEmail: 'matias.gomez@example.com',
       serviceType: 'Mantenimiento preventivo',
       serviceTypeId: 'svc-maintenance',
-      description: 'Chequeo pre verano y limpieza general.',
+      description: 'Mantenimiento anual programado.',
       address: 'Calle Los Pinos 450, San Isidro',
-      scheduledDate: toTimestamp(addDays(today, -10)),
+      scheduledDate: toTimestamp(addHoursToDate(addDays(today, 1), 16, 0)),
       estimatedDuration: 90,
-      status: 'completed',
-      price: 47000,
-      notes: 'Equipo en planta baja, acceso sencillo.',
+      status: 'pending',
+      price: 45000,
+      notes: 'Cliente solicita verificar ruidos extraños.',
       source: 'back_office'
     },
+
+    // Day after tomorrow
     {
-      id: 'job-pending-urgent',
+      id: 'job-day2-urgent',
       clientId: 'client-empresa-frio',
       clientName: 'FríoMax S.R.L.',
       clientPhone: '+54 11 4788-1122',
@@ -241,12 +303,101 @@ const seedJobs = async () => {
       serviceTypeId: 'svc-urgent-repair',
       description: 'Equipo industrial con falla E4. Ambiente crítico.',
       address: 'Parque Industrial Tigre, nave 5',
-      scheduledDate: toTimestamp(addDays(today, 1)),
+      scheduledDate: toTimestamp(addHoursToDate(addDays(today, 2), 8, 0)),
       estimatedDuration: 180,
-      status: 'pending',
+      status: 'confirmed',
       price: 210000,
       notes: 'Ingresar por portón 3. Tiempo máximo de espera 30 minutos.',
       source: 'back_office'
+    },
+    {
+      id: 'job-day2-afternoon-install',
+      clientId: 'client-lorena-alvarez',
+      clientName: 'Lorena Álvarez',
+      clientPhone: '+54 9 11 6011-2233',
+      clientEmail: 'lorena.alvarez@example.com',
+      serviceType: 'Instalación Split 3000 frigorías',
+      serviceTypeId: 'svc-standard-install',
+      description: 'Instalación en segundo dormitorio.',
+      address: 'Av. Callao 123, CABA',
+      scheduledDate: toTimestamp(addHoursToDate(addDays(today, 2), 15, 0)),
+      estimatedDuration: 120,
+      status: 'confirmed',
+      price: 85000,
+      notes: 'Coordinar con trabajo anterior.',
+      source: 'booking'
+    },
+
+    // 3 days from now
+    {
+      id: 'job-day3-maintenance',
+      clientId: 'client-empresa-frio',
+      clientName: 'FríoMax S.R.L.',
+      clientPhone: '+54 11 4788-1122',
+      clientEmail: 'mantenimiento@friomax.com',
+      serviceType: 'Mantenimiento preventivo',
+      serviceTypeId: 'svc-maintenance',
+      description: 'Mantenimiento preventivo mensual contratado.',
+      address: 'Parque Industrial Tigre, nave 5',
+      scheduledDate: toTimestamp(addHoursToDate(addDays(today, 3), 11, 0)),
+      estimatedDuration: 90,
+      status: 'confirmed',
+      price: 45000,
+      notes: 'Revisar todos los equipos del sector A.',
+      source: 'back_office'
+    },
+
+    // Past jobs (completed and cancelled)
+    {
+      id: 'job-past-completed-1',
+      clientId: 'client-matias-gomez',
+      clientName: 'Matías Gómez',
+      clientPhone: '+54 9 11 4222-8899',
+      clientEmail: 'matias.gomez@example.com',
+      serviceType: 'Mantenimiento preventivo',
+      serviceTypeId: 'svc-maintenance',
+      description: 'Chequeo pre verano y limpieza general.',
+      address: 'Calle Los Pinos 450, San Isidro',
+      scheduledDate: toTimestamp(addHoursToDate(addDays(today, -5), 10, 0)),
+      estimatedDuration: 90,
+      status: 'completed',
+      price: 45000,
+      notes: 'Equipo en planta baja, acceso sencillo.',
+      source: 'back_office'
+    },
+    {
+      id: 'job-past-completed-2',
+      clientId: 'client-empresa-frio',
+      clientName: 'FríoMax S.R.L.',
+      clientPhone: '+54 11 4788-1122',
+      clientEmail: 'mantenimiento@friomax.com',
+      serviceType: 'Reparación urgente 24 hs',
+      serviceTypeId: 'svc-urgent-repair',
+      description: 'Reparación de compresor defectuoso.',
+      address: 'Parque Industrial Tigre, nave 5',
+      scheduledDate: toTimestamp(addHoursToDate(addDays(today, -3), 14, 0)),
+      estimatedDuration: 180,
+      status: 'completed',
+      price: 125000,
+      notes: 'Se reemplazó compresor y se recargó gas.',
+      source: 'booking'
+    },
+    {
+      id: 'job-past-cancelled',
+      clientId: 'client-lorena-alvarez',
+      clientName: 'Lorena Álvarez',
+      clientPhone: '+54 9 11 6011-2233',
+      clientEmail: 'lorena.alvarez@example.com',
+      serviceType: 'Instalación Split 3000 frigorías',
+      serviceTypeId: 'svc-standard-install',
+      description: 'Instalación cancelada por el cliente.',
+      address: 'Av. Callao 123, CABA',
+      scheduledDate: toTimestamp(addHoursToDate(addDays(today, -2), 16, 0)),
+      estimatedDuration: 120,
+      status: 'cancelled',
+      price: 0,
+      notes: 'Cliente pospuso para el próximo mes.',
+      source: 'booking'
     }
   ].map((job) => ({
     ...job,
