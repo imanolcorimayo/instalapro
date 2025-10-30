@@ -82,7 +82,7 @@
         :class="[
           'flex items-center justify-center sm:justify-start gap-1.5 px-3 py-1.5 rounded-lg transition-all font-medium text-sm w-full sm:w-auto',
           activeTab === 'resumen'
-            ? 'bg-indigo-600 text-white shadow-sm'
+            ? 'bg-blue-600 text-white shadow-sm'
             : 'text-gray-600 hover:bg-gray-100'
         ]"
       >
@@ -94,7 +94,7 @@
         :class="[
           'flex items-center justify-center sm:justify-start gap-1.5 px-3 py-1.5 rounded-lg transition-all font-medium text-sm w-full sm:w-auto',
           activeTab === 'trabajos'
-            ? 'bg-indigo-600 text-white shadow-sm'
+            ? 'bg-blue-600 text-white shadow-sm'
             : 'text-gray-600 hover:bg-gray-100'
         ]"
       >
@@ -106,7 +106,7 @@
         :class="[
           'flex items-center justify-center sm:justify-start gap-1.5 px-3 py-1.5 rounded-lg transition-all font-medium text-sm w-full sm:w-auto',
           activeTab === 'movimientos'
-            ? 'bg-indigo-600 text-white shadow-sm'
+            ? 'bg-blue-600 text-white shadow-sm'
             : 'text-gray-600 hover:bg-gray-100'
         ]"
       >

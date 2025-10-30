@@ -196,11 +196,11 @@
       </div>
 
       <!-- Form Actions -->
-      <div class="flex gap-3 pt-4">
+      <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
         <button
           type="button"
           @click="closeModal"
-          class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
         >
           Cancelar
         </button>
@@ -208,12 +208,12 @@
           type="submit"
           :disabled="submitting"
           :class="[
-            'flex-1 px-4 py-2 text-white rounded-lg transition-colors font-medium',
+            'px-4 py-2 text-white rounded-lg transition-colors font-medium',
             submitting
-              ? 'bg-indigo-300 cursor-not-allowed opacity-60'
+              ? 'bg-blue-300 cursor-not-allowed'
               : isDemoUser
-                ? 'bg-indigo-600 hover:bg-indigo-600/90'
-                : 'bg-indigo-600 hover:bg-indigo-700'
+                ? 'bg-blue-600 hover:bg-blue-600/90'
+                : 'bg-blue-600 hover:bg-blue-700'
           ]"
           :title="isDemoUser ? (isEditMode ? 'Ingresá con Google para editar gastos' : 'Ingresá con Google para registrar gastos') : undefined"
         >
