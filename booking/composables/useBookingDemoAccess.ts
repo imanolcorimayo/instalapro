@@ -66,7 +66,7 @@ export const useBookingDemoAccess = () => {
 
     closeUpgradeModal({ preserveActionLabel: true })
 
-    const loginUrl = 'https://app.instalapro.com/sign-in'
+    const loginUrl = 'https://instalapro-back-office.web.app'
 
     if (window?.open) {
       window.open(loginUrl, '_blank', 'noopener')
