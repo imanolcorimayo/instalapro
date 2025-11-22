@@ -1,6 +1,8 @@
 // https:://server.instalapro.com/webhooks/mercado-pago
 import admin from "firebase-admin"
-import serviceAccount from "./etc/secrets/service-account.json" with { type: "json" }
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from "url";
 
 import { config } from "dotenv";
 config();
@@ -8,6 +10,21 @@ config();
 import express from "express"
 import cors from "cors"
 
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const localPath = path.join(__dirname, "etc/secrets/service-account.json");
+
+let serviceAccountPath = localPath;
+if (process.env.NODE_ENV == "development") {
+  serviceAccountPath = "/etc/secrets/service-account.json";
+}
+
+const serviceAccount = JSON.parse(
+  fs.readFileSync(serviceAccountPath, 'utf8')
+);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
