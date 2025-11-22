@@ -40,6 +40,12 @@ const PORT = process.env.PORT || 3005;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// save logs every time a request is made
+app.use((req, res, next) => {
+  const logEntry = `${new Date().toISOString()} - ${req.method} ${req.url}\n`;
+  console.log(logEntry);
+  next();
+});
 
 
 
@@ -60,13 +66,13 @@ app.get('/', async (req, res) => {
   res.json({ message: 'InstalaPro Server is running' });
 
   // Query for pending jobs with scheduledDate before now (to cancel)
-  const pendingJobsQuery = db.collection('jobs')
-    .where('status', '==', 'pending');
+  // const pendingJobsQuery = db.collection('jobs')
+  //   .where('status', '==', 'pending');
 
 
-  let pendings = await pendingJobsQuery.get();
+  // let pendings = await pendingJobsQuery.get();
 
-  console.log("pendingJobsQuery:", pendings);
+  // console.log("pendingJobsQuery:", pendings);
 });
 
 // Health check
@@ -78,7 +84,6 @@ app.get('/health', (req, res) => {
 // POST Subscription (preapproval)
 
 // POST new card
-
 
 
 
