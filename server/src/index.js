@@ -47,6 +47,21 @@ app.use((req, res, next) => {
   next();
 });
 
+// Middleware to check for API Key
+const requireApiKey = (req, res, next) => {
+  const apiKey = req.headers['x-api-key'];
+
+  // Bypass API key check for health check endpoint
+  if (req.path === '/health') {
+    return next();
+  }
+
+  if (apiKey && apiKey === process.env.API_KEY) {
+    return next();
+  }
+  res.status(401).json({ message: 'Unauthorized' });
+};
+app.use(requireApiKey);
 
 
 
