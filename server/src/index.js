@@ -1,8 +1,8 @@
 // https:://server.instalapro.com/webhooks/mercado-pago
-import admin from 'firebase-admin'
-import serviceAccount from '../../etc/secrets/service-account.json' with { type: 'json' }
+import admin from "firebase-admin"
+import serviceAccount from "./etc/secrets/service-account.json" with { type: "json" }
 
-import { config } from 'dotenv';
+import { config } from "dotenv";
 config();
 
 import express from "express"

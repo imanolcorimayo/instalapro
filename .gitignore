@@ -70,4 +70,4 @@ node_modules/
 
 
 # Ignore Firebase configuration settings
-etc/secrets/service-account.json
+server/src/etc/secrets/service-account.json
