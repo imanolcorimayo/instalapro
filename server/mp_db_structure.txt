@@ -1,0 +1,141 @@
+Required Schemas
+
+1. Subscription Plans (preapprovalPlans)
+
+Stores the plan templates from https://api.mercadopago.com/preapproval_plan
+
+{
+  id: string (Firestore doc ID)
+  userUid: string (technician who owns this plan)
+  mpPlanId: string (Mercado Pago plan ID)
+  reason: string (plan name/description)
+  autoRecurring: {
+    frequency: number
+    frequencyType: 'days' | 'months'
+    transactionAmount: number
+    currencyId: string
+  }
+  backUrl: string
+  status: 'active' | 'inactive' | 'paused'
+  createdAt: Date
+  updatedAt: Date
+  createdBy: string
+}
+
+2. Payment Methods (paymentMethods)
+
+Stores user card information (tokenized from client SDK)
+
+{
+  id: string
+  userUid: string (technician)
+  customerId: string (client's ID)
+  mpCardId: string (Mercado Pago card token/ID)
+  firstSixDigits: string
+  lastFourDigits: string
+  cardholderName: string
+  expirationMonth: number
+  expirationYear: number
+  paymentMethodId: string ('visa', 'master', etc)
+  issuer: string
+  isDefault: boolean
+  status: 'active' | 'inactive' | 'expired'
+  createdAt: Date
+  updatedAt: Date
+}
+
+3. Subscriptions (subscriptions)
+
+Stores active subscriptions from https://api.mercadopago.com/preapproval
+
+{
+  id: string
+  userUid: string (technician)
+  customerId: string (client)
+  mpSubscriptionId: string (Mercado Pago preapproval ID)
+  planId: string (reference to preapprovalPlans)
+  cardId: string (reference to paymentMethods)
+  status: 'authorized' | 'paused' | 'cancelled' | 'pending'
+  reason: string
+  externalReference: string
+  backUrl: string
+  autoRecurring: {
+    frequency: number
+    frequencyType: 'days' | 'months'
+    transactionAmount: number
+    currencyId: string
+    startDate: Date
+    endDate?: Date
+  }
+  payerEmail: string
+  summarized: {
+    charged_amount: number
+    charged_quantity: number
+    pending_charge_amount: number
+    pending_charge_quantity: number
+    semaphore: string
+  }
+  nextPaymentDate: Date
+  lastPaymentDate?: Date
+  createdAt: Date
+  updatedAt: Date
+}
+
+4. Plan Change Logs (planChangeLogs)
+
+Audit trail for plan modifications
+
+{
+  id: string
+  userUid: string
+  planId: string (reference to preapprovalPlans)
+  mpPlanId: string
+  changeType: 'created' | 'updated' | 'status_changed' | 'deleted'
+  previousData: object (snapshot before change)
+  newData: object (snapshot after change)
+  changedFields: string[] (list of modified fields)
+  changedBy: string (userUid who made the change)
+  createdAt: Date
+}
+
+5. Subscription Change Logs (subscriptionChangeLogs)
+
+Audit trail for subscription modifications
+
+{
+  id: string
+  userUid: string
+  subscriptionId: string (reference to subscriptions)
+  mpSubscriptionId: string
+  changeType: 'created' | 'updated' | 'status_changed' | 'paused' | 'resumed' | 'cancelled'
+  previousData: object
+  newData: object
+  changedFields: string[]
+  reason?: string (cancellation reason, etc)
+  changedBy: string
+  createdAt: Date
+}
+
+Missing Components for Complete Flow
+
+6. Payment Transactions (subscriptionPayments)
+
+Track individual charges from subscriptions
+
+{
+  id: string
+  userUid: string
+  subscriptionId: string
+  mpPaymentId: string (Mercado Pago payment ID)
+  amount: number
+  status: 'approved' | 'pending' | 'rejected' | 'refunded' | 'charged_back'
+  statusDetail: string
+  paymentDate: Date
+  dueDate: Date
+  periodStart: Date
+  periodEnd: Date
+  retryAttempt: number
+  failureReason?: string
+  createdAt: Date
+  updatedAt: Date
+}
