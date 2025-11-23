@@ -22,7 +22,8 @@ export default defineNuxtConfig({
       firebaseAppId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID,
       environment: process.env.NUXT_PUBLIC_ENVIRONMENT || 'development',
       testAccessEnabled: process.env.NUXT_PUBLIC_TEST_ACCESS_ENABLED === 'true',
-      testTechnicianSlug: process.env.NUXT_PUBLIC_TEST_TECHNICIAN_SLUG || ''
+      testTechnicianSlug: process.env.NUXT_PUBLIC_TEST_TECHNICIAN_SLUG || '',
+      mpPublicKey: process.env.NUXT_PUBLIC_MP_PUBLIC_KEY || ''
     }
   },
   dayjs: {
