@@ -31,8 +31,6 @@ admin.initializeApp({
 });
 const db = admin.firestore();
 
-
-console.log("process.env.PORT", process.env.PORT)
 const app = express();
 const PORT = process.env.PORT || 3005;
 
@@ -64,16 +62,11 @@ const requireApiKey = (req, res, next) => {
 app.use(requireApiKey);
 
 
-
-
 // WEBHOOKS
 
 
 
-
-
 // ROUTES
-
 
 
 // Basic route
@@ -99,16 +92,6 @@ app.get('/health', (req, res) => {
 // POST Subscription (preapproval)
 
 // POST new card
-
-
-
-
-
-
-
-
-
-
 
 
 

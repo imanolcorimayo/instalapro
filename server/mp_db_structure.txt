@@ -6,21 +6,44 @@ Stores the plan templates from https://api.mercadopago.com/preapproval_plan
 
 {
   id: string (Firestore doc ID)
-  userUid: string (technician who owns this plan)
-  mpPlanId: string (Mercado Pago plan ID)
-  reason: string (plan name/description)
+  mpPlanId: string (Mercado Pago plan ID)     // "id" in the response /preapproval_plan
+  applicationId: number,                      // "application_id" in the response - not sure if will be useful at some point
+  collectorId: number,                        // "collector_id" in the response - not sure if will be useful at some point
+  reason: string (plan name/description)      // "reason" in the response
   autoRecurring: {
     frequency: number
-    frequencyType: 'days' | 'months'
+    frequencyType: string
     transactionAmount: number
+    freeTrial: {
+      frequency: 1,
+      frequencyType: "months"
+    },
     currencyId: string
   }
-  backUrl: string
+  initPoint: string                           // "init_point" in the response - Used to redirect the user in order to add the payment method
+  backUrl: string,                            // "back_url" in the response - not sure if will be useful at some point
+  externalReference: number,                  // "external_reference" in the response - not sure if will be useful at some point
   status: 'active' | 'inactive' | 'paused'
   createdAt: Date
   updatedAt: Date
-  createdBy: string
 }
+
+
+
+
+{
+    "amount": "100.5",
+    "paymentMethodId": "master",
+    "token": "5a49c7d81b698d66e8e029eb6fd753c0",
+    "issuerId": "3",
+    "installments": "1",
+    "identificationType": "DNI",
+    "identificationNumber": "4085612894651",
+    "processingMode": "aggregator",
+    "merchantAccountId": "",
+    "cardholderEmail": "imanol@gmail.com"
+}
+
 
 2. Payment Methods (paymentMethods)
 
@@ -30,18 +53,52 @@ Stores user card information (tokenized from client SDK)
   id: string
   userUid: string (technician)
   customerId: string (client's ID)
-  mpCardId: string (Mercado Pago card token/ID)
-  firstSixDigits: string
-  lastFourDigits: string
-  cardholderName: string
-  expirationMonth: number
-  expirationYear: number
-  paymentMethodId: string ('visa', 'master', etc)
-  issuer: string
-  isDefault: boolean
-  status: 'active' | 'inactive' | 'expired'
+  cardTokenId: string (Mercado Pago card token/ID)  // "token" in the response
+  paymentMethodId: "master" | "visa" | etc,         // "paymentMethodId" in the response
+  issuerId: string,                                 // "issuerId" in the response - not sure if will be useful at some point
+  installments: string,                             // "installments" in the response - not sure if will be useful at some point
+  identificationType: string,                       // "identificationType" in the response - not sure if will be useful at some point
+  identificationNumber: string,                     // "identificationNumber" in the response - not sure if will be useful at some point
+  processingMode: string,                           // "processingMode" in the response - not sure if will be useful at some point
+  merchantAccountId: string,                        // "merchantAccountId" in the response - not sure if will be useful at some point
+  cardholderEmail: string,                          // "cardholderEmail" in the response - not sure if will be useful at some point
+  status: 'active' | 'inactive' | 'expired' 
   createdAt: Date
   updatedAt: Date
+}
+
+
+
+
+{
+  "id": "2c938084726fca480172750000000000",
+  "version": 0,
+  "application_id": 1234567812345678,
+  "collector_id": 100200300,
+  "preapproval_plan_id": "2c938084726fca480172750000000000",
+  "reason": "Yoga classes.",
+  "external_reference": 23546246234,
+  "back_url": "https://www.mercadopago.com.ar",
+  "init_point": "https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_id=2c938084726fca480172750000000000",
+  "auto_recurring": {
+    "frequency": 1,
+    "frequency_type": "months",
+    "start_date": "2020-06-02T13:07:14.260Z",
+    "end_date": "2022-07-20T15:59:52.581Z",
+    "currency_id": "ARS",
+    "transaction_amount": 10,
+    "free_trial": {
+      "frequency": 1,
+      "frequency_type": "months"
+    }
+  },
+  "payer_id": 123123123,
+  "card_id": 123123123,
+  "payment_method_id": 123123123,
+  "next_payment_date": "2022-01-01T11:12:25.892-04:00",
+  "date_created": "2022-01-01T11:12:25.892-04:00",
+  "last_modified": "2022-01-01T11:12:25.892-04:00",
+  "status": "pending"
 }
 
 3. Subscriptions (subscriptions)
