@@ -124,7 +124,7 @@ app.post("/webhook", async (req, res) => {
     });
 
     // ---- SUBSCRIPCIÓN ----
-    if (type === "preapproval") {
+    if (type === "subscription_preapproval") {
       const preapprovalId = data.id;
       console.log(`\n🔄 Processing subscription (preapproval): ${preapprovalId}`);
 
@@ -148,12 +148,12 @@ app.post("/webhook", async (req, res) => {
       const paymentId = data.id;
       console.log(`\n💰 Processing payment: ${paymentId}`);
 
-      const response = await axios.get(
+      /* const response = await axios.get(
         `https://api.mercadopago.com/v1/payments/${paymentId}`,
         {
           headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
         }
-      );
+      ); */
 
       const payment = response.data;
 
