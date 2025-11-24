@@ -37,21 +37,65 @@ console.log("Webhook Secret:", MP_SECRET ? "✓ Loaded" : "✗ NOT SET");
 console.log("Access Token:", ACCESS_TOKEN ? "✓ Loaded" : "✗ NOT SET");
 console.log("==========================================\n");
 
-// Verificar firma
 function verifySignature(req) {
-  const signature = req.headers["x-signature"];
-  const requestId = req.headers["x-request-id"];
+  const xSignature = req.headers["x-signature"];
+  const xRequestId = req.headers["x-request-id"];
 
-  if (!signature || !requestId) return false;
+  if (!xSignature || !xRequestId) {
+    console.log("⚠️  Missing required headers for signature verification");
+    return false;
+  }
 
-  const payload = `id:${requestId};body:${req.rawBody}`;
-  
-  const hash = crypto
-    .createHmac("sha256", MP_SECRET)
-    .update(payload)
-    .digest("hex");
+  // Get data.id from query params
+  const dataID = req.query["data.id"];
 
-  return hash === signature;
+  if (!dataID) {
+    console.log("⚠️  Missing data.id query parameter");
+    return false;
+  }
+
+  // Parse x-signature header to extract ts and v1 (hash)
+  const parts = xSignature.split(',');
+  let ts;
+  let hash;
+
+  parts.forEach(part => {
+    const [key, value] = part.split('=');
+    if (key && value) {
+      const trimmedKey = key.trim();
+      const trimmedValue = value.trim();
+      if (trimmedKey === 'ts') {
+        ts = trimmedValue;
+      } else if (trimmedKey === 'v1') {
+        hash = trimmedValue;
+      }
+    }
+  });
+
+  if (!ts || !hash) {
+    console.log("⚠️  Invalid x-signature format - missing ts or v1");
+    return false;
+  }
+
+  // Generate the manifest string according to MP docs
+  const manifest = `id:${dataID};request-id:${xRequestId};ts:${ts};`;
+
+  // Create HMAC signature
+  const hmac = crypto.createHmac('sha256', MP_SECRET);
+  hmac.update(manifest);
+  const sha = hmac.digest('hex');
+
+  console.log("🔐 Signature Verification Debug:", {
+    dataID,
+    xRequestId,
+    ts,
+    expectedHash: hash,
+    computedHash: sha,
+    manifest,
+    matches: sha === hash
+  });
+
+  return sha === hash;
 }
 
 app.post("/webhook", async (req, res) => {
