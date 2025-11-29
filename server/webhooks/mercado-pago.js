@@ -165,7 +165,7 @@ app.post("/webhook", async (req, res) => {
 
       /* const payment = response.data; */
 
-      if (payment.preapproval_id) {
+      /* if (payment.preapproval_id) {
         console.log("💳 Subscription Payment Details:", payment);
 
         // TODO: Save payment in the DB
@@ -176,7 +176,7 @@ app.post("/webhook", async (req, res) => {
         console.log("💳 Subscription Payment Details:", payment);
 
         console.log("ℹ️  Payment not associated with subscription - Skipping");
-      }
+      } */
     }
 
     console.log("✅ Webhook processed successfully\n");
