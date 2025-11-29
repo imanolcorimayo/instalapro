@@ -29,10 +29,18 @@ app.use(express.json({
   }
 }));
 
-const MP_SECRET = process.env.MP_WEBHOOK_SECRET;
-const ACCESS_TOKEN = process.env.MP_TEST_ACCESS_TOKEN;
+const isProduction = process.env.NODE_ENV === "production";
+
+const MP_SECRET = isProduction
+  ? process.env.MP_PROD_WEBHOOK_SECRET
+  : process.env.MP_TEST_WEBHOOK_SECRET;
+
+const ACCESS_TOKEN = isProduction
+  ? process.env.MP_PROD_ACCESS_TOKEN
+  : process.env.MP_TEST_ACCESS_TOKEN;
 
 console.log("\n=== Mercado Pago Webhook Configuration ===");
+console.log("Environment:", isProduction ? "PRODUCTION" : "TEST");
 console.log("Webhook Secret:", MP_SECRET ? "✓ Loaded" : "✗ NOT SET");
 console.log("Access Token:", ACCESS_TOKEN ? "✓ Loaded" : "✗ NOT SET");
 console.log("==========================================\n");
@@ -128,16 +136,16 @@ app.post("/webhook", async (req, res) => {
       const preapprovalId = data.id;
       console.log(`\n🔄 Processing subscription (preapproval): ${preapprovalId}`);
 
-      const response = await axios.get(
+      /* const response = await axios.get(
         `https://api.mercadopago.com/preapproval/${preapprovalId}`,
         {
           headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
         }
       );
 
-      const preapproval = response.data;
+      const preapproval = response.data; */
 
-      console.log("📋 Subscription Details:", preapproval);
+      console.log("📋 Subscription Details:", preapprovalId);
 
       // TODO: Save in the DB
       console.log("⚠️  TODO: Save subscription to database");
@@ -155,7 +163,7 @@ app.post("/webhook", async (req, res) => {
         }
       ); */
 
-      const payment = response.data;
+      /* const payment = response.data; */
 
       if (payment.preapproval_id) {
         console.log("💳 Subscription Payment Details:", payment);

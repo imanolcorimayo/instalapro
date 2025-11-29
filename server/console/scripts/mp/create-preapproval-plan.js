@@ -3,6 +3,8 @@
 
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
+import admin from "firebase-admin";
 
 // Load environment variables from the root .env file
 import { config } from "dotenv";
@@ -11,6 +13,26 @@ const __dirname = path.dirname(__filename);
 config({ path: path.resolve(__dirname, "../../../.env") });
 
 const createPreapprovalPlan = async () => {
+  // Initialize Firebase Admin
+  const localPath = path.join(__dirname, "etc/secrets/service-account.json");
+  const serviceAccountPath = localPath;
+
+  let db;
+  try {
+    const serviceAccount = JSON.parse(
+      fs.readFileSync(serviceAccountPath, "utf8")
+    );
+
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+    db = admin.firestore();
+    console.log("✅ Firebase initialized successfully");
+  } catch (error) {
+    console.error("❌ Failed to initialize Firebase:", error.message);
+    process.exit(1);
+  }
+
   // Select the correct token based on the environment
   const isProduction = process.env.NODE_ENV === "production";
   const MP_ACCESS_TOKEN = isProduction
@@ -36,7 +58,7 @@ const createPreapprovalPlan = async () => {
       repetitions: 12,
       billing_day: 10,
       billing_day_proportional: false,
-      transaction_amount: 10000, // Corrected to 10,000 ARS
+      transaction_amount: 1000, // Corrected to 1,000 ARS
       currency_id: "ARS",
     },
     payment_methods_allowed: {
@@ -76,6 +98,35 @@ const createPreapprovalPlan = async () => {
       console.log("   Subscription Link (init_point):", data.init_point);
       console.log("\nResponse Body:");
       console.log(JSON.stringify(data, null, 2));
+
+      // Save to Firestore
+      try {
+        const planData = {
+          id: data.id,
+          back_url: data.back_url,
+          collector_id: data.collector_id,
+          application_id: data.application_id,
+          reason: data.reason,
+          status: data.status,
+          date_created: data.date_created,
+          last_modified: data.last_modified,
+          init_point: data.init_point,
+          auto_recurring: data.auto_recurring,
+          payment_methods_allowed: data.payment_methods_allowed,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        };
+
+        await db.collection("preapproval_plans").doc(data.id).set(planData);
+        console.log("\n✅ Pre-approval plan saved to Firestore successfully!");
+        console.log("   Collection: preapproval_plans");
+        console.log("   Document ID:", data.id);
+      } catch (firestoreError) {
+        console.error(
+          "\n❌ Failed to save pre-approval plan to Firestore:",
+          firestoreError.message
+        );
+        console.error("   Plan was created in Mercado Pago but not saved to database");
+      }
     } else {
       console.error("❌ Failed to create pre-approval plan");
       console.error("   Status:", response.status);
