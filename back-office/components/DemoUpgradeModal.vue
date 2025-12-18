@@ -4,11 +4,25 @@
     :close-on-backdrop-click="false"
     modal-class="max-w-md"
     modal-namespace="demo-upgrade-modal"
-    title="¡Modo demo activo!"
+    :title="modalTitle"
     @on-close="handleModalClosed"
   >
     <div class="flex flex-col gap-4">
-      <div class="rounded-xl bg-blue-50 border border-blue-100 p-4 flex items-start gap-3">
+      <!-- Guest Mode Info (not authenticated) -->
+      <div v-if="isGuestMode" class="rounded-xl bg-indigo-50 border border-indigo-100 p-4 flex items-start gap-3">
+        <IconAccountCircle class="h-6 w-6 text-indigo-500 flex-shrink-0" />
+        <div class="space-y-1">
+          <p class="text-sm text-indigo-800 font-medium">
+            Estás navegando como invitado
+          </p>
+          <p class="text-sm text-indigo-700">
+            Para usar InstalaPro necesitás crear una cuenta y suscribirte.
+          </p>
+        </div>
+      </div>
+
+      <!-- Demo Mode Info (test user) -->
+      <div v-else class="rounded-xl bg-blue-50 border border-blue-100 p-4 flex items-start gap-3">
         <IconLightbulb class="h-6 w-6 text-blue-500 flex-shrink-0" />
         <div class="space-y-1">
           <p class="text-sm text-blue-800 font-medium">
@@ -20,43 +34,96 @@
         </div>
       </div>
 
+      <!-- Action message -->
       <div class="space-y-3 text-sm text-gray-600 leading-relaxed">
         <p v-if="demoState.actionLabel">
-          Para <span class="font-medium text-gray-800">{{ demoState.actionLabel }}</span> necesitás ingresar con tu cuenta de Google.
+          Para <span class="font-medium text-gray-800">{{ demoState.actionLabel }}</span> necesitás {{ isGuestMode ? 'crear una cuenta y suscribirte' : 'ingresar con tu cuenta de Google' }}.
         </p>
         <p v-else>
-          Para usar estas herramientas con tus propios datos, ingresá con Google. Es gratis y toma segundos.
+          Para usar estas herramientas con tus propios datos, {{ isGuestMode ? 'creá tu cuenta y suscribite' : 'ingresá con Google' }}.
         </p>
       </div>
 
+      <!-- Subscription Price Info -->
+      <div class="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-4 text-white">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-blue-100">Plan Mensual</p>
+            <p class="text-2xl font-bold">$10.000</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs text-blue-200">por mes</p>
+            <p class="text-xs text-blue-200">Facturación automática</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features mini list -->
+      <div class="grid grid-cols-2 gap-2 text-xs text-gray-600">
+        <div class="flex items-center gap-1">
+          <IconCheck class="h-3.5 w-3.5 text-green-500" />
+          <span>Agenda ilimitada</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <IconCheck class="h-3.5 w-3.5 text-green-500" />
+          <span>Gestión de clientes</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <IconCheck class="h-3.5 w-3.5 text-green-500" />
+          <span>Reportes</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <IconCheck class="h-3.5 w-3.5 text-green-500" />
+          <span>Soporte prioritario</span>
+        </div>
+      </div>
+
+      <!-- CTA Buttons -->
       <div class="flex flex-col gap-2">
         <button
           type="button"
-          class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white font-medium shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          @click="handleContinueWithGoogle"
+          class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-white font-medium shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          @click="handleSubscribe"
         >
           <IconGoogle class="h-5 w-5" />
-          Conectar con Google
+          {{ isGuestMode ? 'Crear cuenta y suscribirme' : 'Conectar con Google y suscribirme' }}
         </button>
         <button
           type="button"
           class="text-sm text-gray-500 hover:text-gray-700 underline transition"
           @click="handleKeepExploring"
         >
-          Seguir explorando datos demo
+          Seguir explorando
         </button>
       </div>
+
+      <!-- Security note -->
+      <p class="text-center text-xs text-gray-400">
+        Pago seguro con Mercado Pago
+      </p>
     </div>
   </ModalStructure>
 </template>
 
 <script setup>
 import IconLightbulb from '~icons/mdi/lightbulb-on-outline'
+import IconAccountCircle from '~icons/mdi/account-circle-outline'
 import IconGoogle from '~icons/logos/google-icon'
+import IconCheck from '~icons/mdi/check'
 
 const modalRef = ref(null)
+const router = useRouter()
+const authStore = useAuthStore()
+const { $toast } = useNuxtApp()
 
-const { demoState, closeUpgradeModal, resetUpgradeMessage, continueWithGoogle } = useDemoAccessGuard()
+const { demoState, closeUpgradeModal, resetUpgradeMessage, isGuestMode, isDemoUser } = useDemoAccessGuard()
+
+const modalTitle = computed(() => {
+  if (isGuestMode.value) {
+    return 'Suscribite a InstalaPro'
+  }
+  return 'Modo demo activo'
+})
 
 watch(
   () => demoState.value.isOpen,
@@ -77,8 +144,26 @@ const handleKeepExploring = () => {
   closeUpgradeModal({ preserveActionLabel: true })
 }
 
-const handleContinueWithGoogle = async () => {
-  await continueWithGoogle()
+const handleSubscribe = async () => {
+  closeUpgradeModal({ preserveActionLabel: true })
+
+  if (isGuestMode.value) {
+    // Guest user needs to sign in first, then go to subscription
+    $toast.info('Redirigiendo para crear tu cuenta...')
+    router.push('/suscripcion')
+  } else if (isDemoUser.value) {
+    // Demo user needs to sign out and then sign in with real account
+    try {
+      await authStore.signOut()
+      router.push('/suscripcion')
+    } catch (error) {
+      console.error('Error signing out:', error)
+      router.push('/suscripcion')
+    }
+  } else {
+    // Authenticated user without subscription, go directly to subscription page
+    router.push('/suscripcion')
+  }
 }
 
 const handleModalClosed = () => {

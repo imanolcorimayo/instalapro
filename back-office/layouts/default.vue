@@ -66,32 +66,48 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center cursor-default min-w-0 flex-1">
             <div class="flex-shrink-0">
-              <img 
-                v-if="authStore.userPhoto" 
-                :src="authStore.userPhoto" 
-                :alt="authStore.userName" 
+              <!-- Guest user avatar -->
+              <div v-if="isGuestMode" class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <IconAccountCircle class="w-5 h-5 text-indigo-600" />
+              </div>
+              <!-- Authenticated user photo -->
+              <img
+                v-else-if="authStore.userPhoto"
+                :src="authStore.userPhoto"
+                :alt="authStore.userName"
                 class="w-10 h-10 rounded-lg"
               />
+              <!-- Fallback avatar -->
               <div v-else class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <IconAccount class="w-5 h-5 text-blue-600" />
               </div>
             </div>
             <div class="ml-3 min-w-0 flex-1">
               <p class="text-sm font-medium text-gray-700 truncate">
-                {{ authStore.userName || technicianName || 'Técnico' }}
+                {{ isGuestMode ? 'Invitado' : (authStore.userName || technicianName || 'Técnico') }}
               </p>
               <p class="text-xs text-gray-500">
-                Back Office
+                {{ isGuestMode ? 'Modo exploración' : 'Back Office' }}
               </p>
             </div>
           </div>
+          <!-- Sign out button (only for authenticated users) -->
           <button
+            v-if="!isGuestMode"
             @click.prevent="handleSignOut"
             class="p-2 text-gray-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
             title="Cerrar sesión"
             type="button"
           >
             <IconLogoutVariant class="w-4 h-4" />
+          </button>
+          <!-- Subscribe button for guests -->
+          <button
+            v-else
+            @click="openUpgradeModal()"
+            class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            Suscribirme
           </button>
         </div>
       </div>
@@ -120,8 +136,46 @@
           </h2>
         </div>
 
+        <!-- Guest Mode (not authenticated) - Mobile -->
         <div
-          v-if="isDemoUser"
+          v-if="isGuestMode"
+          class="flex items-center gap-2 sm:hidden"
+        >
+          <span class="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-indigo-600">
+            <IconAccountCircle class="h-3.5 w-3.5" />
+            Invitado
+          </span>
+          <button
+            type="button"
+            class="inline-flex items-center gap-1 rounded-md border border-indigo-200 bg-indigo-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+            @click="openUpgradeModal()"
+          >
+            Suscribirme
+          </button>
+        </div>
+
+        <!-- Guest Mode (not authenticated) - Desktop -->
+        <div
+          v-if="isGuestMode"
+          class="hidden sm:flex items-center gap-3"
+        >
+          <span class="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-600">
+            <IconAccountCircle class="h-4 w-4" />
+            Modo invitado
+          </span>
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+            @click="openUpgradeModal()"
+          >
+            <IconCreditCard class="h-4 w-4" />
+            Suscribirme - $10.000/mes
+          </button>
+        </div>
+
+        <!-- Demo Mode (test user) - Mobile -->
+        <div
+          v-else-if="isDemoUser"
           class="flex items-center gap-2 sm:hidden"
         >
           <span class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-blue-600">
@@ -134,12 +188,13 @@
             @click="openUpgradeModal()"
           >
             <IconGoogle class="h-3.5 w-3.5" />
-            Iniciar sesión
+            Suscribirme
           </button>
         </div>
 
+        <!-- Demo Mode (test user) - Desktop -->
         <div
-          v-if="isDemoUser"
+          v-else-if="isDemoUser"
           class="hidden sm:flex items-center gap-3"
         >
           <span class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-600">
@@ -152,7 +207,7 @@
             @click="openUpgradeModal()"
           >
             <IconGoogle class="h-4 w-4" />
-            Ingresar con Google
+            Suscribirme - $10.000/mes
           </button>
         </div>
       </div>
@@ -180,6 +235,7 @@
 import IconAirConditioner from '~icons/mdi/air-conditioner'
 import IconClose from '~icons/mdi/close'
 import IconAccount from '~icons/mdi/account'
+import IconAccountCircle from '~icons/mdi/account-circle-outline'
 import IconMenu from '~icons/mdi/menu'
 import IconCogOutline from '~icons/mdi/cog-outline'
 import IconViewDashboardOutline from '~icons/mdi/view-dashboard-outline'
@@ -189,6 +245,7 @@ import IconFileDocumentOutline from '~icons/mdi/file-document-outline'
 import IconLogoutVariant from '~icons/mdi/logout-variant'
 import IconDatabase from '~icons/mdi/database'
 import IconGoogle from '~icons/logos/google-icon'
+import IconCreditCard from '~icons/mdi/credit-card-outline'
 
 // ==========================================
 // COMPOSABLES
@@ -198,7 +255,7 @@ const route = useRoute()
 const techniciansStore = useTechniciansStore()
 const authStore = useAuthStore()
 const { $toast } = useNuxtApp()
-const { isDemoUser, openUpgradeModal } = useDemoAccessGuard()
+const { isDemoUser, isGuestMode, needsUpgrade, openUpgradeModal } = useDemoAccessGuard()
 
 // ==========================================
 // STATE

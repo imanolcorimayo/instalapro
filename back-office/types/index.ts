@@ -374,3 +374,32 @@ export type TimeSlotStatus = 'available' | 'booked' | 'blocked' | 'break'
 export type ScheduleView = 'day' | 'week' | 'month'
 
 export type MovementType = 'income' | 'outcome'
+
+// ==========================================
+// SUBSCRIPTION INTERFACES
+// ==========================================
+
+export type SubscriptionStatus = 'pending' | 'authorized' | 'paused' | 'cancelled'
+
+export interface Subscription {
+  id: string
+  userUid: string
+  mpSubscriptionId: string // MercadoPago preapproval ID
+  planId: string // MercadoPago plan ID
+  status: SubscriptionStatus
+  nextPaymentDate?: Date
+  lastPaymentDate?: Date
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface SubscriptionPayment {
+  id: string
+  userUid: string
+  subscriptionId: string
+  mpPaymentId: string
+  amount: number
+  status: 'approved' | 'pending' | 'rejected'
+  paymentDate: Date
+  createdAt: Date
+}

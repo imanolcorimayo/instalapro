@@ -1,0 +1,75 @@
+
+
+
+[2025-11-29T15:31:43.923Z] 📨 Incoming Request
+✓ Signature verified successfully
+
+
+Webhook Details: {
+  type: 'subscription_preapproval',
+  action: 'created',
+  dataId: '3f41709c11b6451ebd3be232ac6b0f9f',
+  timestamp: '2025-11-29T15:31:43.924Z'
+}
+
+
+🔄 Processing subscription (preapproval): 3f41709c11b6451ebd3be232ac6b0f9f
+📋 Subscription Details: 3f41709c11b6451ebd3be232ac6b0f9f
+⚠️  TODO: Save subscription to database
+✅ Webhook processed successfully
+
+
+
+
+
+[2025-11-29T15:31:47.362Z] 📨 Incoming Request
+✓ Signature verified successfully
+
+
+Webhook Details: {
+  type: 'payment',
+  action: 'payment.created',
+  dataId: '135756129798',
+  timestamp: '2025-11-29T15:31:47.363Z'
+}
+
+
+💰 Processing payment: 135756129798
+✅ Webhook processed successfully
+
+
+
+
+
+[2025-11-29T15:31:48.831Z] 📨 Incoming Request
+✓ Signature verified successfully
+
+
+Webhook Details: {
+  type: 'subscription_preapproval',
+  action: 'updated',
+  dataId: '3f41709c11b6451ebd3be232ac6b0f9f',
+  timestamp: '2025-11-29T15:31:48.831Z'
+}
+
+
+🔄 Processing subscription (preapproval): 3f41709c11b6451ebd3be232ac6b0f9f
+📋 Subscription Details: 3f41709c11b6451ebd3be232ac6b0f9f
+⚠️  TODO: Save subscription to database
+✅ Webhook processed successfully
+
+
+
+[2025-11-29T15:33:26.883Z] 📨 Incoming Request
+✓ Signature verified successfully
+
+
+Webhook Details: {
+  type: 'subscription_authorized_payment',
+  action: 'created',
+  dataId: '7023566959',
+  timestamp: '2025-11-29T15:33:26.884Z'
+}
+
+
+✅ Webhook processed successfully
