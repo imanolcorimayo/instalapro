@@ -8,7 +8,7 @@
     @on-close="handleModalClosed"
   >
     <div class="flex flex-col gap-4">
-      <!-- Guest Mode Info (not authenticated) -->
+      <!-- Guest Mode Info (auto-demo user) -->
       <div v-if="isGuestMode" class="rounded-xl bg-indigo-50 border border-indigo-100 p-4 flex items-start gap-3">
         <IconAccountCircle class="h-6 w-6 text-indigo-500 flex-shrink-0" />
         <div class="space-y-1">
@@ -21,8 +21,8 @@
         </div>
       </div>
 
-      <!-- Demo Mode Info (test user) -->
-      <div v-else class="rounded-xl bg-blue-50 border border-blue-100 p-4 flex items-start gap-3">
+      <!-- Demo Mode Info (test user with access code) -->
+      <div v-else-if="isDemoUser" class="rounded-xl bg-blue-50 border border-blue-100 p-4 flex items-start gap-3">
         <IconLightbulb class="h-6 w-6 text-blue-500 flex-shrink-0" />
         <div class="space-y-1">
           <p class="text-sm text-blue-800 font-medium">
@@ -34,13 +34,26 @@
         </div>
       </div>
 
+      <!-- Authenticated user without subscription -->
+      <div v-else class="rounded-xl bg-amber-50 border border-amber-100 p-4 flex items-start gap-3">
+        <IconCreditCardOff class="h-6 w-6 text-amber-500 flex-shrink-0" />
+        <div class="space-y-1">
+          <p class="text-sm text-amber-800 font-medium">
+            Suscripción requerida
+          </p>
+          <p class="text-sm text-amber-700">
+            Para usar todas las funcionalidades de InstalaPro necesitás una suscripción activa.
+          </p>
+        </div>
+      </div>
+
       <!-- Action message -->
       <div class="space-y-3 text-sm text-gray-600 leading-relaxed">
         <p v-if="demoState.actionLabel">
-          Para <span class="font-medium text-gray-800">{{ demoState.actionLabel }}</span> necesitás {{ isGuestMode ? 'crear una cuenta y suscribirte' : 'ingresar con tu cuenta de Google' }}.
+          Para <span class="font-medium text-gray-800">{{ demoState.actionLabel }}</span> necesitás {{ actionRequirement }}.
         </p>
         <p v-else>
-          Para usar estas herramientas con tus propios datos, {{ isGuestMode ? 'creá tu cuenta y suscribite' : 'ingresá con Google' }}.
+          {{ defaultActionMessage }}
         </p>
       </div>
 
@@ -85,8 +98,9 @@
           class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-white font-medium shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           @click="handleSubscribe"
         >
-          <IconGoogle class="h-5 w-5" />
-          {{ isGuestMode ? 'Crear cuenta y suscribirme' : 'Conectar con Google y suscribirme' }}
+          <IconGoogle v-if="isGuestMode || isDemoUser" class="h-5 w-5" />
+          <IconCreditCard v-else class="h-5 w-5" />
+          {{ ctaButtonText }}
         </button>
         <button
           type="button"
@@ -108,6 +122,8 @@
 <script setup>
 import IconLightbulb from '~icons/mdi/lightbulb-on-outline'
 import IconAccountCircle from '~icons/mdi/account-circle-outline'
+import IconCreditCardOff from '~icons/mdi/credit-card-off-outline'
+import IconCreditCard from '~icons/mdi/credit-card-outline'
 import IconGoogle from '~icons/logos/google-icon'
 import IconCheck from '~icons/mdi/check'
 
@@ -119,10 +135,41 @@ const { $toast } = useNuxtApp()
 const { demoState, closeUpgradeModal, resetUpgradeMessage, isGuestMode, isDemoUser } = useDemoAccessGuard()
 
 const modalTitle = computed(() => {
-  if (isGuestMode.value) {
-    return 'Suscribite a InstalaPro'
+  if (isGuestMode.value || isDemoUser.value) {
+    return 'Modo demo activo'
   }
-  return 'Modo demo activo'
+  // Authenticated user without subscription
+  return 'Suscribite a InstalaPro'
+})
+
+const actionRequirement = computed(() => {
+  if (isGuestMode.value) {
+    return 'crear una cuenta y suscribirte'
+  }
+  if (isDemoUser.value) {
+    return 'ingresar con tu cuenta de Google'
+  }
+  return 'activar tu suscripción'
+})
+
+const defaultActionMessage = computed(() => {
+  if (isGuestMode.value) {
+    return 'Para usar estas herramientas con tus propios datos, creá tu cuenta y suscribite.'
+  }
+  if (isDemoUser.value) {
+    return 'Para usar estas herramientas con tus propios datos, ingresá con Google.'
+  }
+  return 'Para continuar usando InstalaPro, activá tu suscripción.'
+})
+
+const ctaButtonText = computed(() => {
+  if (isGuestMode.value) {
+    return 'Crear cuenta y suscribirme'
+  }
+  if (isDemoUser.value) {
+    return 'Conectar con Google y suscribirme'
+  }
+  return 'Activar suscripción'
 })
 
 watch(

@@ -70,6 +70,7 @@ export const useServiceTypesStore = defineStore('serviceTypes', () => {
         estimatedDuration: input.estimatedDuration,
         category: input.category.trim(),
         isActive: true,
+        showInBooking: true,
         createdAt: new Date(),
         updatedAt: new Date(),
         createdBy: authStore.user.uid

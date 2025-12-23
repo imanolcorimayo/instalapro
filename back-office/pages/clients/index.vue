@@ -150,6 +150,7 @@
     <ClientModal
       ref="clientModal"
       @client-created="onClientCreated"
+      @client-updated="onClientUpdated"
     />
 
     <!-- Clients Tour -->
@@ -231,14 +232,17 @@ const onClientCreated = (newClient) => {
   console.log('Client created:', newClient.name)
 }
 
+const onClientUpdated = (updatedClient) => {
+  // Client was updated successfully, no need to reload as store is already updated
+  console.log('Client updated:', updatedClient.name)
+}
+
 const editClient = (client) => {
   if (requireFullAccount('editar clientes')) {
     return
   }
 
-  // TODO: Implement edit functionality in ClientModal.vue
-  // For now, we'll keep the current approach until ClientModal supports editing
-  useToast().info('Funcionalidad de edición próximamente disponible')
+  clientModal.value?.showEditModal(client)
 }
 
 const deleteClient = async (clientId, clientName) => {

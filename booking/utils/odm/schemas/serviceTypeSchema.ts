@@ -39,6 +39,11 @@ export class ServiceTypesSchema extends Schema {
       required: false,
       default: true
     },
+    showInBooking: {
+      type: 'boolean',
+      required: false,
+      default: true
+    },
     createdAt: {
       type: 'date',
       required: true
@@ -49,8 +54,8 @@ export class ServiceTypesSchema extends Schema {
     }
   };
 
-  // Find active service types for a technician
-  // NOTE: We query all active services and filter client-side by userUid
+  // Find active service types for a technician that are visible in booking
+  // NOTE: We query all active services and filter client-side by userUid and showInBooking
   // This is because Firestore security rules only allow reading by isActive,
   // not compound queries with userUid (which would require authentication)
   async findByTechnicianUserUid(userUid: string) {
@@ -60,9 +65,12 @@ export class ServiceTypesSchema extends Schema {
       ]
     });
 
-    // Filter client-side by userUid
+    // Filter client-side by userUid and showInBooking
+    // showInBooking defaults to true if not set (for backwards compatibility)
     if (result.success && result.data) {
-      result.data = result.data.filter(service => service.userUid === userUid);
+      result.data = result.data.filter(service =>
+        service.userUid === userUid && service.showInBooking !== false
+      );
     }
 
     return result;

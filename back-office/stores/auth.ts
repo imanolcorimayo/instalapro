@@ -32,6 +32,13 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
 
       try {
+        // Clear any demo mode flags before signing in with a real account
+        if (process.client) {
+          localStorage.removeItem('instalapro_isTestUser')
+          localStorage.removeItem('instalapro_auto_demo')
+        }
+        this.isTestUser = false
+
         const user = await signInWithGoogle()
         // Don't set this.user here - let the auth listener handle it
         return user
@@ -92,9 +99,10 @@ export const useAuthStore = defineStore('auth', {
         await signOutUser()
         // Don't set this.user to null here - let the auth listener handle it
 
-        // Clear test user flag from localStorage
+        // Clear all demo mode flags from localStorage
         if (process.client) {
           localStorage.removeItem('instalapro_isTestUser')
+          localStorage.removeItem('instalapro_auto_demo')
         }
 
         this.isTestUser = false

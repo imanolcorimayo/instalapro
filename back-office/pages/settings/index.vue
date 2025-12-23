@@ -412,15 +412,42 @@
 
                 <p v-if="service.description" class="text-sm text-gray-600 mb-3">{{ service.description }}</p>
 
-                <div class="flex items-center gap-4">
-                  <div class="flex items-center gap-1.5">
-                    <IconCurrencyUsd class="w-5 h-5 text-blue-600" />
-                    <span class="font-semibold text-gray-900">${{ formatPrice(service.basePrice) }}</span>
+                <div class="flex items-center justify-between gap-4 mb-3">
+                  <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-1.5">
+                      <IconCurrencyUsd class="w-5 h-5 text-blue-600" />
+                      <span class="font-semibold text-gray-900">${{ formatPrice(service.basePrice) }}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <IconClock class="w-5 h-5 text-gray-600" />
+                      <span class="text-sm text-gray-600">{{ Math.round(service.estimatedDuration / 60) }}h {{ service.estimatedDuration % 60 }}min</span>
+                    </div>
                   </div>
-                  <div class="flex items-center gap-1.5">
-                    <IconClock class="w-5 h-5 text-gray-600" />
-                    <span class="text-sm text-gray-600">{{ Math.round(service.estimatedDuration / 60) }}h {{ service.estimatedDuration % 60 }}min</span>
+                </div>
+
+                <!-- Show in Booking Toggle -->
+                <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <div class="flex items-center gap-2">
+                    <IconWeb class="w-4 h-4 text-gray-500" />
+                    <span class="text-sm text-gray-600">Mostrar en página de reservas</span>
                   </div>
+                  <button
+                    type="button"
+                    @click="toggleServiceVisibility(service)"
+                    :disabled="isTogglingVisibility[service.id]"
+                    :class="[
+                      'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50',
+                      service.showInBooking !== false ? 'bg-blue-600' : 'bg-gray-200'
+                    ]"
+                    :title="service.showInBooking !== false ? 'Ocultar de la página de reservas' : 'Mostrar en la página de reservas'"
+                  >
+                    <span
+                      :class="[
+                        'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+                        service.showInBooking !== false ? 'translate-x-5' : 'translate-x-0'
+                      ]"
+                    />
+                  </button>
                 </div>
               </div>
             </div>
@@ -820,6 +847,7 @@ import IconCalendar from '~icons/mdi/calendar'
 import IconLink from '~icons/mdi/link-variant'
 import IconContentCopy from '~icons/mdi/content-copy'
 import IconCheckCircle from '~icons/mdi/check-circle'
+import IconWeb from '~icons/mdi/web'
 
 // ==========================================
 // PAGE METADATA
@@ -853,6 +881,7 @@ const isReactivating = ref(false)
 const isSavingService = ref(false)
 const editingService = ref(null)
 const showCustomCategoryInput = ref(false)
+const isTogglingVisibility = reactive({})
 
 // URL Slug management
 const slugInput = ref('')
@@ -1171,16 +1200,45 @@ const deleteService = async (service) => {
   if (!confirm(`¿Estás seguro de eliminar el servicio "${service.name}"?`)) {
     return
   }
-  
+
   try {
     const success = await serviceTypesStore.deleteServiceType(service.id)
-    
+
     if (success) {
       useToast().success('Servicio eliminado correctamente')
     }
-    
+
   } catch (error) {
     console.error('Error deleting service:', error)
+  }
+}
+
+const toggleServiceVisibility = async (service) => {
+  if (requireFullAccount('cambiar visibilidad de servicios')) {
+    return
+  }
+
+  isTogglingVisibility[service.id] = true
+
+  try {
+    // Toggle the showInBooking value (default to true if undefined)
+    const newValue = service.showInBooking === false ? true : false
+    const success = await serviceTypesStore.updateServiceType(service.id, {
+      showInBooking: newValue
+    })
+
+    if (success) {
+      useToast().success(
+        newValue
+          ? 'Servicio visible en página de reservas'
+          : 'Servicio oculto de página de reservas'
+      )
+    }
+  } catch (error) {
+    console.error('Error toggling service visibility:', error)
+    useToast().error('Error al cambiar visibilidad')
+  } finally {
+    isTogglingVisibility[service.id] = false
   }
 }
 

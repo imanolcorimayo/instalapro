@@ -26,8 +26,10 @@ export const useSubscriptionStore = defineStore('subscription', () => {
   // ==========================================
 
   const hasActiveSubscription = computed(() => {
-    if (!subscription.value) return false
-    return subscription.value.status === 'authorized'
+    // TODO: Re-enable subscription validation when ready
+    // if (!subscription.value) return false
+    // return subscription.value.status === 'authorized'
+    return true // Temporarily disabled - all users have access
   })
 
   const isPendingSubscription = computed(() => {

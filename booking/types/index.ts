@@ -30,6 +30,7 @@ export interface ServiceType {
   estimatedDuration: number // minutes
   category: string
   isActive?: boolean
+  showInBooking?: boolean // Whether to show in the public booking page (default: true)
   createdAt: Date
   updatedAt: Date
 }

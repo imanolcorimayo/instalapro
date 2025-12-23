@@ -942,7 +942,7 @@
               <div
                 v-for="(client, index) in filteredClients"
                 :key="client.id"
-                @click="selectClient(client)"
+                @mousedown.prevent="selectClient(client)"
                 :class="[
                   'p-3 cursor-pointer border-b border-gray-100 last:border-b-0 touch-manipulation',
                   index === highlightedClientIndex
@@ -962,7 +962,7 @@
 
               <!-- Create new client option -->
               <div
-                @click="createNewClient"
+                @mousedown.prevent="createNewClient"
                 :class="[
                   'p-3 cursor-pointer border-t-2 border-gray-200 bg-green-50 touch-manipulation',
                   highlightedClientIndex === filteredClients.length

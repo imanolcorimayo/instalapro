@@ -41,6 +41,11 @@ export class ServiceTypesSchema extends Schema {
       required: false,
       default: true
     },
+    showInBooking: {
+      type: 'boolean',
+      required: false,
+      default: true
+    },
     createdAt: {
       type: 'date',
       required: true

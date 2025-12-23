@@ -17,7 +17,11 @@ export const useServiceTypesStore = defineStore('serviceTypes', () => {
   // ==========================================
 
   const activeServiceTypes = computed(() => {
-    return serviceTypes.value.filter(st => st.isActive !== false)
+    // Filter by both isActive and showInBooking
+    // Both default to true if not set (for backwards compatibility)
+    return serviceTypes.value.filter(st =>
+      st.isActive !== false && st.showInBooking !== false
+    )
   })
 
   // ==========================================

@@ -1,8 +1,8 @@
 <template>
 <ModalStructure
   ref="clientModal"
-  title="Nuevo Cliente"
-  @on-close="closeModal"
+  :title="isEditing ? 'Editar Cliente' : 'Nuevo Cliente'"
+  @on-close="handleModalClose"
 >
   <form @submit.prevent="saveClient" class="space-y-4">
     <!-- Name -->
@@ -87,11 +87,11 @@
         :disabled="saving"
         class="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center gap-2"
       >
-        <IconLoading 
-          v-if="saving" 
-          class="w-4 h-4 animate-spin" 
+        <IconLoading
+          v-if="saving"
+          class="w-4 h-4 animate-spin"
         />
-        Crear Cliente
+        {{ isEditing ? 'Guardar Cambios' : 'Crear Cliente' }}
       </button>
     </div>
   </form>
@@ -110,7 +110,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['clientCreated'])
+const emit = defineEmits(['clientCreated', 'clientUpdated'])
 
 // Store integration
 const clientsStore = useClientsStore()
@@ -120,6 +120,10 @@ const clientModal = ref()
 
 // Component state
 const saving = ref(false)
+const editingClient = ref(null)
+
+// Computed
+const isEditing = computed(() => !!editingClient.value)
 
 // Form data
 const clientForm = ref({
@@ -132,11 +136,30 @@ const clientForm = ref({
 
 // Methods
 const showModal = () => {
+  editingClient.value = null
+  resetForm()
+  clientModal.value?.showModal()
+}
+
+const showEditModal = (client) => {
+  editingClient.value = client
+  clientForm.value = {
+    name: client.name || '',
+    phone: client.phone || '',
+    email: client.email || '',
+    address: client.address || '',
+    notes: client.notes || ''
+  }
   clientModal.value?.showModal()
 }
 
 const closeModal = () => {
   clientModal.value?.closeModal()
+}
+
+// Called when ModalStructure emits on-close (e.g., user clicks X or backdrop)
+const handleModalClose = () => {
+  editingClient.value = null
   resetForm()
 }
 
@@ -152,11 +175,9 @@ const resetForm = () => {
 
 const saveClient = async () => {
   saving.value = true
-  let clientCreated = false
-  let newClient = null
 
   try {
-    // Prepare client data according to ClientCreateInput interface
+    // Prepare client data
     const clientData = {
       name: clientForm.value.name.trim(),
       phone: clientForm.value.phone.trim(),
@@ -165,46 +186,58 @@ const saveClient = async () => {
       notes: clientForm.value.notes?.trim() || undefined
     }
 
-    // Use the clients store to create the client (now returns the full client object)
-    newClient = await clientsStore.createClient(clientData)
-    clientCreated = true
+    if (isEditing.value) {
+      // Update existing client
+      const clientToUpdate = editingClient.value
+      await clientsStore.updateClient(clientToUpdate.id, clientData)
+      useToast().success('Cliente actualizado exitosamente')
+      closeModal()
+      handleModalClose()
+      emit('clientUpdated', { ...clientToUpdate, ...clientData })
+    } else {
+      // Create new client
+      let clientCreated = false
+      let newClient = null
 
-  } catch (err) {
-    // Check if error is the known Nuxt regex bug (client may still be created)
-    const isNuxtRegexBug = err instanceof Error &&
-                           err.message.includes('Invalid regular expression') &&
-                           err.message.includes('Stack overflow')
-
-    if (isNuxtRegexBug) {
-      // This is a known Nuxt bug - client was likely created successfully
-      console.warn('Nuxt regex bug encountered, but client may have been created:', err)
-      // We'll check if client exists by reloading
-      await clientsStore.loadClients()
-      // Try to find the newly created client by name and phone
-      const possibleClient = clientsStore.activeClients.find(
-        c => c.name === clientForm.value.name.trim() &&
-             c.phone === clientForm.value.phone.trim()
-      )
-      if (possibleClient) {
-        newClient = possibleClient
+      try {
+        newClient = await clientsStore.createClient(clientData)
         clientCreated = true
+      } catch (err) {
+        // Check if error is the known Nuxt regex bug (client may still be created)
+        const isNuxtRegexBug = err instanceof Error &&
+                               err.message.includes('Invalid regular expression') &&
+                               err.message.includes('Stack overflow')
+
+        if (isNuxtRegexBug) {
+          console.warn('Nuxt regex bug encountered, but client may have been created:', err)
+          await clientsStore.loadClients()
+          const possibleClient = clientsStore.activeClients.find(
+            c => c.name === clientForm.value.name.trim() &&
+                 c.phone === clientForm.value.phone.trim()
+          )
+          if (possibleClient) {
+            newClient = possibleClient
+            clientCreated = true
+          }
+        }
+
+        if (!clientCreated) {
+          throw err
+        }
+      }
+
+      if (clientCreated && newClient) {
+        useToast().success('Cliente creado exitosamente')
+        closeModal()
+        handleModalClose()
+        emit('clientCreated', newClient)
       }
     }
-
-    if (!clientCreated) {
-      console.error('Error saving client:', err)
-      useToast().error('Error al guardar cliente')
-      saving.value = false
-      return
-    }
-  }
-
-  // If we got here, client was created successfully
-  if (clientCreated && newClient) {
-    useToast().success('Cliente creado exitosamente')
+  } catch (err) {
+    console.error('Error saving client:', err)
+    useToast().error('Error al guardar cliente')
+  } finally {
     saving.value = false
-    emit('clientCreated', newClient)
-    closeModal()
   }
 }
 
@@ -216,6 +249,7 @@ watch(() => props.initialName, (newName) => {
 // Expose methods to parent components
 defineExpose({
   showModal,
+  showEditModal,
   closeModal
 })
 </script>
